@@ -7,610 +7,688 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
-    --surface2: #f1efe8;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --text-primary: #1a1a18;
-    --text-secondary: #5f5e5a;
-    --text-hint: #888780;
-    --accent: #1d9e75;
-    --accent-light: #e1f5ee;
-    --accent2: #378add;
-    --accent2-light: #e6f1fb;
-    --warn: #ba7517;
-    --warn-light: #faeeda;
-    --danger: #a32d2d;
-    --danger-light: #fcebeb;
-    --radius: 10px;
-    --radius-sm: 6px;
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f1efe8;--surface3:#e8e6df;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --text-primary:#1a1a18;--text-secondary:#5f5e5a;--text-hint:#888780;
+  --accent:#1d9e75;--accent-light:#e1f5ee;--accent-dark:#0f6e56;
+  --blue:#378add;--blue-light:#e6f1fb;
+  --purple:#7f77dd;--purple-light:#eeedfe;
+  --amber:#ba7517;--amber-light:#faeeda;
+  --danger:#a32d2d;--danger-light:#fcebeb;
+  --sidebar-w:200px;--header-h:52px;
+  --radius:10px;--radius-sm:6px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--surface:#2c2c2a;--surface2:#242422;--surface3:#1a1a18;
+    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+    --text-primary:#f1efe8;--text-secondary:#b4b2a9;--text-hint:#888780;
+    --accent:#5dcaa5;--accent-light:#04342c;--accent-dark:#9fe1cb;
+    --blue:#85b7eb;--blue-light:#042c53;
+    --purple:#afa9ec;--purple-light:#26215c;
+    --amber:#ef9f27;--amber-light:#412402;
+    --danger:#f09595;--danger-light:#501313;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a;
-      --surface: #2c2c2a;
-      --surface2: #242422;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.18);
-      --text-primary: #f1efe8;
-      --text-secondary: #b4b2a9;
-      --text-hint: #888780;
-      --accent: #5dcaa5;
-      --accent-light: #04342c;
-      --accent2: #85b7eb;
-      --accent2-light: #042c53;
-      --warn: #ef9f27;
-      --warn-light: #412402;
-      --danger: #f09595;
-      --danger-light: #501313;
-    }
-  }
-  body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); font-size: 14px; line-height: 1.5; min-height: 100vh; }
-  .header { background: var(--surface); border-bottom: 0.5px solid var(--border2); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-  .header-title { font-size: 16px; font-weight: 500; color: var(--text-primary); }
-  .header-sub { font-size: 12px; color: var(--text-hint); margin-top: 2px; }
-  .tab-group { display: flex; background: var(--surface2); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
-  .tab-btn { padding: 6px 18px; border-radius: 4px; border: none; background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-  .tab-btn.active { background: var(--surface); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  .date-nav { display: flex; align-items: center; gap: 8px; }
-  .date-nav button { width: 28px; height: 28px; border: 0.5px solid var(--border2); background: var(--surface); border-radius: var(--radius-sm); cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 14px; }
-  .date-nav button:hover { background: var(--surface2); }
-  .date-label { font-size: 13px; font-weight: 500; color: var(--text-primary); min-width: 160px; text-align: center; }
-  .main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
-  .section-title { font-size: 12px; font-weight: 500; color: var(--text-hint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; margin-top: 24px; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
-  .kpi-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; position: relative; overflow: hidden; }
-  .kpi-card.highlight { border-color: var(--accent); }
-  .kpi-label { font-size: 11px; color: var(--text-hint); font-weight: 500; letter-spacing: 0.04em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
-  .kpi-value { font-size: 22px; font-weight: 500; color: var(--text-primary); line-height: 1.1; }
-  .kpi-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-  .kpi-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 20px; margin-top: 6px; }
-  .kpi-badge.up { background: var(--accent-light); color: var(--accent); }
-  .kpi-badge.down { background: var(--danger-light); color: var(--danger); }
-  .kpi-badge.neutral { background: var(--surface2); color: var(--text-hint); }
-  .kpi-divider { width: 100%; height: 0.5px; background: var(--border); margin: 8px 0; }
-  .kpi-row { display: flex; justify-content: space-between; align-items: baseline; }
-  .kpi-row-label { font-size: 11px; color: var(--text-secondary); }
-  .kpi-row-value { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; margin-top: 12px; }
-  .chart-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
-  .chart-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
-  .chart-subtitle { font-size: 11px; color: var(--text-hint); margin-bottom: 12px; }
-  .chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
-  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 12px; }
-  .spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-hint); }
-  .error-box { background: var(--danger-light); border: 0.5px solid var(--danger); border-radius: var(--radius); padding: 14px 16px; color: var(--danger); font-size: 13px; margin: 12px 0; }
-  .ratio-bar { height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-  .ratio-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
-  .last-updated { font-size: 11px; color: var(--text-hint); margin-top: 16px; text-align: right; }
-  .chart-canvas-wrap { position: relative; width: 100%; height: 200px; }
+}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;line-height:1.5;display:flex;flex-direction:column;min-height:100vh;}
+
+/* TOP HEADER */
+.top-header{height:var(--header-h);background:var(--surface);border-bottom:0.5px solid var(--border2);display:flex;align-items:center;padding:0 20px;gap:16px;position:fixed;top:0;left:0;right:0;z-index:200;}
+.top-header-title{font-size:15px;font-weight:500;color:var(--text-primary);display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.top-header-title i{color:var(--accent);font-size:18px;}
+.header-controls{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.tab-group{display:flex;background:var(--surface2);border-radius:var(--radius-sm);padding:3px;gap:2px;}
+.tab-btn{padding:5px 16px;border-radius:4px;border:none;background:transparent;color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+.tab-btn.active{background:var(--surface);color:var(--text-primary);}
+.date-nav{display:flex;align-items:center;gap:6px;}
+.date-nav button{width:26px;height:26px;border:0.5px solid var(--border2);background:var(--surface);border-radius:var(--radius-sm);cursor:pointer;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.date-nav button:hover{background:var(--surface2);}
+.date-label{font-size:12px;font-weight:500;color:var(--text-primary);min-width:150px;text-align:center;white-space:nowrap;}
+
+/* LAYOUT */
+.layout{display:flex;margin-top:var(--header-h);min-height:calc(100vh - var(--header-h));}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:0.5px solid var(--border2);position:fixed;top:var(--header-h);bottom:0;left:0;overflow-y:auto;z-index:100;padding:16px 0;}
+.sidebar-section{padding:0 12px;margin-bottom:4px;}
+.sidebar-label{font-size:10px;font-weight:500;color:var(--text-hint);letter-spacing:0.07em;text-transform:uppercase;padding:8px 8px 4px;}
+.menu-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:400;transition:all 0.12s;border:none;background:transparent;width:100%;text-align:left;}
+.menu-item i{font-size:16px;flex-shrink:0;}
+.menu-item:hover{background:var(--surface2);color:var(--text-primary);}
+.menu-item.active{background:var(--accent-light);color:var(--accent);font-weight:500;}
+.menu-item.active i{color:var(--accent);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;padding:20px 24px;min-width:0;}
+
+/* MINI KPI */
+.mini-kpi-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.mini-kpi{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;min-width:140px;flex:1;}
+.mini-kpi.accent{border-color:var(--accent);}
+.mini-kpi-label{font-size:10px;color:var(--text-hint);font-weight:500;letter-spacing:0.04em;margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.mini-kpi-value{font-size:18px;font-weight:500;color:var(--text-primary);line-height:1.1;}
+.mini-kpi-sub{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+.mini-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;margin-top:4px;}
+.mini-badge.up{background:var(--accent-light);color:var(--accent);}
+.mini-badge.down{background:var(--danger-light);color:var(--danger);}
+.mini-badge.neutral{background:var(--surface2);color:var(--text-hint);}
+
+/* TABLE */
+.table-section{margin-bottom:24px;}
+.table-section-title{font-size:12px;font-weight:500;color:var(--text-hint);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.table-section-title i{font-size:14px;}
+.tbl-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--surface2);padding:9px 14px;text-align:right;font-size:11px;font-weight:500;color:var(--text-hint);border-bottom:0.5px solid var(--border2);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody tr{border-bottom:0.5px solid var(--border);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:8px 14px;text-align:right;color:var(--text-primary);white-space:nowrap;}
+tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;}
+.td-up{color:var(--accent);font-size:11px;}
+.td-down{color:var(--danger);font-size:11px;}
+.td-bold{font-weight:500;color:var(--text-primary);}
+
+/* CHARTS */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;}
+.chart-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.chart-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:3px;}
+.chart-subtitle{font-size:11px;color:var(--text-hint);margin-bottom:10px;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.chart-canvas-wrap{position:relative;width:100%;height:200px;}
+
+/* LOADING / ERROR */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:12px;}
+.spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:13px;color:var(--text-hint);}
+.error-box{background:var(--danger-light);border:0.5px solid var(--danger);border-radius:var(--radius);padding:14px 16px;color:var(--danger);font-size:13px;margin:12px 0;}
+.ratio-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:6px;overflow:hidden;}
+.ratio-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;}
+.last-updated{font-size:11px;color:var(--text-hint);margin-top:16px;text-align:right;}
+.page-section{margin-bottom:28px;}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <div class="header-title"><i class="ti ti-device-tv" aria-hidden="true" style="margin-right:6px;"></i>앱 이용 지표 대시보드</div>
-    <div class="header-sub" id="headerSub">데이터 로딩 중...</div>
-  </div>
-  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+<!-- TOP HEADER -->
+<div class="top-header">
+  <div class="top-header-title"><i class="ti ti-device-mobile" aria-hidden="true"></i>앱 이용 지표 대시보드</div>
+  <div class="header-controls">
     <div class="tab-group">
-      <button class="tab-btn active" onclick="switchTab('daily')">일간</button>
-      <button class="tab-btn" onclick="switchTab('weekly')">주간</button>
+      <button class="tab-btn active" onclick="switchTab('weekly')">주간</button>
       <button class="tab-btn" onclick="switchTab('monthly')">월간</button>
     </div>
     <div class="date-nav">
-      <button onclick="navigate(-1)" title="이전"><i class="ti ti-chevron-left"></i></button>
+      <button onclick="navigate(-1)"><i class="ti ti-chevron-left"></i></button>
       <span class="date-label" id="dateLabel">-</span>
-      <button onclick="navigate(1)" title="다음"><i class="ti ti-chevron-right"></i></button>
+      <button onclick="navigate(1)"><i class="ti ti-chevron-right"></i></button>
     </div>
   </div>
 </div>
 
-<div class="main" id="mainContent">
-  <div class="loading"><div class="spinner"></div><div class="loading-text">구글 시트에서 데이터를 불러오는 중...</div></div>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" aria-label="메뉴">
+    <div class="sidebar-section">
+      <div class="sidebar-label">메뉴</div>
+      <button class="menu-item active" onclick="switchMenu('chart')" id="menu-chart">
+        <i class="ti ti-chart-line" aria-hidden="true"></i>추이 차트
+      </button>
+      <button class="menu-item" onclick="switchMenu('customer')" id="menu-customer">
+        <i class="ti ti-users" aria-hidden="true"></i>고객 지표
+      </button>
+      <button class="menu-item" onclick="switchMenu('viewing')" id="menu-viewing">
+        <i class="ti ti-player-play" aria-hidden="true"></i>시청 지표
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" id="mainContent">
+    <div class="loading"><div class="spinner"></div><div class="loading-text">구글 시트에서 데이터를 불러오는 중...</div></div>
+  </main>
 </div>
 
 <script>
 const SHEET_ID = '1rnz0S8YPAgjHu9lzsT3f2yAtjU4XQrxpQioQnAU1eN4';
-const SHEETS = { dau:'DAU', tid:'TID', pairing:'페어링', vod:'VOD 시청', serial:'정주행 시청' };
+const SHEETS = {dau:'DAU',tid:'TID',pairing:'페어링',vod:'VOD 시청',serial:'정주행 시청'};
+let allData={}, currentTab='weekly', currentIndex=0, currentMenu='chart';
+let dailyRows=[], weeklyRows=[], monthlyRows=[];
+let chartInstances={};
 
-let allData = {};
-let currentTab = 'daily';
-let currentIndex = 0;
-
-async function fetchSheet(name) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`시트 로드 실패: ${name}`);
-  const text = await res.text();
-  return parseCSV(text);
+/* ── FETCH & PARSE ── */
+async function fetchSheet(name){
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  const res=await fetch(url);
+  if(!res.ok) throw new Error(`시트 로드 실패: ${name}`);
+  return parseCSV(await res.text());
 }
-
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-  return lines.slice(1).map(line => {
-    const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || [];
-    const row = {};
-    headers.forEach((h, i) => { row[h] = (vals[i]||'').replace(/"/g,'').trim(); });
+function parseCSV(text){
+  const lines=text.trim().split('\n');
+  const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+  return lines.slice(1).map(line=>{
+    const vals=line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g)||[];
+    const row={};
+    headers.forEach((h,i)=>{row[h]=(vals[i]||'').replace(/"/g,'').trim();});
     return row;
-  }).filter(r => r[headers[0]]);
+  }).filter(r=>r[headers[0]]);
 }
 
-function parseDate(s) {
-  s = String(s).replace(/\D/g,'');
-  if (s.length === 8) return new Date(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8));
-  return null;
-}
-
-function fmtDate(d) {
-  return `${d.getFullYear().toString().slice(2)}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function getWeekStart(d) {
-  const base = new Date(2025, 11, 29);
-  const diff = Math.floor((d - base) / 86400000);
-  const weekOffset = Math.floor(diff / 7);
-  const ws = new Date(base);
-  ws.setDate(base.getDate() + weekOffset * 7);
+/* ── DATES ── */
+function parseDate(s){s=String(s).replace(/\D/g,'');return s.length===8?new Date(+s.slice(0,4),+s.slice(4,6)-1,+s.slice(6,8)):null;}
+function fmtDate(d){return `${d.getFullYear().toString().slice(2)}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
+function getWeekStart(d){
+  const base=new Date(2025,11,29);
+  const offset=Math.floor((d-base)/86400000);
+  const ws=new Date(base);
+  ws.setDate(base.getDate()+Math.floor(offset/7)*7);
   return ws;
 }
-
-function getWeekLabel(ws) {
-  const we = new Date(ws); we.setDate(ws.getDate()+6);
-  const base = new Date(2025,11,29);
-  const wn = Math.floor((ws-base)/86400000/7)+1;
-  const yr = we.getFullYear().toString().slice(2);
-  const mo = String(we.getMonth()+1).padStart(2,'0');
-  const s = `${fmtDate(ws)}~${fmtDate(we)}`;
-  return `${yr}/${mo}-W${wn} (${s})`;
+function getWeekNo(ws){return Math.floor((ws-new Date(2025,11,29))/86400000/7)+1;}
+function getWeekLabel(ws){
+  const we=new Date(ws);we.setDate(ws.getDate()+6);
+  const wn=getWeekNo(ws);
+  const yr=we.getFullYear().toString().slice(2);
+  const mo=String(we.getMonth()+1).padStart(2,'0');
+  return `${yr}/${mo}-W${wn} (${fmtDate(ws)}~${fmtDate(we)})`;
 }
 
-function num(v) { return v ? parseFloat(String(v).replace(/,/g,'')) : 0; }
-function fmtN(v, digits=0) {
-  if (isNaN(v)||v===null||v===undefined) return '-';
-  return Math.round(v).toLocaleString('ko-KR');
+/* ── NUMBERS ── */
+function num(v){return v?parseFloat(String(v).replace(/,/g,'')):0;}
+function fmtN(v){if(v===null||v===undefined||isNaN(v))return '-';return Math.round(v).toLocaleString('ko-KR');}
+function fmtDelta(cur,prev){
+  if(cur===null||prev===null||prev===0)return null;
+  const r=(cur-prev)/Math.abs(prev);
+  return{text:(r>0?'+':'')+( r*100).toFixed(1)+'%',cls:r>0?'up':r<0?'down':'neutral'};
 }
-function fmtDelta(v) {
-  if (isNaN(v)||v===null) return null;
-  const s = v > 0 ? `+${(v*100).toFixed(1)}%` : `${(v*100).toFixed(1)}%`;
-  return { text: s, cls: v > 0 ? 'up' : v < 0 ? 'down' : 'neutral' };
-}
-function secToMin(s) { return (s/60).toFixed(1)+'분'; }
-function secToHour(s) { return (s/3600).toFixed(1)+'시간'; }
+function secToMin(s){return s?(s/60).toFixed(1)+'분':'-';}
+function secToHour(s){return s?(s/3600).toFixed(1)+'시간':'-';}
 
-function buildDailyRows() {
-  const rows = {};
-  const addRows = (key, sheet) => {
-    (allData[key]||[]).forEach(r => {
-      const d = parseDate(Object.values(r)[0]);
-      if (!d) return;
-      const dk = d.toISOString().slice(0,10);
-      if (!rows[dk]) rows[dk] = { date: d };
-      rows[dk][key] = r;
+/* ── BUILD ROWS ── */
+function buildDailyRows(){
+  const rows={};
+  Object.keys(SHEETS).forEach(key=>{
+    (allData[key]||[]).forEach(r=>{
+      const d=parseDate(Object.values(r)[0]);if(!d)return;
+      const dk=d.toISOString().slice(0,10);
+      if(!rows[dk])rows[dk]={date:d};
+      rows[dk][key]=r;
     });
-  };
-  Object.keys(SHEETS).forEach(k => addRows(k, k));
+  });
   return Object.values(rows).sort((a,b)=>a.date-b.date);
 }
 
-function buildWeeklyRows(dailyRows) {
-  const weeks = {};
-  dailyRows.forEach(row => {
-    const ws = getWeekStart(row.date);
-    const wk = ws.toISOString().slice(0,10);
-    if (!weeks[wk]) weeks[wk] = { weekStart: ws, days: [] };
+function tidField(){return Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체';}
+
+function buildWeeklyRows(dr){
+  const weeks={};
+  dr.forEach(row=>{
+    const ws=getWeekStart(row.date);const wk=ws.toISOString().slice(0,10);
+    if(!weeks[wk])weeks[wk]={weekStart:ws,days:[]};
     weeks[wk].days.push(row);
   });
-  return Object.values(weeks).sort((a,b)=>a.weekStart-b.weekStart).map(w => {
-    const days = w.days;
-    const last = days[days.length-1];
-    const avg = (key, field) => days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0)/Math.max(days.filter(d=>d[key]).length,1);
-    const sum = (key, field) => days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0);
-    const lastVal = (key, field) => { const d = [...days].reverse().find(d=>d[key]); return d ? num(d[key][field]) : null; };
-    return {
-      weekStart: w.weekStart,
-      label: getWeekLabel(w.weekStart),
-      dau: avg('dau','DAU'), mau: lastVal('dau','MAU'),
-      tid: lastVal('tid', Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체'),
-      pairing_total: lastVal('pairing','유효단말') !== null ? lastVal('pairing','유효단말') + lastVal('pairing','비유효단말') : null,
-      pairing_valid: lastVal('pairing','유효단말'),
-      pairing_invalid: lastVal('pairing','비유효단말'),
-      vod_viewers: avg('vod','프로필자수'), vod_count: sum('vod','시청건수'), vod_time: sum('vod','시청시간'),
-      serial_viewers: avg('serial','프로필자수'), serial_count: sum('serial','시청건수'), serial_time: sum('serial','시청시간'),
+  return Object.values(weeks).sort((a,b)=>a.weekStart-b.weekStart).map(w=>{
+    const days=w.days;
+    const avg=(key,field)=>days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0)/Math.max(days.filter(d=>d[key]).length,1);
+    const sum=(key,field)=>days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0);
+    const last=(key,field)=>{const d=[...days].reverse().find(d=>d[key]);return d?num(d[key][field]):null;};
+    const tf=tidField();
+    return{
+      weekStart:w.weekStart,label:getWeekLabel(w.weekStart),
+      dau:avg('dau','DAU'),mau:last('dau','MAU'),
+      tid:last('tid',tf),
+      pairing_total:(last('pairing','유효단말')??0)+(last('pairing','비유효단말')??0)||null,
+      pairing_valid:last('pairing','유효단말'),pairing_invalid:last('pairing','비유효단말'),
+      vod_viewers:avg('vod','프로필자수'),vod_count:sum('vod','시청건수'),vod_time:sum('vod','시청시간'),
+      serial_viewers:avg('serial','프로필자수'),serial_count:sum('serial','시청건수'),serial_time:sum('serial','시청시간'),
     };
   });
 }
 
-function buildMonthlyRows(dailyRows) {
-  const months = {};
-  dailyRows.forEach(row => {
-    const mk = `${row.date.getFullYear()}-${String(row.date.getMonth()+1).padStart(2,'0')}`;
-    if (!months[mk]) months[mk] = { year: row.date.getFullYear(), month: row.date.getMonth()+1, days: [] };
+function buildMonthlyRows(dr){
+  const months={};
+  dr.forEach(row=>{
+    const mk=`${row.date.getFullYear()}-${String(row.date.getMonth()+1).padStart(2,'0')}`;
+    if(!months[mk])months[mk]={year:row.date.getFullYear(),month:row.date.getMonth()+1,days:[]};
     months[mk].days.push(row);
   });
-  return Object.values(months).sort((a,b)=>a.year!==b.year?a.year-b.year:a.month-b.month).map(m => {
-    const days = m.days;
-    const avg = (key, field) => days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0)/Math.max(days.filter(d=>d[key]).length,1);
-    const sum = (key, field) => days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0);
-    const lastVal = (key, field) => { const d = [...days].reverse().find(d=>d[key]); return d ? num(d[key][field]) : null; };
-    return {
-      year: m.year, month: m.month,
-      label: `${m.year}년 ${m.month}월`,
-      dau: avg('dau','DAU'), mau: lastVal('dau','MAU'),
-      tid: lastVal('tid', Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체'),
-      pairing_total: lastVal('pairing','유효단말') !== null ? lastVal('pairing','유효단말') + lastVal('pairing','비유효단말') : null,
-      pairing_valid: lastVal('pairing','유효단말'),
-      pairing_invalid: lastVal('pairing','비유효단말'),
-      vod_viewers: avg('vod','프로필자수'), vod_count: sum('vod','시청건수'), vod_time: sum('vod','시청시간'),
-      serial_viewers: avg('serial','프로필자수'), serial_count: sum('serial','시청건수'), serial_time: sum('serial','시청시간'),
+  return Object.values(months).sort((a,b)=>a.year!==b.year?a.year-b.year:a.month-b.month).map(m=>{
+    const days=m.days;
+    const avg=(key,field)=>days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0)/Math.max(days.filter(d=>d[key]).length,1);
+    const sum=(key,field)=>days.filter(d=>d[key]).reduce((s,d)=>s+num(d[key]?.[field]||0),0);
+    const last=(key,field)=>{const d=[...days].reverse().find(d=>d[key]);return d?num(d[key][field]):null;};
+    const tf=tidField();
+    return{
+      year:m.year,month:m.month,label:`${m.year}년 ${m.month}월`,
+      dau:avg('dau','DAU'),mau:last('dau','MAU'),
+      tid:last('tid',tf),
+      pairing_total:(last('pairing','유효단말')??0)+(last('pairing','비유효단말')??0)||null,
+      pairing_valid:last('pairing','유효단말'),pairing_invalid:last('pairing','비유효단말'),
+      vod_viewers:avg('vod','프로필자수'),vod_count:sum('vod','시청건수'),vod_time:sum('vod','시청시간'),
+      serial_viewers:avg('serial','프로필자수'),serial_count:sum('serial','시청건수'),serial_time:sum('serial','시청시간'),
     };
   });
 }
 
-let dailyRows=[], weeklyRows=[], monthlyRows=[];
-
-async function init() {
-  try {
-    const [dau, tid, pairing, vod, serial] = await Promise.all([
-      fetchSheet(SHEETS.dau), fetchSheet(SHEETS.tid),
-      fetchSheet(SHEETS.pairing), fetchSheet(SHEETS.vod), fetchSheet(SHEETS.serial)
+/* ── INIT ── */
+async function init(){
+  try{
+    const [dau,tid,pairing,vod,serial]=await Promise.all([
+      fetchSheet(SHEETS.dau),fetchSheet(SHEETS.tid),
+      fetchSheet(SHEETS.pairing),fetchSheet(SHEETS.vod),fetchSheet(SHEETS.serial)
     ]);
-    allData = { dau, tid, pairing, vod, serial };
-    dailyRows = buildDailyRows();
-    weeklyRows = buildWeeklyRows(dailyRows);
-    monthlyRows = buildMonthlyRows(dailyRows);
-    currentIndex = dailyRows.length - 1;
+    allData={dau,tid,pairing,vod,serial};
+    dailyRows=buildDailyRows();
+    weeklyRows=buildWeeklyRows(dailyRows);
+    monthlyRows=buildMonthlyRows(dailyRows);
+    currentIndex=weeklyRows.length-1;
     render();
-  } catch(e) {
-    document.getElementById('mainContent').innerHTML = `<div class="error-box"><i class="ti ti-alert-circle"></i> 데이터 로딩 오류: ${e.message}<br><small>구글 시트가 공개(웹에 게시) 설정이 되어 있는지 확인해 주세요.</small></div>`;
+  }catch(e){
+    document.getElementById('mainContent').innerHTML=`<div class="error-box"><i class="ti ti-alert-circle"></i> 데이터 로딩 오류: ${e.message}<br><small>구글 시트 웹 게시 설정을 확인해 주세요.</small></div>`;
   }
 }
 
-function navigate(dir) {
-  const rows = currentTab==='daily'?dailyRows:currentTab==='weekly'?weeklyRows:monthlyRows;
-  currentIndex = Math.max(0, Math.min(rows.length-1, currentIndex+dir));
+/* ── NAVIGATION ── */
+function getRows(){return currentTab==='weekly'?weeklyRows:monthlyRows;}
+function navigate(dir){
+  const rows=getRows();
+  currentIndex=Math.max(0,Math.min(rows.length-1,currentIndex+dir));
+  render();
+}
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',['weekly','monthly'][i]===tab);});
+  currentIndex=getRows().length-1;
+  render();
+}
+function switchMenu(menu){
+  currentMenu=menu;
+  document.querySelectorAll('.menu-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('menu-'+menu).classList.add('active');
   render();
 }
 
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{ b.classList.toggle('active', ['daily','weekly','monthly'][i]===tab); });
-  const rows = tab==='daily'?dailyRows:tab==='weekly'?weeklyRows:monthlyRows;
-  currentIndex = rows.length - 1;
-  render();
+/* ── CURRENT VALUES ── */
+function getCurPrev(){
+  const rows=getRows();if(!rows.length)return{cur:null,prev:null};
+  const idx=Math.min(currentIndex,rows.length-1);
+  return{cur:rows[idx],prev:idx>0?rows[idx-1]:null};
+}
+function getVal(row,key,field,aggKey){
+  return row?.[aggKey]??null;
 }
 
-function getRows() { return currentTab==='daily'?dailyRows:currentTab==='weekly'?weeklyRows:monthlyRows; }
-
-function getCurrentData() {
-  const rows = getRows();
-  if (!rows.length) return null;
-  const idx = Math.min(currentIndex, rows.length-1);
-  return { cur: rows[idx], prev: idx>0?rows[idx-1]:null };
+/* ── MINI KPI HTML ── */
+function miniKpi(label,icon,value,sub,delta,accent,extra){
+  const d=delta?fmtDelta(delta.cur,delta.prev):null;
+  const badge=d?`<span class="mini-badge ${d.cls}">${d.text}</span>`:'';
+  return `<div class="mini-kpi${accent?' accent':''}">
+    <div class="mini-kpi-label"><i class="ti ti-${icon}" aria-hidden="true"></i>${label}</div>
+    <div class="mini-kpi-value">${value}</div>
+    ${sub?`<div class="mini-kpi-sub">${sub}</div>`:''}
+    ${badge}
+    ${extra||''}
+  </div>`;
 }
 
-function deltaRate(cur, prev) {
-  if (cur===null||prev===null||prev===0) return null;
-  return (cur-prev)/Math.abs(prev);
+/* ── TABLE HELPERS ── */
+function tdDelta(cur,prev){
+  if(cur===null||prev===null||prev===0)return '<td>-</td>';
+  const r=(cur-prev)/Math.abs(prev);
+  const cls=r>0?'td-up':r<0?'td-down':'';
+  return `<td class="${cls}">${r>0?'+':''}${(r*100).toFixed(1)}%</td>`;
+}
+function compareLabel(){return currentTab==='weekly'?'WoW':'MoM';}
+
+/* ── DATE LABEL ── */
+function updateDateLabel(){
+  const rows=getRows();if(!rows.length)return;
+  const idx=Math.min(currentIndex,rows.length-1);
+  const cur=rows[idx];
+  
+  else if(currentTab==='weekly') document.getElementById('dateLabel').textContent=`W${getWeekNo(cur.weekStart)} (${fmtDate(cur.weekStart)}~${fmtDate(new Date(cur.weekStart.getTime()+6*86400000))})`;
+  else document.getElementById('dateLabel').textContent=cur.label;
 }
 
-function render() {
-  const rows = getRows();
-  if (!rows.length) return;
-  const idx = Math.min(currentIndex, rows.length-1);
-  const cur = rows[idx];
-  const prev = idx > 0 ? rows[idx-1] : null;
+/* ── TIME FORMAT ── */
+function fmtTime(sec){return secToHour(sec);}
+function timeUnitLabel(){return '(시간)';}
 
-  let dateStr = '';
-  if (currentTab==='daily') {
-    dateStr = cur.date ? fmtDate(cur.date) : '-';
-    document.getElementById('headerSub').textContent = `일별 기준 · ${dateStr}`;
-  } else if (currentTab==='weekly') {
-    dateStr = cur.label || '-';
-    document.getElementById('headerSub').textContent = `주간 기준 · ${cur.label}`;
-  } else {
-    dateStr = cur.label || '-';
-    document.getElementById('headerSub').textContent = `월간 기준 · ${cur.label}`;
-  }
-  document.getElementById('dateLabel').textContent = currentTab==='daily'?dateStr:currentTab==='weekly'?`W${Math.floor((cur.weekStart-new Date(2025,11,29))/86400000/7)+1}`:cur.label;
-
-  // Get values from daily row
-  function getDailyVal(row, key, field) {
-    if (!row || !row[key]) return null;
-    return num(row[key][field]);
-  }
-
-  let pairingTotal, pairingValid, pairingInvalid, tid_val, dau_val, mau_val;
-  let vodViewers, vodCount, vodTime, serialViewers, serialCount, serialTime;
-  let prevPairingTotal, prevPairingValid, prevTid, prevDau, prevMau;
-  let prevVodViewers, prevVodCount, prevVodTime, prevSerialViewers, prevSerialCount, prevSerialTime;
-
-  const tidField = Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체';
-
-  if (currentTab==='daily') {
-    pairingValid = getDailyVal(cur,'pairing','유효단말');
-    pairingInvalid = getDailyVal(cur,'pairing','비유효단말');
-    pairingTotal = pairingValid!==null&&pairingInvalid!==null ? pairingValid+pairingInvalid : null;
-    tid_val = getDailyVal(cur,'tid',tidField);
-    dau_val = getDailyVal(cur,'dau','DAU');
-    mau_val = getDailyVal(cur,'dau','MAU');
-    vodViewers = getDailyVal(cur,'vod','프로필자수'); vodCount = getDailyVal(cur,'vod','시청건수'); vodTime = getDailyVal(cur,'vod','시청시간');
-    serialViewers = getDailyVal(cur,'serial','프로필자수'); serialCount = getDailyVal(cur,'serial','시청건수'); serialTime = getDailyVal(cur,'serial','시청시간');
-    if (prev) {
-      prevPairingValid = getDailyVal(prev,'pairing','유효단말'); prevPairingTotal = (getDailyVal(prev,'pairing','유효단말')||0)+(getDailyVal(prev,'pairing','비유효단말')||0);
-      prevTid = getDailyVal(prev,'tid',tidField); prevDau = getDailyVal(prev,'dau','DAU'); prevMau = getDailyVal(prev,'dau','MAU');
-      prevVodViewers = getDailyVal(prev,'vod','프로필자수'); prevVodCount = getDailyVal(prev,'vod','시청건수'); prevVodTime = getDailyVal(prev,'vod','시청시간');
-      prevSerialViewers = getDailyVal(prev,'serial','프로필자수'); prevSerialCount = getDailyVal(prev,'serial','시청건수'); prevSerialTime = getDailyVal(prev,'serial','시청시간');
-    }
-  } else {
-    pairingTotal = cur.pairing_total; pairingValid = cur.pairing_valid; pairingInvalid = cur.pairing_invalid;
-    tid_val = cur.tid; dau_val = cur.dau; mau_val = cur.mau;
-    vodViewers = cur.vod_viewers; vodCount = cur.vod_count; vodTime = cur.vod_time;
-    serialViewers = cur.serial_viewers; serialCount = cur.serial_count; serialTime = cur.serial_time;
-    if (prev) {
-      prevPairingTotal = prev.pairing_total; prevPairingValid = prev.pairing_valid;
-      prevTid = prev.tid; prevDau = prev.dau; prevMau = prev.mau;
-      prevVodViewers = prev.vod_viewers; prevVodCount = prev.vod_count; prevVodTime = prev.vod_time;
-      prevSerialViewers = prev.serial_viewers; prevSerialCount = prev.serial_count; prevSerialTime = prev.serial_time;
-    }
-  }
-
-  const validRatio = pairingTotal ? (pairingValid/pairingTotal*100).toFixed(1) : null;
-  const timeLabel = currentTab==='daily' ? '분' : '시간';
-  const timeConverter = currentTab==='daily' ? (s=>s?secToMin(s):'-') : (s=>s?secToHour(s):'-');
-  const compareLabel = currentTab==='daily'?'전일비':currentTab==='weekly'?'WoW':'MoM';
-
-  function badge(delta) {
-    const d = fmtDelta(delta);
-    return d ? `<span class="kpi-badge ${d.cls}">${d.text} ${compareLabel}</span>` : '';
-  }
-
-  const mainEl = document.getElementById('mainContent');
-  mainEl.innerHTML = `
-    <div class="section-title">고객 지표</div>
-    <div class="kpi-grid">
-      <div class="kpi-card highlight">
-        <div class="kpi-label"><i class="ti ti-wifi" aria-hidden="true"></i>페어링 전체</div>
-        <div class="kpi-value">${fmtN(pairingTotal)}</div>
-        ${badge(deltaRate(pairingTotal, prevPairingTotal))}
-        ${pairingValid!==null?`
-        <div class="kpi-divider"></div>
-        <div class="kpi-row"><span class="kpi-row-label">유효단말</span><span class="kpi-row-value">${fmtN(pairingValid)}</span></div>
-        <div class="kpi-row"><span class="kpi-row-label">비유효단말</span><span class="kpi-row-value">${fmtN(pairingInvalid)}</span></div>
-        `:''}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-device-mobile-check" aria-hidden="true"></i>유효단말 비율</div>
-        <div class="kpi-value">${validRatio ? validRatio+'%' : '-'}</div>
-        <div class="kpi-sub">${fmtN(pairingValid)} / ${fmtN(pairingTotal)}</div>
-        ${badge(deltaRate(pairingValid, prevPairingValid))}
-        ${validRatio!==null?`<div class="ratio-bar"><div class="ratio-fill" style="width:${validRatio}%"></div></div>`:''}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-id-badge" aria-hidden="true"></i>T아이디</div>
-        <div class="kpi-value">${fmtN(tid_val)}</div>
-        ${badge(deltaRate(tid_val, prevTid))}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-users" aria-hidden="true"></i>DAU / MAU</div>
-        <div class="kpi-value">${fmtN(dau_val)}</div>
-        <div class="kpi-sub">MAU ${fmtN(mau_val)}</div>
-        ${badge(deltaRate(dau_val, prevDau))}
-      </div>
-    </div>
-
-    <div class="section-title" style="margin-top:20px;">시청 지표 — VOD</div>
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-eye" aria-hidden="true"></i>VOD 시청자수</div>
-        <div class="kpi-value">${fmtN(vodViewers)}</div>
-        <div class="kpi-sub">${currentTab==='weekly'?'주간 일평균':currentTab==='monthly'?'월간 일평균':'당일'}</div>
-        ${badge(deltaRate(vodViewers, prevVodViewers))}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-list-numbers" aria-hidden="true"></i>VOD 시청건수</div>
-        <div class="kpi-value">${fmtN(vodCount)}</div>
-        <div class="kpi-sub">${currentTab==='weekly'?'주간 누적':currentTab==='monthly'?'월간 누적':'당일'}</div>
-        ${badge(deltaRate(vodCount, prevVodCount))}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-clock" aria-hidden="true"></i>VOD 시청시간</div>
-        <div class="kpi-value">${timeConverter(vodTime)}</div>
-        <div class="kpi-sub">${currentTab==='weekly'?'주간 누적':currentTab==='monthly'?'월간 누적':'당일'}</div>
-        ${badge(deltaRate(vodTime, prevVodTime))}
-      </div>
-    </div>
-
-    <div class="section-title" style="margin-top:20px;">시청 지표 — 정주행</div>
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-eye" aria-hidden="true"></i>정주행 시청자수</div>
-        <div class="kpi-value">${fmtN(serialViewers)}</div>
-        <div class="kpi-sub">${currentTab==='weekly'?'주간 일평균':currentTab==='monthly'?'월간 일평균':'당일'}</div>
-        ${badge(deltaRate(serialViewers, prevSerialViewers))}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-list-numbers" aria-hidden="true"></i>정주행 시청건수</div>
-        <div class="kpi-value">${fmtN(serialCount)}</div>
-        <div class="kpi-sub">${currentTab==='weekly'?'주간 누적':currentTab==='monthly'?'월간 누적':'당일'}</div>
-        ${badge(deltaRate(serialCount, prevSerialCount))}
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label"><i class="ti ti-clock" aria-hidden="true"></i>정주행 시청시간</div>
-        <div class="kpi-value">${timeConverter(serialTime)}</div>
-        <div class="kpi-sub">${currentTab==='weekly'?'주간 누적':currentTab==='monthly'?'월간 누적':'당일'}</div>
-        ${badge(deltaRate(serialTime, prevSerialTime))}
-      </div>
-    </div>
-
-    <div class="section-title" style="margin-top:28px;">추이 차트</div>
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">페어링 추이</div>
-        <div class="chart-subtitle">전체 / 유효 / 비유효</div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>전체</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>유효</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#d85a30;opacity:.6"></span>비유효</span>
-        </div>
-        <div class="chart-canvas-wrap"><canvas id="chartPairing" role="img" aria-label="페어링 추이 라인 차트">페어링 전체/유효/비유효 추이</canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">DAU / MAU 추이</div>
-        <div class="chart-subtitle">DAU 바 · MAU 라인(우축)</div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>MAU</span>
-        </div>
-        <div class="chart-canvas-wrap"><canvas id="chartDau" role="img" aria-label="DAU MAU 추이">DAU/MAU 추이</canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">T아이디 추이</div>
-        <div class="chart-subtitle">누적 연동 고객수</div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#7f77dd"></span>T아이디</span>
-        </div>
-        <div class="chart-canvas-wrap"><canvas id="chartTid" role="img" aria-label="T아이디 추이">T아이디 추이</canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">시청자수 추이</div>
-        <div class="chart-subtitle">VOD / 정주행 별도 (중복 고객 존재)</div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
-        </div>
-        <div class="chart-canvas-wrap"><canvas id="chartViewers" role="img" aria-label="시청자수 추이">시청자수 추이</canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">시청건수 추이</div>
-        <div class="chart-subtitle">VOD / 정주행</div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
-        </div>
-        <div class="chart-canvas-wrap"><canvas id="chartCount" role="img" aria-label="시청건수 추이">시청건수 추이</canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">시청시간 추이</div>
-        <div class="chart-subtitle">VOD / 정주행 (${timeLabel})</div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
-        </div>
-        <div class="chart-canvas-wrap"><canvas id="chartTime" role="img" aria-label="시청시간 추이">시청시간 추이</canvas></div>
-      </div>
-    </div>
-    <div class="last-updated" id="lastUpdated"></div>
-  `;
-
-  renderCharts(timeLabel);
+/* ══════════════════════════════
+   RENDER
+══════════════════════════════ */
+function render(){
+  updateDateLabel();
+  destroyCharts();
+  if(currentMenu==='chart') renderChart();
+  else if(currentMenu==='customer') renderCustomer();
+  else if(currentMenu==='viewing') renderViewing();
 }
 
-function getChartData() {
-  const rows = getRows();
-  const n = currentTab==='daily'?30:currentTab==='weekly'?12:12;
-  const end = Math.min(currentIndex+1, rows.length);
-  const start = Math.max(0, end-n);
-  const slice = rows.slice(start, end);
-  const tidField = Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체';
+/* ── CHART MENU ── */
+function renderChart(){
+  const timeLabel='시간';
+  const rows=getRows();
+  const n=12;
+  const end=Math.min(currentIndex+1,rows.length);
+  const slice=rows.slice(Math.max(0,end-n),end);
+  const tf=tidField();
 
-  const labels = slice.map(r => {
-    if (currentTab==='daily') return fmtDate(r.date);
-    if (currentTab==='weekly') {
-      const wn = Math.floor((r.weekStart-new Date(2025,11,29))/86400000/7)+1;
-      return `W${wn}`;
-    }
+  const labels=slice.map(r=>{
+    
+    if(currentTab==='weekly')return `W${getWeekNo(r.weekStart)}`;
     return `${r.month}월`;
   });
+  const g=(r,key,field,aggKey)=>r[aggKey]??null;
+  const timeDiv=3600;
 
-  function getField(r, key, field) {
-    if (currentTab==='daily') {
-      if (!r[key]) return null;
-      return num(r[key][field]);
-    }
-    return r[field] ?? null;
-  }
+  const pTotal=slice.map(r=>r.pairing_total);
+  const pValid=slice.map(r=>g(r,'pairing','유효단말','pairing_valid'));
+  const pInvalid=slice.map(r=>g(r,'pairing','비유효단말','pairing_invalid'));
+  const dauA=slice.map(r=>g(r,'dau','DAU','dau'));
+  const mauA=slice.map(r=>g(r,'dau','MAU','mau'));
+  const tidA=slice.map(r=>r.tid);
+  const vodV=slice.map(r=>g(r,'vod','프로필자수','vod_viewers'));
+  const serV=slice.map(r=>g(r,'serial','프로필자수','serial_viewers'));
+  const vodC=slice.map(r=>g(r,'vod','시청건수','vod_count'));
+  const serC=slice.map(r=>g(r,'serial','시청건수','serial_count'));
+  const vodT=slice.map(r=>{const v=g(r,'vod','시청시간','vod_time');return v?v/timeDiv:null;});
+  const serT=slice.map(r=>{const v=g(r,'serial','시청시간','serial_time');return v?v/timeDiv:null;});
 
-  return { labels, slice, tidField };
-}
+  document.getElementById('mainContent').innerHTML=`
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">페어링 추이</div>
+      <div class="chart-subtitle">전체 / 유효 / 비유효</div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>전체</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>유효</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#d85a30"></span>비유효</span>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="cPairing" role="img" aria-label="페어링 추이">페어링 추이</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">DAU / MAU 추이</div>
+      <div class="chart-subtitle">DAU 바 · MAU 라인(우축)</div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>MAU</span>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="cDau" role="img" aria-label="DAU MAU 추이">DAU/MAU 추이</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">T아이디 추이</div>
+      <div class="chart-subtitle">누적 연동 고객수</div>
+      <div class="chart-legend"><span class="legend-item"><span class="legend-dot" style="background:#7f77dd"></span>T아이디</span></div>
+      <div class="chart-canvas-wrap"><canvas id="cTid" role="img" aria-label="T아이디 추이">T아이디 추이</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">시청자수 추이</div>
+      <div class="chart-subtitle">VOD / 정주행 (중복 고객 존재)</div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="cViewers" role="img" aria-label="시청자수 추이">시청자수 추이</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">시청건수 추이</div>
+      <div class="chart-subtitle">VOD / 정주행</div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="cCount" role="img" aria-label="시청건수 추이">시청건수 추이</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">시청시간 추이</div>
+      <div class="chart-subtitle">VOD / 정주행 ${timeUnitLabel()}</div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="cTime" role="img" aria-label="시청시간 추이">시청시간 추이</canvas></div>
+    </div>
+  </div>
+  <div class="last-updated" id="lastUpdated"></div>`;
 
-let chartInstances = {};
-function destroyCharts() { Object.values(chartInstances).forEach(c=>{ try{c.destroy();}catch(e){} }); chartInstances={}; }
-
-const chartDefaults = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}` } } },
-  scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888780', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 } }, y: { grid: { color: 'rgba(136,135,128,0.15)' }, ticks: { font: { size: 10 }, color: '#888780', callback: v => Math.abs(v)>=10000?(v/10000).toFixed(0)+'만':v.toLocaleString() } } }
-};
-
-function renderCharts(timeLabel) {
-  destroyCharts();
-  const { labels, slice, tidField } = getChartData();
-
-  function getDailyNum(r, key, field) {
-    if (currentTab!=='daily') return null;
-    return r[key] ? num(r[key][field]) : null;
-  }
-
-  const pTotal = slice.map(r=>currentTab==='daily'?(getDailyNum(r,'pairing','유효단말')||0)+(getDailyNum(r,'pairing','비유효단말')||0):r.pairing_total);
-  const pValid = slice.map(r=>currentTab==='daily'?getDailyNum(r,'pairing','유효단말'):r.pairing_valid);
-  const pInvalid = slice.map(r=>currentTab==='daily'?getDailyNum(r,'pairing','비유효단말'):r.pairing_invalid);
-  const dauArr = slice.map(r=>currentTab==='daily'?getDailyNum(r,'dau','DAU'):r.dau);
-  const mauArr = slice.map(r=>currentTab==='daily'?getDailyNum(r,'dau','MAU'):r.mau);
-  const tidArr = slice.map(r=>currentTab==='daily'?getDailyNum(r,'tid',tidField):r.tid);
-  const vodV = slice.map(r=>currentTab==='daily'?getDailyNum(r,'vod','프로필자수'):r.vod_viewers);
-  const serV = slice.map(r=>currentTab==='daily'?getDailyNum(r,'serial','프로필자수'):r.serial_viewers);
-  const vodC = slice.map(r=>currentTab==='daily'?getDailyNum(r,'vod','시청건수'):r.vod_count);
-  const serC = slice.map(r=>currentTab==='daily'?getDailyNum(r,'serial','시청건수'):r.serial_count);
-  const timeDiv = currentTab==='daily'?60:3600;
-  const vodT = slice.map(r=>{const v=currentTab==='daily'?getDailyNum(r,'vod','시청시간'):r.vod_time; return v?v/timeDiv:null;});
-  const serT = slice.map(r=>{const v=currentTab==='daily'?getDailyNum(r,'serial','시청시간'):r.serial_time; return v?v/timeDiv:null;});
-
-  const baseOpts = JSON.parse(JSON.stringify(chartDefaults));
-
-  chartInstances.pairing = new Chart(document.getElementById('chartPairing'), { type:'line', data:{ labels, datasets:[
-    {label:'전체',data:pTotal,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
-    {label:'유효',data:pValid,borderColor:'#378add',backgroundColor:'rgba(55,138,221,0.08)',tension:0.3,pointRadius:2,borderDash:[4,3],borderWidth:1.5},
-    {label:'비유효',data:pInvalid,borderColor:'#d85a30',backgroundColor:'transparent',tension:0.3,pointRadius:2,borderDash:[2,4],borderWidth:1.5},
-  ]}, options:{...baseOpts} });
-
-  chartInstances.dau = new Chart(document.getElementById('chartDau'), { type:'bar', data:{ labels, datasets:[
-    {label:'DAU',data:dauArr,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3,yAxisID:'y'},
-    {label:'MAU',data:mauArr,type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,pointRadius:2,borderWidth:2,yAxisID:'y2'},
-  ]}, options:{...baseOpts, scales:{...baseOpts.scales, y2:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888780',callback:v=>Math.abs(v)>=10000?(v/10000).toFixed(0)+'만':v.toLocaleString()}}}} });
-
-  chartInstances.tid = new Chart(document.getElementById('chartTid'), { type:'line', data:{ labels, datasets:[
-    {label:'T아이디',data:tidArr,borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.08)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
-  ]}, options:{...baseOpts} });
-
-  chartInstances.viewers = new Chart(document.getElementById('chartViewers'), { type:'line', data:{ labels, datasets:[
-    {label:'VOD',data:vodV,borderColor:'#378add',backgroundColor:'rgba(55,138,221,0.08)',tension:0.3,pointRadius:2,fill:false,borderWidth:2},
-    {label:'정주행',data:serV,borderColor:'#ef9f27',backgroundColor:'rgba(239,159,39,0.08)',tension:0.3,pointRadius:2,fill:false,borderWidth:2,borderDash:[4,3]},
-  ]}, options:{...baseOpts} });
-
-  chartInstances.count = new Chart(document.getElementById('chartCount'), { type:'bar', data:{ labels, datasets:[
+  const bo=baseOpts();
+  chartInstances.pairing=new Chart(document.getElementById('cPairing'),{type:'line',data:{labels,datasets:[
+    {label:'전체',data:pTotal,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.07)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
+    {label:'유효',data:pValid,borderColor:'#378add',tension:0.3,pointRadius:2,borderDash:[4,3],borderWidth:1.5},
+    {label:'비유효',data:pInvalid,borderColor:'#d85a30',tension:0.3,pointRadius:2,borderDash:[2,4],borderWidth:1.5},
+  ]},options:bo});
+  const dauOpts={...bo,scales:{...bo.scales,y2:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888780',callback:v=>fmtK(v)}}}};
+  chartInstances.dau=new Chart(document.getElementById('cDau'),{type:'bar',data:{labels,datasets:[
+    {label:'DAU',data:dauA,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3,yAxisID:'y'},
+    {label:'MAU',data:mauA,type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,pointRadius:2,borderWidth:2,yAxisID:'y2'},
+  ]},options:dauOpts});
+  chartInstances.tid=new Chart(document.getElementById('cTid'),{type:'line',data:{labels,datasets:[
+    {label:'T아이디',data:tidA,borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.07)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
+  ]},options:bo});
+  chartInstances.viewers=new Chart(document.getElementById('cViewers'),{type:'line',data:{labels,datasets:[
+    {label:'VOD',data:vodV,borderColor:'#378add',tension:0.3,pointRadius:2,borderWidth:2},
+    {label:'정주행',data:serV,borderColor:'#ef9f27',tension:0.3,pointRadius:2,borderWidth:2,borderDash:[4,3]},
+  ]},options:bo});
+  chartInstances.count=new Chart(document.getElementById('cCount'),{type:'bar',data:{labels,datasets:[
     {label:'VOD',data:vodC,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3},
     {label:'정주행',data:serC,backgroundColor:'rgba(239,159,39,0.6)',borderRadius:3},
-  ]}, options:{...baseOpts} });
-
-  chartInstances.time = new Chart(document.getElementById('chartTime'), { type:'bar', data:{ labels, datasets:[
+  ]},options:bo});
+  const timeOpts={...JSON.parse(JSON.stringify(bo)),scales:{...bo.scales,y:{...bo.scales.y,ticks:{...bo.scales.y.ticks,callback:v=>`${v.toFixed(1)}${timeLabel}` }}}};
+  chartInstances.time=new Chart(document.getElementById('cTime'),{type:'bar',data:{labels,datasets:[
     {label:'VOD',data:vodT,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3},
     {label:'정주행',data:serT,backgroundColor:'rgba(239,159,39,0.6)',borderRadius:3},
-  ]}, options:{...baseOpts, scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks, callback:v=>`${v.toFixed(1)}${timeLabel}`}}}} });
-
-  const now = new Date();
-  const el = document.getElementById('lastUpdated');
-  if (el) el.textContent = `마지막 업데이트: ${now.toLocaleString('ko-KR')}`;
+  ]},options:timeOpts});
+  const el=document.getElementById('lastUpdated');
+  if(el)el.textContent=`마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
 }
+
+/* ── CUSTOMER MENU ── */
+function renderCustomer(){
+  const{cur,prev}=getCurPrev();if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
+  const tf=tidField();
+
+  const pValid=getVal(cur,'pairing','유효단말','pairing_valid');
+  const pInvalid=getVal(cur,'pairing','비유효단말','pairing_invalid');
+  const pTotal=(pValid??0)+(pInvalid??0)||null;
+  const pValidPrev=getVal(prev,'pairing','유효단말','pairing_valid');
+  const pTotalPrev=prev?((getVal(prev,'pairing','유효단말','pairing_valid')??0)+(getVal(prev,'pairing','비유효단말','pairing_invalid')??0)||null):null;
+  const validRatio=pTotal?(pValid/pTotal*100).toFixed(1):null;
+  const validRatioPrev=pTotalPrev&&pValidPrev?(pValidPrev/pTotalPrev*100):null;
+  const tidVal=getVal(cur,'tid',tf,'tid');
+  const tidPrev=getVal(prev,'tid',tf,'tid');
+  const dauVal=getVal(cur,'dau','DAU','dau');
+  const dauPrev=getVal(prev,'dau','DAU','dau');
+  const mauVal=getVal(cur,'dau','MAU','mau');
+  const mauPrev=getVal(prev,'dau','MAU','mau');
+
+  const cLabel=compareLabel();
+  const periodSub=currentTab==='weekly'?'주 마지막일':'월 마지막일';
+  const dauSub=currentTab==='weekly'?'주간 일평균':'월간 일평균';
+
+  /* 표 데이터 — 최근 N개 */
+  const rows=getRows();
+  const n=12;
+  const end=Math.min(currentIndex+1,rows.length);
+  const slice=[...rows.slice(Math.max(0,end-n),end)].reverse();
+
+  function rowLabel(r){
+    
+    if(currentTab==='weekly')return `W${getWeekNo(r.weekStart)} (${fmtDate(r.weekStart)}~${fmtDate(new Date(r.weekStart.getTime()+6*86400000))})`;
+    return r.label;
+  }
+  function getR(r,key,field,aggKey){return r[aggKey]??null;}
+
+  const pairingRows=slice.map((r,i)=>{
+    const vld=getR(r,'pairing','유효단말','pairing_valid');
+    const inv=getR(r,'pairing','비유효단말','pairing_invalid');
+    const tot=(vld??0)+(inv??0)||null;
+    const ratio=tot?(vld/tot*100).toFixed(1):'-';
+    const prevR=i<slice.length-1?slice[i+1]:null;
+    const prevTot=prevR?((getR(prevR,'pairing','유효단말','pairing_valid')??0)+(getR(prevR,'pairing','비유효단말','pairing_invalid')??0)||null):null;
+    return`<tr>
+      <td>${rowLabel(r)}</td>
+      <td class="td-bold">${fmtN(tot)}</td>
+      <td>${fmtN(vld)}</td><td>${fmtN(inv)}</td>
+      <td>${ratio}%</td>
+      ${tdDelta(tot,prevTot)}
+    </tr>`;
+  }).join('');
+
+  const tidRows=slice.map((r,i)=>{
+    const v=r.tid??null;
+    const prevR=i<slice.length-1?slice[i+1]:null;
+    const pv=prevR?(prevR.tid??null):null;
+    return`<tr><td>${rowLabel(r)}</td><td class="td-bold">${fmtN(v)}</td>${tdDelta(v,pv)}</tr>`;
+  }).join('');
+
+  const dauRows=slice.map((r,i)=>{
+    const dv=getR(r,'dau','DAU','dau');
+    const mv=getR(r,'dau','MAU','mau');
+    const prevR=i<slice.length-1?slice[i+1]:null;
+    const pdv=prevR?getR(prevR,'dau','DAU','dau'):null;
+    const pmv=prevR?getR(prevR,'dau','MAU','mau'):null;
+    return`<tr>
+      <td>${rowLabel(r)}</td>
+      <td class="td-bold">${fmtN(dv)}</td>${tdDelta(dv,pdv)}
+      <td class="td-bold">${fmtN(mv)}</td>${tdDelta(mv,pmv)}
+    </tr>`;
+  }).join('');
+
+  document.getElementById('mainContent').innerHTML=`
+  <div class="mini-kpi-row">
+    ${miniKpi('페어링 전체','wifi',fmtN(pTotal),periodSub,{cur:pTotal,prev:pTotalPrev},true,
+      validRatio?`<div class="ratio-bar"><div class="ratio-fill" style="width:${validRatio}%"></div></div>`:'')}
+    ${miniKpi('유효단말 비율','device-mobile-check',validRatio?validRatio+'%':'-',`${fmtN(pValid)} / ${fmtN(pTotal)}`,{cur:parseFloat(validRatio)||null,prev:validRatioPrev},false)}
+    ${miniKpi('T아이디','id-badge',fmtN(tidVal),periodSub,{cur:tidVal,prev:tidPrev},false)}
+    ${miniKpi('DAU','users',fmtN(dauVal),dauSub,{cur:dauVal,prev:dauPrev},false)}
+    ${miniKpi('MAU','chart-line',fmtN(mauVal),'누적 UV (마지막일)',{cur:mauVal,prev:mauPrev},false)}
+  </div>
+
+  <div class="page-section">
+    <div class="table-section">
+      <div class="table-section-title"><i class="ti ti-wifi"></i>페어링</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>기간</th><th>전체</th><th>유효단말</th><th>비유효단말</th><th>유효비율</th><th>${cLabel}</th></tr></thead>
+        <tbody>${pairingRows}</tbody>
+      </table></div>
+    </div>
+    <div class="table-section">
+      <div class="table-section-title"><i class="ti ti-id-badge"></i>T아이디</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>기간</th><th>T아이디 연동</th><th>${cLabel}</th></tr></thead>
+        <tbody>${tidRows}</tbody>
+      </table></div>
+    </div>
+    <div class="table-section">
+      <div class="table-section-title"><i class="ti ti-users"></i>DAU · MAU</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>기간</th><th>DAU</th><th>DAU ${cLabel}</th><th>MAU</th><th>MAU ${cLabel}</th></tr></thead>
+        <tbody>${dauRows}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+/* ── VIEWING MENU ── */
+function renderViewing(){
+  const{cur,prev}=getCurPrev();if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
+
+  const vodV=getVal(cur,'vod','프로필자수','vod_viewers');
+  const vodC=getVal(cur,'vod','시청건수','vod_count');
+  const vodT=getVal(cur,'vod','시청시간','vod_time');
+  const serV=getVal(cur,'serial','프로필자수','serial_viewers');
+  const serC=getVal(cur,'serial','시청건수','serial_count');
+  const serT=getVal(cur,'serial','시청시간','serial_time');
+  const prevVodV=getVal(prev,'vod','프로필자수','vod_viewers');
+  const prevVodC=getVal(prev,'vod','시청건수','vod_count');
+  const prevVodT=getVal(prev,'vod','시청시간','vod_time');
+  const prevSerV=getVal(prev,'serial','프로필자수','serial_viewers');
+  const prevSerC=getVal(prev,'serial','시청건수','serial_count');
+  const prevSerT=getVal(prev,'serial','시청시간','serial_time');
+
+  const viewerSub=currentTab==='weekly'?'주간 일평균':'월간 일평균';
+  const countSub=currentTab==='weekly'?'주간 누적':'월간 누적';
+  const cLabel=compareLabel();
+
+  const rows=getRows();
+  const n=12;
+  const end=Math.min(currentIndex+1,rows.length);
+  const slice=[...rows.slice(Math.max(0,end-n),end)].reverse();
+  function rowLabel(r){
+    
+    if(currentTab==='weekly')return `W${getWeekNo(r.weekStart)} (${fmtDate(r.weekStart)}~${fmtDate(new Date(r.weekStart.getTime()+6*86400000))})`;
+    return r.label;
+  }
+  function getR(r,key,field,aggKey){return r[aggKey]??null;}
+
+  const vodRows=slice.map((r,i)=>{
+    const v=getR(r,'vod','프로필자수','vod_viewers');
+    const c=getR(r,'vod','시청건수','vod_count');
+    const t=getR(r,'vod','시청시간','vod_time');
+    const pr=i<slice.length-1?slice[i+1]:null;
+    const pv=pr?getR(pr,'vod','프로필자수','vod_viewers'):null;
+    const pc=pr?getR(pr,'vod','시청건수','vod_count'):null;
+    return`<tr><td>${rowLabel(r)}</td><td class="td-bold">${fmtN(v)}</td>${tdDelta(v,pv)}<td class="td-bold">${fmtN(c)}</td>${tdDelta(c,pc)}<td>${fmtTime(t)}</td></tr>`;
+  }).join('');
+
+  const serRows=slice.map((r,i)=>{
+    const v=getR(r,'serial','프로필자수','serial_viewers');
+    const c=getR(r,'serial','시청건수','serial_count');
+    const t=getR(r,'serial','시청시간','serial_time');
+    const pr=i<slice.length-1?slice[i+1]:null;
+    const pv=pr?getR(pr,'serial','프로필자수','serial_viewers'):null;
+    const pc=pr?getR(pr,'serial','시청건수','serial_count'):null;
+    return`<tr><td>${rowLabel(r)}</td><td class="td-bold">${fmtN(v)}</td>${tdDelta(v,pv)}<td class="td-bold">${fmtN(c)}</td>${tdDelta(c,pc)}<td>${fmtTime(t)}</td></tr>`;
+  }).join('');
+
+  document.getElementById('mainContent').innerHTML=`
+  <div class="mini-kpi-row">
+    ${miniKpi('VOD 시청자수','eye',fmtN(vodV),viewerSub,{cur:vodV,prev:prevVodV},false)}
+    ${miniKpi('VOD 시청건수','list-numbers',fmtN(vodC),countSub,{cur:vodC,prev:prevVodC},false)}
+    ${miniKpi('VOD 시청시간','clock',fmtTime(vodT),'시간',{cur:vodT,prev:prevVodT},false)}
+    ${miniKpi('정주행 시청자수','eye',fmtN(serV),viewerSub,{cur:serV,prev:prevSerV},false)}
+    ${miniKpi('정주행 시청건수','list-numbers',fmtN(serC),countSub,{cur:serC,prev:prevSerC},false)}
+    ${miniKpi('정주행 시청시간','clock',fmtTime(serT),'시간',{cur:serT,prev:prevSerT},false)}
+  </div>
+
+  <div class="page-section">
+    <div class="table-section">
+      <div class="table-section-title"><i class="ti ti-device-tv"></i>VOD 시청</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>기간</th><th>시청자수</th><th>${cLabel}</th><th>시청건수</th><th>${cLabel}</th><th>시청시간 ${timeUnitLabel()}</th></tr></thead>
+        <tbody>${vodRows}</tbody>
+      </table></div>
+    </div>
+    <div class="table-section">
+      <div class="table-section-title"><i class="ti ti-player-play"></i>정주행 시청</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>기간</th><th>시청자수</th><th>${cLabel}</th><th>시청건수</th><th>${cLabel}</th><th>시청시간 ${timeUnitLabel()}</th></tr></thead>
+        <tbody>${serRows}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+/* ── CHART UTILS ── */
+function fmtK(v){return Math.abs(v)>=10000?(v/10000).toFixed(0)+'만':Math.round(v).toLocaleString('ko-KR');}
+function baseOpts(){
+  return{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#888780',maxRotation:45,autoSkip:true,maxTicksLimit:10}},
+      y:{grid:{color:'rgba(136,135,128,0.13)'},ticks:{font:{size:10},color:'#888780',callback:fmtK}}
+    }
+  };
+}
+function destroyCharts(){Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};}
 
 init();
 </script>
