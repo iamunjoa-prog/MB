@@ -278,19 +278,32 @@ function buildMonthlyRows(dr){
 
 /* ── INIT ── */
 async function init(){
+  const el=document.getElementById('mainContent');
   try{
-    const [dau,tid,pairing,vod,serial]=await Promise.all([
-      fetchSheet(SHEETS.dau),fetchSheet(SHEETS.tid),
-      fetchSheet(SHEETS.pairing),fetchSheet(SHEETS.vod),fetchSheet(SHEETS.serial)
-    ]);
+    el.innerHTML='<div class="loading"><div class="spinner"></div><div class="loading-text" id="loadMsg">DAU 시트 로딩 중...</div></div>';
+    const setMsg=m=>{const e=document.getElementById('loadMsg');if(e)e.textContent=m;};
+
+    setMsg('DAU 시트 로딩 중...');
+    const dau=await fetchSheet(SHEETS.dau);
+    setMsg('TID 시트 로딩 중...');
+    const tid=await fetchSheet(SHEETS.tid);
+    setMsg('페어링 시트 로딩 중...');
+    const pairing=await fetchSheet(SHEETS.pairing);
+    setMsg('VOD 시청 시트 로딩 중...');
+    const vod=await fetchSheet(SHEETS.vod);
+    setMsg('정주행 시청 시트 로딩 중...');
+    const serial=await fetchSheet(SHEETS.serial);
+
     allData={dau,tid,pairing,vod,serial};
+    setMsg('집계 중...');
     dailyRows=buildDailyRows();
     weeklyRows=buildWeeklyRows(dailyRows);
     monthlyRows=buildMonthlyRows(dailyRows);
     currentIndex=weeklyRows.length-1;
     render();
   }catch(e){
-    document.getElementById('mainContent').innerHTML=`<div class="error-box"><i class="ti ti-alert-circle"></i> 데이터 로딩 오류: ${e.message}<br><small>구글 시트 웹 게시 설정을 확인해 주세요.</small></div>`;
+    console.error('init error:', e);
+    el.innerHTML=`<div class="error-box"><i class="ti ti-alert-circle"></i> 데이터 로딩 오류: ${e.message}<br><small>${e.stack||''}</small></div>`;
   }
 }
 
