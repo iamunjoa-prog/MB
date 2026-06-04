@@ -377,7 +377,7 @@ function updateDateLabel(){
   const idx=Math.min(currentIndex,rows.length-1);
   const cur=rows[idx];
   
-  else if(currentTab==='weekly') document.getElementById('dateLabel').textContent=`W${getWeekNo(cur.weekStart)} (${fmtDate(cur.weekStart)}~${fmtDate(new Date(cur.weekStart.getTime()+6*86400000))})`;
+  if(currentTab==='weekly') document.getElementById('dateLabel').textContent=`W${getWeekNo(cur.weekStart)} (${fmtDate(cur.weekStart)}~${fmtDate(new Date(cur.weekStart.getTime()+6*86400000))})`;
   else document.getElementById('dateLabel').textContent=cur.label;
 }
 
