@@ -406,8 +406,7 @@ function renderChart(){
   const tf=tidField();
 
   const labels=slice.map(r=>{
-    
-    if(currentTab==='weekly')return `W${getWeekNo(r.weekStart)}`;
+    if(currentTab==='weekly'){const ws=r.weekStart;return `${ws.getFullYear()}-${String(ws.getMonth()+1).padStart(2,'0')}-W${getWeekNo(ws)}`;}
     return `${r.month}월`;
   });
   const g=(r,key,field,aggKey)=>r[aggKey]??null;
