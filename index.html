@@ -164,8 +164,9 @@ let chartInstances={};
 
 /* ── FETCH & PARSE ── */
 async function fetchSheet(name){
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${name}`;
-  const res=await fetch(url);
+  const ts=Date.now();
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${name}&_=${ts}`;
+  const res=await fetch(url, {cache:'no-store'});
   if(!res.ok) throw new Error(`시트 로드 실패: ${name} (${res.status})`);
   return parseCSV(await res.text());
 }
