@@ -439,11 +439,8 @@ function renderChart(){
     </div>
     <div class="chart-card">
       <div class="chart-title">DAU / MAU 추이</div>
-      <div class="chart-subtitle">DAU 바 · MAU 라인(우축)</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>MAU</span>
-      </div>
+      <div class="chart-subtitle" id="dauChartSub"></div>
+      <div class="chart-legend" id="dauChartLegend"></div>
       <div class="chart-canvas-wrap"><canvas id="cDau" role="img" aria-label="DAU MAU 추이">DAU/MAU 추이</canvas></div>
     </div>
     <div class="chart-card">
@@ -489,10 +486,22 @@ function renderChart(){
     {label:'비유효',data:pInvalid,borderColor:'#d85a30',tension:0.3,pointRadius:2,borderDash:[2,4],borderWidth:1.5},
   ]},options:bo});
   const dauOpts={...bo,scales:{...bo.scales,y2:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888780',callback:v=>fmtK(v)}}}};
-  chartInstances.dau=new Chart(document.getElementById('cDau'),{type:'bar',data:{labels,datasets:[
-    {label:'DAU',data:dauA,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3,yAxisID:'y'},
-    {label:'MAU',data:mauA,type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,pointRadius:2,borderWidth:2,yAxisID:'y2'},
-  ]},options:dauOpts});
+  const dauSubEl=document.getElementById('dauChartSub');
+  const dauLegEl=document.getElementById('dauChartLegend');
+  if(currentTab==='weekly'){
+    if(dauSubEl)dauSubEl.textContent='DAU 주간 일평균';
+    if(dauLegEl)dauLegEl.innerHTML='<span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span>';
+    chartInstances.dau=new Chart(document.getElementById('cDau'),{type:'bar',data:{labels,datasets:[
+      {label:'DAU 평균',data:dauA,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3},
+    ]},options:bo});
+  } else {
+    if(dauSubEl)dauSubEl.textContent='DAU 월평균 바 · MAU 라인(우축)';
+    if(dauLegEl)dauLegEl.innerHTML='<span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span><span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>MAU</span>';
+    chartInstances.dau=new Chart(document.getElementById('cDau'),{type:'bar',data:{labels,datasets:[
+      {label:'DAU',data:dauA,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3,yAxisID:'y'},
+      {label:'MAU',data:mauA,type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,pointRadius:2,borderWidth:2,yAxisID:'y2'},
+    ]},options:dauOpts});
+  }
   chartInstances.tid=new Chart(document.getElementById('cTid'),{type:'line',data:{labels,datasets:[
     {label:'T아이디',data:tidA,borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.07)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
   ]},options:bo});
