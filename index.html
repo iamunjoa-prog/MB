@@ -407,7 +407,7 @@ function renderChart(){
 
   const labels=slice.map(r=>{
     if(currentTab==='weekly'){const ws=r.weekStart;return `${ws.getFullYear()}-${String(ws.getMonth()+1).padStart(2,'0')}-W${getWeekNo(ws)}`;}
-    return `${r.month}월`;
+    return `${r.year}년 ${r.month}월`;
   });
   const g=(r,key,field,aggKey)=>r[aggKey]??null;
   const timeDiv=3600;
