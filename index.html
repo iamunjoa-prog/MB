@@ -170,14 +170,8 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
       <button class="menu-item active" onclick="switchMenu('chart')" id="menu-chart">
         <i class="ti ti-chart-line" aria-hidden="true"></i>Trend
       </button>
-      <button class="menu-item" onclick="switchMenu('pairing')" id="menu-pairing">
-        <i class="ti ti-wifi" aria-hidden="true"></i>페어링
-      </button>
-      <button class="menu-item" onclick="switchMenu('daumau')" id="menu-daumau">
-        <i class="ti ti-users" aria-hidden="true"></i>MAU
-      </button>
-      <button class="menu-item" onclick="switchMenu('tid')" id="menu-tid">
-        <i class="ti ti-id-badge" aria-hidden="true"></i>T아이디
+      <button class="menu-item" onclick="switchMenu('customer')" id="menu-customer">
+        <i class="ti ti-users" aria-hidden="true"></i>고객
       </button>
       <button class="menu-item" onclick="switchMenu('viewing')" id="menu-viewing">
         <i class="ti ti-player-play" aria-hidden="true"></i>시청
@@ -471,9 +465,7 @@ function render(){
   updateDateLabel();
   destroyCharts();
   if(currentMenu==='chart') renderChart();
-  else if(currentMenu==='pairing') renderPairing();
-  else if(currentMenu==='daumau') renderDauMau();
-  else if(currentMenu==='tid') renderTid();
+  else if(currentMenu==='customer') renderCustomer();
   else if(currentMenu==='viewing') renderViewing();
 }
 
@@ -610,8 +602,23 @@ function getSlice(n){
   const end=Math.min(currentIndex+1,rows.length);
   return rows.slice(Math.max(0,end-n),end); // 오래된→최신 순
 }
+/* 주차 레이블: YYYY-MM-Wn (목요일 귀속 기준, 업로드 파일 getWL 방식) */
+function getWL(d){
+  if(!(d instanceof Date)||isNaN(d)) return null;
+  const dow=d.getDay(), diff=dow===0?-6:1-dow;
+  const mon=new Date(d); mon.setDate(d.getDate()+diff);
+  const thu=new Date(mon); thu.setDate(mon.getDate()+3);
+  const y=thu.getFullYear(), m=thu.getMonth()+1;
+  const f=new Date(y,m-1,1), fd=f.getDay(), dt=(4-fd+7)%7;
+  const ft=new Date(f); ft.setDate(1+dt);
+  const wn=Math.floor((thu-ft)/(7*864e5))+1;
+  return `${y}-${String(m).padStart(2,'0')}-W${wn}`;
+}
 function rowShortLabel(r){
-  if(currentTab==='weekly'){const ws=r.weekStart;return `W${getWeekNo(ws)}`;}
+  if(currentTab==='weekly'){
+    const lbl=getWL(r.weekStart);
+    return lbl||`W${getWeekNo(r.weekStart)}`;
+  }
   return `${r.year%100}/${String(r.month).padStart(2,'0')}`;
 }
 function rowLabel(r){
@@ -666,151 +673,125 @@ function baseOptsDetail(timeCallback){
   return o;
 }
 
-/* ── PAIRING MENU ── */
-function renderPairing(){
+/* ── CUSTOMER MENU ── */
+function renderCustomer(){
   const{cur,prev}=getCurPrev();
   if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
-  const pValid=cur.pairing_valid??null;
-  const pInvalid=cur.pairing_invalid??null;
+
+  /* 값 추출 */
+  const pValid=cur.pairing_valid??null, pInvalid=cur.pairing_invalid??null;
   const pTotal=(pValid??0)+(pInvalid??0)||null;
   const pValidPrev=prev?(prev.pairing_valid??null):null;
   const pTotalPrev=prev?((prev.pairing_valid??0)+(prev.pairing_invalid??0)||null):null;
   const validRatio=pTotal?(pValid/pTotal*100):null;
   const validRatioPrev=pTotalPrev&&pValidPrev?(pValidPrev/pTotalPrev*100):null;
+  const dauVal=cur.dau??null, dauPrev=prev?(prev.dau??null):null;
+  const mauVal=cur.mau??null, mauPrev=prev?(prev.mau??null):null;
+  const tidVal=cur.tid??null, tidPrev=prev?(prev.tid??null):null;
+
   const periodSub=currentTab==='weekly'?'주 마지막일':'월 마지막일';
-
-  const slice=getSlice();
-  const curIdx=slice.length-1;
-  const colLabels=slice.map(rowShortLabel);
-
-  const kpiCards=[
-    {label:'페어링 전체',icon:'wifi',value:fmtN(pTotal),sub:periodSub,delta:{cur:pTotal,prev:pTotalPrev},accent:true,
-     sparkVals:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null)},
-    {label:'유효단말',icon:'device-mobile-check',value:fmtN(pValid),sub:periodSub,delta:{cur:pValid,prev:pValidPrev},
-     sparkVals:slice.map(r=>r.pairing_valid??null)},
-    {label:'유효단말 비율',icon:'chart-pie',value:validRatio?validRatio.toFixed(1)+'%':'-',
-     sub:`${fmtN(pValid)} / ${fmtN(pTotal)}`,delta:{cur:validRatio,prev:validRatioPrev}},
-  ];
-
-  const chartConfigs=[
-    {id:'cPairTotal',title:'페어링 전체 추이',sub:'전체 · 유효 · 비유효'},
-    {id:'cPairRatio',title:'유효단말 비율 추이',sub:'%'},
-  ];
-
-  const metrics=[
-    {label:'전체',vals:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null)},
-    {label:'유효단말',vals:slice.map(r=>r.pairing_valid??null)},
-    {label:'비유효단말',vals:slice.map(r=>r.pairing_invalid??null)},
-    {label:'유효비율',vals:slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return t?(r.pairing_valid/t*100):null;}),
-     fmt:v=>v===null?'-':v.toFixed(1)+'%', isPercPoint:true},
-  ];
-
-  document.getElementById('mainContent').innerHTML=
-    buildKpiSection(kpiCards, chartConfigs, slice)+
-    `<div class="page-section">
-      <div class="table-section">
-        <div class="table-section-title"><i class="ti ti-wifi"></i>페어링 추이</div>
-        ${buildTransposedTable(metrics, colLabels, curIdx)}
-      </div>
-    </div>`;
-
-  const labels=slice.map(rowShortLabel);
-  const bo=baseOptsDetail();
-  chartInstances.pairTotal=new Chart(document.getElementById('cPairTotal'),{type:'line',data:{labels,datasets:[
-    {label:'전체',data:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null),borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,pointRadius:3,fill:true,borderWidth:2},
-    {label:'유효',data:slice.map(r=>r.pairing_valid??null),borderColor:'#378add',tension:0.3,pointRadius:2,borderDash:[4,3],borderWidth:1.5},
-    {label:'비유효',data:slice.map(r=>r.pairing_invalid??null),borderColor:'#d85a30',tension:0.3,pointRadius:2,borderDash:[2,4],borderWidth:1.5},
-  ]},options:{...bo,plugins:{...bo.plugins,legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}});
-  const ratioVals=slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return t?(r.pairing_valid/t*100):null;});
-  const roOpts={...baseOptsDetail(v=>`${v.toFixed(1)}%`),plugins:{...bo.plugins}};
-  chartInstances.pairRatio=new Chart(document.getElementById('cPairRatio'),{type:'line',data:{labels,datasets:[
-    {label:'유효비율',data:ratioVals,borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.08)',tension:0.3,pointRadius:3,fill:true,borderWidth:2},
-  ]},options:roOpts});
-}
-
-/* ── DAU/MAU MENU ── */
-function renderDauMau(){
-  const{cur,prev}=getCurPrev();
-  if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
-  const dauVal=cur.dau??null; const dauPrev=prev?(prev.dau??null):null;
-  const mauVal=cur.mau??null; const mauPrev=prev?(prev.mau??null):null;
   const dauSub=currentTab==='weekly'?'주간 일평균':'월간 일평균';
 
   const slice=getSlice();
   const curIdx=slice.length-1;
   const colLabels=slice.map(rowShortLabel);
+  const curHL=slice.map((_,i)=>i===curIdx);
 
+  /* KPI 카드 6개 */
   const kpiCards=[
-    {label:'DAU',icon:'users',value:fmtN(dauVal),sub:dauSub,delta:{cur:dauVal,prev:dauPrev},accent:true,
+    {label:'페어링 전체',icon:'wifi',value:fmtN(pTotal),sub:periodSub,
+     delta:{cur:pTotal,prev:pTotalPrev},accent:true,
+     sparkVals:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null)},
+    {label:'유효단말',icon:'device-mobile-check',value:fmtN(pValid),sub:periodSub,
+     delta:{cur:pValid,prev:pValidPrev},
+     sparkVals:slice.map(r=>r.pairing_valid??null)},
+    {label:'유효비율',icon:'chart-pie',value:validRatio?validRatio.toFixed(1)+'%':'-',
+     sub:`${fmtN(pValid)} / ${fmtN(pTotal)}`,
+     delta:{cur:validRatio,prev:validRatioPrev},
+     sparkVals:slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return t?(r.pairing_valid/t*100):null;})},
+    {label:'DAU',icon:'users',value:fmtN(dauVal),sub:dauSub,
+     delta:{cur:dauVal,prev:dauPrev},
      sparkVals:slice.map(r=>r.dau??null)},
-    {label:'MAU',icon:'chart-line',value:fmtN(mauVal),sub:'누적 UV (마지막일)',delta:{cur:mauVal,prev:mauPrev},
+    {label:'MAU',icon:'chart-line',value:fmtN(mauVal),sub:'누적 UV (마지막일)',
+     delta:{cur:mauVal,prev:mauPrev},
      sparkVals:slice.map(r=>r.mau??null)},
-  ];
-  const chartConfigs=[
-    {id:'cDauDetail',title:'DAU 추이',sub:dauSub},
-    {id:'cMauDetail',title:'MAU 추이',sub:'누적 UV'},
-  ];
-  const metrics=[
-    {label:'DAU',vals:slice.map(r=>r.dau??null)},
-    {label:'MAU',vals:slice.map(r=>r.mau??null)},
-  ];
-
-  document.getElementById('mainContent').innerHTML=
-    buildKpiSection(kpiCards, chartConfigs, slice)+
-    `<div class="page-section">
-      <div class="table-section">
-        <div class="table-section-title"><i class="ti ti-users"></i>DAU · MAU 추이</div>
-        ${buildTransposedTable(metrics, colLabels, curIdx)}
-      </div>
-    </div>`;
-
-  const labels=slice.map(rowShortLabel);
-  const bo=baseOptsDetail();
-  chartInstances.dauDetail=new Chart(document.getElementById('cDauDetail'),{type:'bar',data:{labels,datasets:[
-    {label:'DAU',data:slice.map(r=>r.dau??null),backgroundColor:slice.map((_,i)=>i===curIdx?'#378add':'rgba(55,138,221,0.4)'),borderRadius:3},
-  ]},options:bo});
-  chartInstances.mauDetail=new Chart(document.getElementById('cMauDetail'),{type:'line',data:{labels,datasets:[
-    {label:'MAU',data:slice.map(r=>r.mau??null),borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,pointRadius:3,fill:true,borderWidth:2,
-     pointBackgroundColor:slice.map((_,i)=>i===curIdx?'#1d9e75':'rgba(29,158,117,0.4)'),
-     pointRadius:slice.map((_,i)=>i===curIdx?5:2)},
-  ]},options:bo});
-}
-
-/* ── TID MENU ── */
-function renderTid(){
-  const{cur,prev}=getCurPrev();
-  if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
-  const tf=tidField();
-  const tidVal=cur.tid??null; const tidPrev=prev?(prev.tid??null):null;
-  const periodSub=currentTab==='weekly'?'주 마지막일':'월 마지막일';
-
-  const slice=getSlice();
-  const curIdx=slice.length-1;
-  const colLabels=slice.map(rowShortLabel);
-
-  const kpiCards=[
-    {label:'T아이디 연동',icon:'id-badge',value:fmtN(tidVal),sub:periodSub,delta:{cur:tidVal,prev:tidPrev},accent:true,
+    {label:'T아이디',icon:'id-badge',value:fmtN(tidVal),sub:periodSub,
+     delta:{cur:tidVal,prev:tidPrev},
      sparkVals:slice.map(r=>r.tid??null)},
   ];
-  const chartConfigs=[{id:'cTidDetail',title:'T아이디 연동 추이',sub:periodSub}];
-  const metrics=[{label:'T아이디 연동',vals:slice.map(r=>r.tid??null)}];
+
+  /* 미니 차트 3개 */
+  const chartConfigs=[
+    {id:'cCusPairing',title:'페어링 추이',sub:'전체 · 유효 · 비유효'},
+    {id:'cCusDauMau',title:'DAU · MAU 추이',sub:dauSub+' / 누적 UV'},
+    {id:'cCusTid',title:'T아이디 추이',sub:periodSub},
+  ];
+
+  /* 전치 표 */
+  const metrics=[
+    {label:'페어링 전체',vals:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null)},
+    {label:'유효단말',vals:slice.map(r=>r.pairing_valid??null)},
+    {label:'비유효단말',vals:slice.map(r=>r.pairing_invalid??null)},
+    {label:'유효비율',vals:slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return t?(r.pairing_valid/t*100):null;}),
+     fmt:v=>v===null?'-':v.toFixed(1)+'%', isPercPoint:true},
+    {label:'DAU',vals:slice.map(r=>r.dau??null)},
+    {label:'MAU',vals:slice.map(r=>r.mau??null)},
+    {label:'T아이디',vals:slice.map(r=>r.tid??null)},
+  ];
 
   document.getElementById('mainContent').innerHTML=
     buildKpiSection(kpiCards, chartConfigs, slice)+
     `<div class="page-section">
       <div class="table-section">
-        <div class="table-section-title"><i class="ti ti-id-badge"></i>T아이디 추이</div>
+        <div class="table-section-title"><i class="ti ti-users"></i>고객 지표 추이</div>
         ${buildTransposedTable(metrics, colLabels, curIdx)}
       </div>
     </div>`;
 
+  /* 차트 렌더 */
   const labels=slice.map(rowShortLabel);
   const bo=baseOptsDetail();
-  chartInstances.tidDetail=new Chart(document.getElementById('cTidDetail'),{type:'line',data:{labels,datasets:[
-    {label:'T아이디',data:slice.map(r=>r.tid??null),borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.08)',tension:0.3,fill:true,borderWidth:2,
-     pointBackgroundColor:slice.map((_,i)=>i===curIdx?'#7f77dd':'rgba(127,119,221,0.4)'),
-     pointRadius:slice.map((_,i)=>i===curIdx?5:2)},
-  ]},options:bo});
+  const legOpts={display:true,position:'bottom',labels:{boxWidth:10,font:{size:10}}};
+
+  /* 페어링 — 전체/유효/비유효 라인 */
+  chartInstances.cusPairing=new Chart(document.getElementById('cCusPairing'),{type:'line',data:{labels,datasets:[
+    {label:'전체',data:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null),
+     borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,fill:true,borderWidth:2,
+     pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#1d9e75':'rgba(29,158,117,0.4)')},
+    {label:'유효',data:slice.map(r=>r.pairing_valid??null),
+     borderColor:'#378add',tension:0.3,borderDash:[4,3],borderWidth:1.5,
+     pointRadius:curHL.map(b=>b?4:1.5),pointBackgroundColor:curHL.map(b=>b?'#378add':'rgba(55,138,221,0.4)')},
+    {label:'비유효',data:slice.map(r=>r.pairing_invalid??null),
+     borderColor:'#d85a30',tension:0.3,borderDash:[2,4],borderWidth:1.5,
+     pointRadius:curHL.map(b=>b?4:1.5),pointBackgroundColor:curHL.map(b=>b?'#d85a30':'rgba(216,90,48,0.4)')},
+  ]},options:{...bo,plugins:{...bo.plugins,legend:legOpts}}});
+
+  /* DAU(bar) + MAU(line 우축) */
+  const dauOpts={...bo,
+    scales:{...bo.scales,
+      y2:{position:'right',grid:{display:false},ticks:{font:{size:9},color:'#888780',callback:fmtK}}},
+    plugins:{...bo.plugins,legend:legOpts}};
+  if(currentTab==='weekly'){
+    chartInstances.cusDauMau=new Chart(document.getElementById('cCusDauMau'),{type:'bar',data:{labels,datasets:[
+      {label:'DAU',data:slice.map(r=>r.dau??null),
+       backgroundColor:curHL.map(b=>b?'#378add':'rgba(55,138,221,0.4)'),borderRadius:3},
+    ]},options:{...bo,plugins:{...bo.plugins,legend:legOpts}}});
+  } else {
+    chartInstances.cusDauMau=new Chart(document.getElementById('cCusDauMau'),{type:'bar',data:{labels,datasets:[
+      {label:'DAU',data:slice.map(r=>r.dau??null),
+       backgroundColor:curHL.map(b=>b?'#378add':'rgba(55,138,221,0.4)'),borderRadius:3,yAxisID:'y'},
+      {label:'MAU',data:slice.map(r=>r.mau??null),type:'line',
+       borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,borderWidth:2,yAxisID:'y2',
+       pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#1d9e75':'rgba(29,158,117,0.4)')},
+    ]},options:dauOpts});
+  }
+
+  /* T아이디 라인 */
+  chartInstances.cusTid=new Chart(document.getElementById('cCusTid'),{type:'line',data:{labels,datasets:[
+    {label:'T아이디',data:slice.map(r=>r.tid??null),
+     borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.08)',tension:0.3,fill:true,borderWidth:2,
+     pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#7f77dd':'rgba(127,119,221,0.4)')},
+  ]},options:{...bo,plugins:{...bo.plugins,legend:legOpts}}});
 }
 
 /* ── VIEWING MENU ── */
