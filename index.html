@@ -74,8 +74,12 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;b
 .mini-badge.up{background:var(--accent-light);color:var(--accent);}
 .mini-badge.down{background:var(--danger-light);color:var(--danger);}
 .mini-badge.neutral{background:var(--surface2);color:var(--text-hint);}
-.mini-kpi-mom{font-size:10px;color:var(--text-hint);margin-top:4px;display:flex;align-items:center;gap:3px;}
+.mini-kpi-mom{font-size:10px;color:var(--text-hint);margin-top:4px;display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
 .mini-kpi-mom i{font-size:11px;}
+.mini-kpi-mom-delta{font-size:10px;font-weight:500;margin-left:3px;}
+.mini-kpi-mom-delta.mom-up{color:var(--accent);}
+.mini-kpi-mom-delta.mom-dn{color:var(--danger);}
+.mini-kpi-mom-delta.mom-neu{color:var(--text-hint);}
 
 /* 고객 행동 지표 섹션 헤더 */
 .behavior-section-header{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text-primary);padding:12px 16px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;border-bottom:2px solid var(--accent);margin-bottom:0;}
@@ -683,8 +687,21 @@ function buildKpiSection(kpiCards, chartConfigs, sliceArr){
     const badgeCls = d ? d.cls : '';
     const badge = d ? `<span class="mini-badge ${badgeCls}">${icon} ${d.text}</span>` : '';
     const spark = k.sparkVals ? sparkbarHtml(k.sparkVals, curIdx) : '';
-    const momLine = k.momVal !== undefined && k.momVal !== null
-      ? `<div class="mini-kpi-mom"><i class="ti ti-calendar-month" aria-hidden="true"></i>전월 동기간 ${k.momFmt ? k.momFmt(k.momVal) : fmtN(k.momVal)}</div>` : '';
+    const momLine = (()=>{
+      if(k.momVal===undefined||k.momVal===null) return '';
+      const momDisp = k.momFmt ? k.momFmt(k.momVal) : fmtN(k.momVal);
+      // 현재값(숫자)과 전월값 비교 — momVal이 숫자, delta.cur이 현재값
+      const curNum = k.delta?.cur??null;
+      let momDelta = '';
+      if(curNum!==null && k.momVal!==null && k.momVal!==0){
+        const r=(curNum-k.momVal)/Math.abs(k.momVal);
+        const pct=(r*100).toFixed(1);
+        const ic=r>0?'▲':r<0?'▼':'';
+        const cls=r>0?'mom-up':r<0?'mom-dn':'mom-neu';
+        momDelta=`<span class="mini-kpi-mom-delta ${cls}">${ic} ${r>0?'+':''}${pct}%</span>`;
+      }
+      return `<div class="mini-kpi-mom"><i class="ti ti-calendar-month" aria-hidden="true"></i>전월 동기간 ${momDisp}${momDelta}</div>`;
+    })();
     return `<div class="mini-kpi${k.accent?' accent':''}">
       <div class="mini-kpi-label"><i class="ti ti-${k.icon}" aria-hidden="true"></i>${k.label}</div>
       <div class="mini-kpi-value">${k.value}</div>
@@ -864,7 +881,24 @@ function renderCustomer(){
         <i class="ti ti-chart-dots" aria-hidden="true"></i>고객 행동 지표
         <span class="behavior-section-desc">기본 지표에서 산출한 파생 지표입니다</span>
       </div>
-      <div class="table-section">
+      <div class="detail-chart-grid" style="grid-template-columns:repeat(3,1fr);margin-top:12px;">
+        <div class="detail-chart-card">
+          <div class="detail-chart-title">활성도 · 충성도</div>
+          <div class="detail-chart-sub">Stickiness (DAU/MAU) · T아이디 연동률 (%)</div>
+          <div class="detail-chart-wrap"><canvas id="cBehStickiness"></canvas></div>
+        </div>
+        <div class="detail-chart-card">
+          <div class="detail-chart-title">신규 · 이탈 추정</div>
+          <div class="detail-chart-sub">MAU 순증분 · 페어링 순증분</div>
+          <div class="detail-chart-wrap"><canvas id="cBehNet"></canvas></div>
+        </div>
+        <div class="detail-chart-card">
+          <div class="detail-chart-title">도달 효율</div>
+          <div class="detail-chart-sub">DAU per 페어링 (%)</div>
+          <div class="detail-chart-wrap"><canvas id="cBehReach"></canvas></div>
+        </div>
+      </div>
+      <div class="table-section" style="margin-top:12px;">
         <div class="table-section-title"><i class="ti ti-activity"></i>활성도 · 충성도</div>
         ${buildTransposedTable([...metricsStickiness,...metricsTidRate], colLabels, curIdx)}
       </div>
@@ -922,6 +956,51 @@ function renderCustomer(){
      borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.08)',tension:0.3,fill:true,borderWidth:2,
      pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#7f77dd':'rgba(127,119,221,0.4)')},
   ]},options:{...bo,plugins:{...bo.plugins,legend:legOpts}}});
+
+  /* ── 파생지표 차트 ── */
+  const pctOpts={...baseOptsDetail(v=>`${v.toFixed(1)}%`),plugins:{...bo.plugins,legend:legOpts}};
+
+  /* 활성도·충성도: Stickiness + T아이디 연동률 라인 */
+  const stickinessVals=slice.map(r=>(r.dau!==null&&r.mau)?(r.dau/r.mau*100):null);
+  const tidRateVals=slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return(r.tid&&t)?(r.tid/t*100):null;});
+  chartInstances.behStickiness=new Chart(document.getElementById('cBehStickiness'),{type:'line',data:{labels,datasets:[
+    {label:'Stickiness',data:stickinessVals,
+     borderColor:'#378add',backgroundColor:'rgba(55,138,221,0.07)',tension:0.3,fill:true,borderWidth:2,
+     pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#378add':'rgba(55,138,221,0.4)')},
+    {label:'T아이디 연동률',data:tidRateVals,
+     borderColor:'#7f77dd',tension:0.3,borderDash:[4,3],borderWidth:1.5,
+     pointRadius:curHL.map(b=>b?4:1.5),pointBackgroundColor:curHL.map(b=>b?'#7f77dd':'rgba(127,119,221,0.4)')},
+  ]},options:pctOpts});
+
+  /* 신규·이탈: MAU 순증분 + 페어링 순증분 바 */
+  const mauNetVals=slice.map((r,i)=>i===0?null:((r.mau??null)!==null&&(slice[i-1].mau??null)!==null?r.mau-slice[i-1].mau:null));
+  const pairNetVals=slice.map((r,i)=>{
+    const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;
+    if(i===0||t===null)return null;
+    const pt=(slice[i-1].pairing_valid??0)+(slice[i-1].pairing_invalid??0)||null;
+    return pt!==null?t-pt:null;
+  });
+  const netOpts={...bo,
+    plugins:{...bo.plugins,legend:legOpts,
+      tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw>=0?'+':''}${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}},
+    scales:{...bo.scales,y:{...bo.scales.y,ticks:{...bo.scales.y.ticks,
+      callback:v=>(v>=0?'+':'')+fmtK(v)}}}};
+  chartInstances.behNet=new Chart(document.getElementById('cBehNet'),{type:'bar',data:{labels,datasets:[
+    {label:'MAU 순증분',data:mauNetVals,
+     backgroundColor:mauNetVals.map((v,i)=>i===curIdx?(v>=0?'#1d9e75':'#a32d2d'):(v>=0?'rgba(29,158,117,0.4)':'rgba(163,45,45,0.4)')),
+     borderRadius:3},
+    {label:'페어링 순증분',data:pairNetVals,
+     backgroundColor:pairNetVals.map((v,i)=>i===curIdx?(v>=0?'#378add':'#d85a30'):(v>=0?'rgba(55,138,221,0.4)':'rgba(216,90,48,0.4)')),
+     borderRadius:3},
+  ]},options:netOpts});
+
+  /* 도달 효율: DAU per 페어링 라인 */
+  const reachVals=slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return(r.dau&&t)?(r.dau/t*100):null;});
+  chartInstances.behReach=new Chart(document.getElementById('cBehReach'),{type:'line',data:{labels,datasets:[
+    {label:'DAU per 페어링',data:reachVals,
+     borderColor:'#ba7517',backgroundColor:'rgba(186,117,23,0.07)',tension:0.3,fill:true,borderWidth:2,
+     pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#ba7517':'rgba(186,117,23,0.4)')},
+  ]},options:pctOpts});
 }
 
 /* ── VIEWING MENU ── */
