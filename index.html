@@ -107,6 +107,18 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;b
 .chart-card-drilldown:hover .chart-title{color:var(--accent);}
 .drilldown-hint{font-size:10px;font-weight:400;color:var(--accent);opacity:0;transition:opacity 0.15s;margin-left:4px;}
 .chart-card-drilldown:hover .drilldown-hint{opacity:1;}
+/* T아이디 섹션 색상 구분 */
+.table-section-tid-sub{border-left:3px solid #7f77dd;}
+.tid-sub-title{color:#6159bb !important;}
+.tid-sub-title i{color:#7f77dd !important;}
+.tbl-wrap-tid-sub thead th.th-cur-tid-sub{background:rgba(127,119,221,0.2);color:#4a43a0;font-weight:600;}
+.tbl-wrap-tid-sub tbody td.td-cur-tid-sub{background:rgba(127,119,221,0.07);font-weight:500;}
+.table-section-tid-pair{border-left:3px solid #1d9e75;}
+.tid-pair-title{color:#0f6e56 !important;}
+.tid-pair-title i{color:#1d9e75 !important;}
+.tbl-wrap-tid-pair thead th.th-cur-tid-pair{background:rgba(29,158,117,0.18);color:#0f6e56;font-weight:600;}
+.tbl-wrap-tid-pair tbody td.td-cur-tid-pair{background:rgba(29,158,117,0.06);font-weight:500;}
+
 .beh-guide{margin-top:14px;display:flex;flex-direction:column;gap:10px;border-top:0.5px solid var(--border);padding-top:12px;}
 .beh-guide-item{display:flex;flex-direction:column;gap:3px;}
 .beh-guide-name{font-size:11px;font-weight:600;color:var(--text-primary);}
@@ -209,36 +221,26 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .tbl-wrap-x tbody td.td-delta-neu{color:var(--text-hint);font-size:11px;}
 
 /* ── TREND 레이아웃 ── */
-.trend-layout{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start;margin-bottom:16px;}
-.trend-kpi-panel{display:flex;flex-direction:column;gap:10px;}
-.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
+.trend-layout{display:grid;grid-template-columns:188px 1fr 188px;gap:12px;align-items:stretch;height:calc(100vh - 130px);}
+.trend-kpi-panel{display:flex;flex-direction:column;gap:8px;height:100%;}
+.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;flex:1;overflow:hidden;}
 .trend-kpi-section:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(29,158,117,0.12);}
 .trend-kpi-section:hover .trend-kpi-section-title{color:var(--accent);}
-.trend-kpi-section-title{font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:5px;margin-bottom:8px;letter-spacing:.04em;}
-.trend-kpi-section-title i{font-size:13px;}
+.trend-kpi-section-title{font-size:10px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:4px;margin-bottom:7px;letter-spacing:.04em;text-transform:uppercase;}
+.trend-kpi-section-title i{font-size:12px;}
 .trend-kpi-section-title .drilldown-hint{margin-left:auto;font-size:10px;color:var(--accent);opacity:0;transition:opacity 0.15s;}
 .trend-kpi-section:hover .drilldown-hint{opacity:1;}
-.trend-kpi-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border);gap:6px;}
+.trend-kpi-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border);gap:4px;}
 .trend-kpi-item:last-child{border-bottom:none;padding-bottom:0;}
-.trend-kpi-label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
-.trend-kpi-val{font-size:12px;font-weight:500;color:var(--text-primary);}
-.trend-kpi-delta{font-size:10px;font-weight:500;white-space:nowrap;}
+.trend-kpi-label{font-size:10px;color:var(--text-secondary);white-space:nowrap;}
+.trend-kpi-val{font-size:12px;font-weight:500;color:var(--text-primary);white-space:nowrap;}
+.trend-kpi-delta{font-size:9px;font-weight:500;white-space:nowrap;}
 .trend-kpi-delta.up{color:var(--accent);}
 .trend-kpi-delta.dn{color:var(--danger);}
 .trend-kpi-delta.neu{color:var(--text-hint);}
-.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;}
-.trend-chart-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:12px;}
-
-/* 하단 시청 */
-.trend-bottom{margin-bottom:16px;}
-.trend-bottom-title{font-size:12px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:5px;margin-bottom:8px;}
-.trend-bottom-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.trend-bottom-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s;}
-.trend-bottom-card:hover{border-color:var(--accent);}
-.trend-bottom-card-title{font-size:11px;font-weight:500;color:var(--text-primary);margin-bottom:2px;display:flex;align-items:center;gap:4px;}
-.trend-bottom-card-title .drilldown-hint{font-size:10px;color:var(--accent);opacity:0;transition:opacity 0.15s;margin-left:4px;}
-.trend-bottom-card:hover .drilldown-hint{opacity:1;}
-.trend-bottom-card-sub{font-size:10px;color:var(--text-hint);margin-bottom:8px;}
+.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;height:100%;}
+.trend-chart-title{font-size:12px;font-weight:500;color:var(--text-primary);margin-bottom:10px;}
+.trend-main-chart-wrap canvas{flex:1;}
 
 /* 메뉴 내부 헤더 (탭 + 날짜 네비) */
 .menu-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;gap:12px;flex-wrap:wrap;}
@@ -372,8 +374,10 @@ function buildDailyRows(){
 }
 
 function tidField(){return Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체';}
-function tidFieldSKB(){return Object.keys(allData.tid?.[0]||{})[2]||null;}  // C열
-function tidFieldOther(){return Object.keys(allData.tid?.[0]||{})[5]||null;} // F열
+function tidFieldSKB(){return Object.keys(allData.tid?.[0]||{})[2]||null;}    // C열 SKB
+function tidFieldPaired(){return Object.keys(allData.tid?.[0]||{})[3]||null;} // D열 페어링
+function tidFieldUnpaired(){return Object.keys(allData.tid?.[0]||{})[4]||null;}// E열 미페어링
+function tidFieldOther(){return Object.keys(allData.tid?.[0]||{})[5]||null;}   // F열 타사
 
 function buildWeeklyRows(dr){
   const weeks={};
@@ -393,6 +397,8 @@ function buildWeeklyRows(dr){
       dau:avg('dau','DAU'),mau:last('dau','MAU'),
       tid:last('tid',tf),
       tid_skb:last('tid',tidFieldSKB()),
+      tid_paired:last('tid',tidFieldPaired()),
+      tid_unpaired:last('tid',tidFieldUnpaired()),
       tid_other:last('tid',tidFieldOther()),
       pairing_total:(last('pairing','유효단말')??0)+(last('pairing','비유효단말')??0)||null,
       pairing_valid:last('pairing','유효단말'),pairing_invalid:last('pairing','비유효단말'),
@@ -421,6 +427,8 @@ function buildMonthlyRows(dr){
       dau:avg('dau','DAU'),mau:last('dau','MAU'),
       tid:last('tid',tf),
       tid_skb:last('tid',tidFieldSKB()),
+      tid_paired:last('tid',tidFieldPaired()),
+      tid_unpaired:last('tid',tidFieldUnpaired()),
       tid_other:last('tid',tidFieldOther()),
       pairing_total:(last('pairing','유효단말')??0)+(last('pairing','비유효단말')??0)||null,
       pairing_valid:last('pairing','유효단말'),pairing_invalid:last('pairing','비유효단말'),
@@ -720,63 +728,67 @@ function renderChart(){
   const vodC=slice.map(r=>r.vod_count??null);
   const serC=slice.map(r=>r.serial_count??null);
 
+  /* 시청 현재값 */
+  const vodVCur=cur.vod_viewers??null, vodVPrev=prev?(prev.vod_viewers??null):null;
+  const vodCCur=cur.vod_count??null,   vodCPrev=prev?(prev.vod_count??null):null;
+  const serVCur=cur.serial_viewers??null, serVPrev=prev?(prev.serial_viewers??null):null;
+  const serCCur=cur.serial_count??null,   serCPrev=prev?(prev.serial_count??null):null;
+  const vodTCur=cur.vod_time??null,    vodTPrev=prev?(prev.vod_time??null):null;
+  const serTCur=cur.serial_time??null, serTPrev=prev?(prev.serial_time??null):null;
+  const fmtH=v=>v===null?'-':(v/3600).toFixed(1)+'h';
+
   document.getElementById('mainContent').innerHTML=buildMenuHeader(false)+`
   <div class="trend-layout">
 
-    <!-- 좌측 KPI 패널 -->
+    <!-- 좌측: 페어링·T아이디·MAU KPI -->
     <div class="trend-kpi-panel">
-
       <div class="trend-kpi-section" onclick="switchMenu('pairing')" title="페어링 상세">
         <div class="trend-kpi-section-title"><i class="ti ti-wifi"></i>페어링 현황 <span class="drilldown-hint">→</span></div>
         ${kpiItemN('전체',pTotal,pTotalPrev)}
         ${kpiItemN('유효단말',pValid,pValidPrev)}
         ${kpiItemN('비유효단말',pInvalid,pInvalidPrev)}
       </div>
-
       <div class="trend-kpi-section" onclick="switchMenu('tid')" title="T아이디 상세">
         <div class="trend-kpi-section-title"><i class="ti ti-id-badge"></i>T아이디 현황 <span class="drilldown-hint">→</span></div>
         ${kpiItemN('전체',tidTotal,tidTotalPrev)}
         ${kpiItemN('SKB',tidSkb,tidSkbPrev)}
         ${kpiItemN('타사',tidOther,tidOtherPrev)}
       </div>
-
       <div class="trend-kpi-section" onclick="switchMenu('daumau')" title="DAU·MAU 상세">
         <div class="trend-kpi-section-title"><i class="ti ti-users"></i>MAU 현황 <span class="drilldown-hint">→</span></div>
         ${kpiItemN('DAU 평균',dauVal,dauPrev)}
         ${kpiItemN('MAU',mauVal,mauPrev)}
       </div>
-
     </div>
 
-    <!-- 중앙 메인 차트 -->
+    <!-- 중앙: 메인 차트 -->
     <div class="trend-main-chart-wrap">
       <div class="trend-chart-title">페어링 · DAU/MAU · T아이디 추이</div>
-      <div class="trend-chart-legend" id="trendLegend"></div>
-      <div style="position:relative;height:320px;"><canvas id="cTrendMain"></canvas></div>
+      <div style="position:relative;flex:1;min-height:0;"><canvas id="cTrendMain"></canvas></div>
     </div>
 
-  </div>
-
-  <!-- 하단 시청 차트 -->
-  <div class="trend-bottom">
-    <div class="trend-bottom-title"><i class="ti ti-player-play"></i>시청 현황</div>
-    <div class="trend-bottom-charts">
-      <div class="trend-bottom-card" onclick="switchMenu('viewing')" title="시청 상세">
-        <div class="trend-bottom-card-title">시청자수 추이 <span class="drilldown-hint">→</span></div>
-        <div class="trend-bottom-card-sub">VOD / 정주행</div>
-        <div style="position:relative;height:110px;"><canvas id="cTrendViewers"></canvas></div>
+    <!-- 우측: 시청 KPI -->
+    <div class="trend-kpi-panel">
+      <div class="trend-kpi-section" onclick="switchMenu('viewing')" title="시청 상세">
+        <div class="trend-kpi-section-title" style="color:#378add;"><i class="ti ti-player-play"></i>VOD 시청 <span class="drilldown-hint">→</span></div>
+        ${kpiItemN('시청자수',vodVCur,vodVPrev)}
+        ${kpiItemN('시청건수',vodCCur,vodCPrev)}
+        <div class="trend-kpi-item">
+          <span class="trend-kpi-label">시청시간</span>
+          <span class="trend-kpi-val">${fmtH(vodTCur)}</span>
+        </div>
       </div>
-      <div class="trend-bottom-card" onclick="switchMenu('viewing')" title="시청 상세">
-        <div class="trend-bottom-card-title">시청건수 추이 <span class="drilldown-hint">→</span></div>
-        <div class="trend-bottom-card-sub">VOD / 정주행</div>
-        <div style="position:relative;height:110px;"><canvas id="cTrendCount"></canvas></div>
-      </div>
-      <div class="trend-bottom-card" onclick="switchMenu('viewing')" title="시청 상세">
-        <div class="trend-bottom-card-title">시청시간 추이 <span class="drilldown-hint">→</span></div>
-        <div class="trend-bottom-card-sub">VOD / 정주행 (시간)</div>
-        <div style="position:relative;height:110px;"><canvas id="cTrendTime"></canvas></div>
+      <div class="trend-kpi-section" onclick="switchMenu('viewing')" title="시청 상세">
+        <div class="trend-kpi-section-title" style="color:#ef9f27;"><i class="ti ti-repeat"></i>정주행 시청 <span class="drilldown-hint">→</span></div>
+        ${kpiItemN('시청자수',serVCur,serVPrev)}
+        ${kpiItemN('시청건수',serCCur,serCPrev)}
+        <div class="trend-kpi-item">
+          <span class="trend-kpi-label">시청시간</span>
+          <span class="trend-kpi-val">${fmtH(serTCur)}</span>
+        </div>
       </div>
     </div>
+
   </div>
   <div class="last-updated" id="lastUpdated"></div>`;
 
@@ -807,27 +819,7 @@ function renderChart(){
     {label:'T아이디',data:tidData,type:'line',borderColor:'#7f77dd',backgroundColor:'transparent',tension:0.3,borderWidth:2,pointRadius:2,yAxisID:'y3',order:1},
   ]},options:mainOpts});
 
-  /* ── 하단 시청 소형 차트 ── */
-  const smOpts={
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,font:{size:9}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}},
-    scales:{x:{display:false},y:{display:false}}
-  };
-  chartInstances.trendViewers=new Chart(document.getElementById('cTrendViewers'),{type:'line',data:{labels,datasets:[
-    {label:'VOD',data:vodV,borderColor:'#378add',tension:0.3,pointRadius:0,borderWidth:1.5,fill:false},
-    {label:'정주행',data:serV,borderColor:'#ef9f27',tension:0.3,pointRadius:0,borderWidth:1.5,borderDash:[3,2],fill:false},
-  ]},options:smOpts});
-  chartInstances.trendCount=new Chart(document.getElementById('cTrendCount'),{type:'line',data:{labels,datasets:[
-    {label:'VOD',data:vodC,borderColor:'#378add',tension:0.3,pointRadius:0,borderWidth:1.5,fill:false},
-    {label:'정주행',data:serC,borderColor:'#ef9f27',tension:0.3,pointRadius:0,borderWidth:1.5,borderDash:[3,2],fill:false},
-  ]},options:smOpts});
-  const vodT=slice.map(r=>r.vod_time?(r.vod_time/3600):null);
-  const serT=slice.map(r=>r.serial_time?(r.serial_time/3600):null);
-  const timeSmOpts={...smOpts,plugins:{...smOpts.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}h`}}}};
-  chartInstances.trendTime=new Chart(document.getElementById('cTrendTime'),{type:'line',data:{labels,datasets:[
-    {label:'VOD',data:vodT,borderColor:'#378add',tension:0.3,pointRadius:0,borderWidth:1.5,fill:false},
-    {label:'정주행',data:serT,borderColor:'#ef9f27',tension:0.3,pointRadius:0,borderWidth:1.5,borderDash:[3,2],fill:false},
-  ]},options:timeSmOpts});
+  /* 하단 시청 차트 제거 — 우측 KPI 패널로 대체 */
 
   const el=document.getElementById('lastUpdated');
   if(el)el.textContent=`마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
@@ -987,6 +979,26 @@ function buildTransposedTableNew(metrics, colLabels, curColIdx){
     return`<tr><td class="td-row">${label}</td>${dataCells}${tdDeltaT(cur,prev,isPercPoint)}</tr>`;
   }).join('');
   return`<div class="tbl-wrap-x tbl-wrap-new"><table>
+    <thead><tr><th class="th-row">지표</th>${thCells}<th>${cLabel}</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+/* T아이디 서브 섹션 전치표 (자사구분=보라, 페어링여부=초록/빨강) */
+function buildTransposedTableTidSub(metrics, colLabels, curColIdx, theme){
+  const cLabel=compareLabel();
+  const thCls=theme==='sub'?'th-cur-tid-sub':'th-cur-tid-pair';
+  const tdCls=theme==='sub'?'td-cur-tid-sub':'td-cur-tid-pair';
+  const thCells=colLabels.map((l,i)=>`<th class="${i===curColIdx?thCls:''}">${l}</th>`).join('');
+  const rows=metrics.map(m=>{
+    const{label,vals,fmt,isPercPoint}=m;
+    const f=fmt||fmtN;
+    const cur=vals[curColIdx]??null;
+    const prev=curColIdx>0?(vals[curColIdx-1]??null):null;
+    const dataCells=vals.map((v,i)=>`<td class="${i===curColIdx?tdCls:''}">${f(v)}</td>`).join('');
+    return`<tr><td class="td-row">${label}</td>${dataCells}${tdDeltaT(cur,prev,isPercPoint)}</tr>`;
+  }).join('');
+  return`<div class="tbl-wrap-x tbl-wrap-tid-${theme}"><table>
     <thead><tr><th class="th-row">지표</th>${thCells}<th>${cLabel}</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
@@ -1287,39 +1299,103 @@ function renderTid(){
   if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
 
   const tf=tidField();
-  const tidVal=cur.tid??null,tidPrev=prev?(prev.tid??null):null;
-  const periodSub=currentTab==='weekly'?'주 마지막일':'월 마지막일';
+  const tidVal    = cur.tid??null,          tidPrev     = prev?(prev.tid??null):null;
+  const tidSkb    = cur.tid_skb??null,      tidSkbPrev  = prev?(prev.tid_skb??null):null;
+  const tidOther  = cur.tid_other??null,    tidOtherPrev= prev?(prev.tid_other??null):null;
+  const tidPaired = cur.tid_paired??null,   tidPairedPrev= prev?(prev.tid_paired??null):null;
+  const tidUnpair = cur.tid_unpaired??null, tidUnpairPrev= prev?(prev.tid_unpaired??null):null;
+  const periodSub = currentTab==='weekly'?'주 마지막일':'월 마지막일';
 
   const mom=getMomBaseline(cur);
   const mdr=mom.momDailyRow;
-  const momTid=mdr?.tid?num(mdr.tid[tf]):null;
+  const momTid   = mdr?.tid?num(mdr.tid[tf]):null;
+  const momSkb   = mdr?.tid&&tidFieldSKB()?num(mdr.tid[tidFieldSKB()]):null;
+  const momOther = mdr?.tid&&tidFieldOther()?num(mdr.tid[tidFieldOther()]):null;
 
   const slice=getSlice(); const curIdx=slice.length-1; const colLabels=slice.map(rowShortLabel);
   const curHL=slice.map((_,i)=>i===curIdx);
 
+  /* KPI 3개 */
   const kpiCards=[
-    {label:'T아이디 연동',icon:'id-badge',value:fmtN(tidVal),sub:periodSub,
+    {label:'T아이디 전체',icon:'id-badge',value:fmtN(tidVal),sub:periodSub,
      delta:{cur:tidVal,prev:tidPrev},accent:true,momVal:momTid,
      sparkVals:slice.map(r=>r.tid??null)},
+    {label:'SKB',icon:'building',value:fmtN(tidSkb),sub:periodSub,
+     delta:{cur:tidSkb,prev:tidSkbPrev},momVal:momSkb,
+     sparkVals:slice.map(r=>r.tid_skb??null)},
+    {label:'타사',icon:'building-community',value:fmtN(tidOther),sub:periodSub,
+     delta:{cur:tidOther,prev:tidOtherPrev},momVal:momOther,
+     sparkVals:slice.map(r=>r.tid_other??null)},
   ];
-  const chartConfigs=[{id:'cTidDetail2',title:'T아이디 연동 추이',sub:periodSub}];
-  const metrics=[{label:'T아이디 연동',vals:slice.map(r=>r.tid??null)}];
+
+  const chartConfigs=[
+    {id:'cTidTotal2',title:'T아이디 전체 추이',sub:periodSub},
+    {id:'cTidType2',title:'자사구분 추이',sub:'SKB / 타사'},
+    {id:'cTidPair2',title:'페어링 여부 추이',sub:'페어링 / 미페어링'},
+  ];
+
+  /* 전치표 — 전체 */
+  const metricsTotal=[
+    {label:'T아이디 전체',vals:slice.map(r=>r.tid??null)},
+  ];
+  /* 전치표 — 자사구분 */
+  const metricsSub=[
+    {label:'SKB',vals:slice.map(r=>r.tid_skb??null)},
+    {label:'타사',vals:slice.map(r=>r.tid_other??null)},
+    {label:'SKB 비율',vals:slice.map(r=>(r.tid&&r.tid_skb)?(r.tid_skb/r.tid*100):null),
+     fmt:v=>v===null?'-':v.toFixed(1)+'%',isPercPoint:true},
+  ];
+  /* 전치표 — 페어링 여부 */
+  const metricsPair=[
+    {label:'페어링',vals:slice.map(r=>r.tid_paired??null)},
+    {label:'미페어링',vals:slice.map(r=>r.tid_unpaired??null)},
+    {label:'페어링 비율',vals:slice.map(r=>(r.tid&&r.tid_paired)?(r.tid_paired/r.tid*100):null),
+     fmt:v=>v===null?'-':v.toFixed(1)+'%',isPercPoint:true},
+  ];
 
   document.getElementById('mainContent').innerHTML=
     buildMenuHeader()+
     buildKpiSection(kpiCards,chartConfigs,slice)+
     `<div class="page-section">
       <div class="table-section">
-        <div class="table-section-title"><i class="ti ti-id-badge"></i>T아이디 추이</div>
-        ${buildTransposedTable(metrics,colLabels,curIdx)}
+        <div class="table-section-title"><i class="ti ti-id-badge"></i>T아이디 전체 추이</div>
+        ${buildTransposedTable(metricsTotal,colLabels,curIdx)}
+      </div>
+      <div class="table-section table-section-tid-sub">
+        <div class="table-section-title tid-sub-title"><i class="ti ti-building"></i>자사구분 (SKB / 타사)</div>
+        ${buildTransposedTableTidSub(metricsSub,colLabels,curIdx,'sub')}
+      </div>
+      <div class="table-section table-section-tid-pair">
+        <div class="table-section-title tid-pair-title"><i class="ti ti-device-mobile"></i>페어링 여부</div>
+        ${buildTransposedTableTidSub(metricsPair,colLabels,curIdx,'pair')}
       </div>
     </div>`;
 
   const labels=slice.map(rowShortLabel); const bo=baseOptsDetail(); const leg={display:true,position:'bottom',labels:{boxWidth:10,font:{size:10}}};
-  chartInstances.tidDetail2=new Chart(document.getElementById('cTidDetail2'),{type:'line',data:{labels,datasets:[
+
+  /* 전체 라인 */
+  chartInstances.tidTotal2=new Chart(document.getElementById('cTidTotal2'),{type:'line',data:{labels,datasets:[
     {label:'T아이디',data:slice.map(r=>r.tid??null),borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.08)',tension:0.3,fill:true,borderWidth:2,
      pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#7f77dd':'rgba(127,119,221,0.4)')},
   ]},options:{...bo,plugins:{...bo.plugins,legend:leg}}});
+
+  /* 자사구분: SKB 바 + 타사 라인 */
+  const subOpts={...bo,plugins:{...bo.plugins,legend:leg,
+    tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}}};
+  chartInstances.tidType2=new Chart(document.getElementById('cTidType2'),{type:'bar',data:{labels,datasets:[
+    {label:'SKB',data:slice.map(r=>r.tid_skb??null),
+     backgroundColor:curHL.map(b=>b?'#7f77dd':'rgba(127,119,221,0.4)'),borderRadius:3},
+    {label:'타사',data:slice.map(r=>r.tid_other??null),
+     backgroundColor:curHL.map(b=>b?'#378add':'rgba(55,138,221,0.4)'),borderRadius:3},
+  ]},options:subOpts});
+
+  /* 페어링 여부: 페어링 바 + 미페어링 바 */
+  chartInstances.tidPair2=new Chart(document.getElementById('cTidPair2'),{type:'bar',data:{labels,datasets:[
+    {label:'페어링',data:slice.map(r=>r.tid_paired??null),
+     backgroundColor:curHL.map(b=>b?'#1d9e75':'rgba(29,158,117,0.4)'),borderRadius:3},
+    {label:'미페어링',data:slice.map(r=>r.tid_unpaired??null),
+     backgroundColor:curHL.map(b=>b?'#d85a30':'rgba(216,90,48,0.4)'),borderRadius:3},
+  ]},options:{...subOpts}});
 }
 
 /* ── VIEWING MENU ── */
