@@ -958,9 +958,8 @@ function renderWeeklyBlock(){
       wItem('전체',w.tid??null,pw?(pw.tid??null):null)+
       wItem('SKB',w.tid_skb??null,pw?(pw.tid_skb??null):null)+
       wItem('타사',w.tid_other??null,pw?(pw.tid_other??null):null))+
-    wSec('daumau',`<i class="ti ti-users"></i>MAU`,
-      wItem('DAU 평균',w.dau??null,pw?(pw.dau??null):null)+
-      wItem('MAU',w.mau??null,pw?(pw.mau??null):null));
+    wSec('daumau',`<i class="ti ti-users"></i>DAU`,
+      wItem('DAU 평균',w.dau??null,pw?(pw.dau??null):null));
 
   const rightHTML=
     wSec('viewing',`<i class="ti ti-player-play" style="color:#378add"></i><span style="color:#378add">VOD</span>`,
