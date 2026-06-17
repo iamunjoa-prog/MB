@@ -229,16 +229,22 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .tbl-wrap-x tbody td.td-delta-dn{color:var(--danger);font-size:11px;}
 .tbl-wrap-x tbody td.td-delta-neu{color:var(--text-hint);font-size:11px;}
 
+/* 월 트렌드 페이지 타이틀 */
+.trend-page-title{font-size:15px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:7px;margin-bottom:14px;}
+.trend-page-title i{font-size:17px;color:var(--accent);}
+.trend-page-sub{font-size:12px;font-weight:400;color:var(--text-hint);margin-left:2px;}
+
 /* ── TREND 레이아웃 ── */
 .trend-layout{display:grid;grid-template-columns:210px 1fr 210px;gap:12px;align-items:start;margin-bottom:16px;width:100%;min-width:0;}
 .trend-kpi-panel{display:flex;flex-direction:column;gap:8px;min-width:0;}
 .trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
 .trend-kpi-section:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(29,158,117,0.1);}
 .trend-kpi-section:hover .trend-kpi-section-title{color:var(--accent);}
-.trend-kpi-section-title{font-size:9px;font-weight:700;color:var(--text-hint);display:flex;align-items:center;gap:4px;margin-bottom:8px;letter-spacing:.07em;text-transform:uppercase;}
-.trend-kpi-section-title i{font-size:11px;}
+.trend-kpi-section-title{font-size:11px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:5px;margin-bottom:8px;letter-spacing:.03em;}
+.trend-kpi-section-title i{font-size:13px;color:var(--accent);}
 .trend-kpi-section-title .drilldown-hint{margin-left:auto;font-size:9px;color:var(--accent);opacity:0;transition:opacity 0.15s;}
 .trend-kpi-section:hover .drilldown-hint{opacity:1;}
+/* 우측 시청 패널 타이틀은 각자 색상 (인라인 style로 처리) */
 .trend-kpi-item{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:6px 0;border-bottom:0.5px solid var(--border);}
 .trend-kpi-item:last-child{border-bottom:none;padding-bottom:0;}
 .trend-kpi-label{font-size:11px;color:var(--text-secondary);flex-shrink:0;}
@@ -280,7 +286,7 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
     <div class="sidebar-section">
       <div class="sidebar-label">메뉴</div>
       <button class="menu-item active" onclick="switchMenu('chart')" id="menu-chart">
-        <i class="ti ti-chart-line" aria-hidden="true"></i>Trend
+        <i class="ti ti-chart-line" aria-hidden="true"></i>월 트렌드
       </button>
       <button class="menu-item" onclick="switchMenu('pairing')" id="menu-pairing">
         <i class="ti ti-wifi" aria-hidden="true"></i>페어링
@@ -748,6 +754,9 @@ function renderChart(){
   const fmtH=v=>v===null?'-':(v/3600).toFixed(1)+'h';
 
   document.getElementById('mainContent').innerHTML=buildMenuHeader(false)+`
+  <div class="trend-page-title">
+    <i class="ti ti-device-mobile"></i>모바일 B tv 주요 지표 <span class="trend-page-sub">월 기준</span>
+  </div>
   <div class="trend-layout">
 
     <!-- 좌측: 페어링·T아이디·MAU KPI -->
