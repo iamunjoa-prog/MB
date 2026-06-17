@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>앱 이용 지표 대시보드</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -247,9 +248,9 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .trend-page-nav .menu-nav-btn{padding:4px 9px;}
 
 /* ── TREND 레이아웃 ── */
-.trend-layout{display:grid;grid-template-columns:210px 1fr 210px;gap:12px;align-items:start;margin-bottom:16px;width:100%;min-width:0;}
+.trend-layout{display:grid;grid-template-columns:210px 1fr 210px;gap:12px;align-items:stretch;margin-bottom:16px;width:100%;min-width:0;}
 .trend-kpi-panel{display:flex;flex-direction:column;gap:8px;min-width:0;}
-.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
+.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;flex:1;}
 .trend-kpi-section:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(29,158,117,0.1);}
 .trend-kpi-section:hover .trend-kpi-section-title{color:var(--accent);}
 .trend-kpi-section-title{font-size:11px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:5px;margin-bottom:8px;letter-spacing:.03em;}
@@ -268,7 +269,7 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .trend-kpi-delta.neu{color:var(--text-hint);}
 
 /* 단일 차트 영역 */
-.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;min-width:0;}
+.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;min-width:0;display:flex;flex-direction:column;}
 .trend-chart-title{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 
 /* 메뉴 내부 헤더 (탭 + 날짜 네비) */
@@ -469,6 +470,8 @@ function buildMonthlyRows(dr){
 }
 
 /* ── INIT ── */
+Chart.register(ChartDataLabels);
+Chart.defaults.plugins.datalabels={display:false}; // 전체 기본 비활성, 필요한 차트에만 개별 설정
 async function init(){
   const el=document.getElementById('mainContent');
   try{
@@ -481,9 +484,9 @@ async function init(){
     const tid=await fetchSheet(SHEETS.tid);
     setMsg('페어링 시트 로딩 중...');
     const pairing=await fetchSheet(SHEETS.pairing);
-    setMsg('VOD 시청 시트 로딩 중...');
+    setMsg('VOD 시트 로딩 중...');
     const vod=await fetchSheet(SHEETS.vod);
-    setMsg('정주행 시청 시트 로딩 중...');
+    setMsg('정주행 시트 로딩 중...');
     const serial=await fetchSheet(SHEETS.serial);
 
     allData={dau,tid,pairing,vod,serial};
@@ -784,19 +787,19 @@ function renderChart(){
     <!-- 좌측: 페어링·T아이디·MAU KPI -->
     <div class="trend-kpi-panel">
       <div class="trend-kpi-section" onclick="switchMenu('pairing')" title="페어링 상세">
-        <div class="trend-kpi-section-title"><i class="ti ti-wifi"></i>페어링 현황 <span class="drilldown-hint">→</span></div>
+        <div class="trend-kpi-section-title"><i class="ti ti-wifi"></i>페어링 <span class="drilldown-hint">→</span></div>
         ${kpiItemN('전체',pTotal,pTotalPrev)}
         ${kpiItemN('유효단말',pValid,pValidPrev)}
         ${kpiItemN('비유효단말',pInvalid,pInvalidPrev)}
       </div>
       <div class="trend-kpi-section" onclick="switchMenu('tid')" title="T아이디 상세">
-        <div class="trend-kpi-section-title"><i class="ti ti-id-badge"></i>T아이디 현황 <span class="drilldown-hint">→</span></div>
+        <div class="trend-kpi-section-title"><i class="ti ti-id-badge"></i>T아이디 <span class="drilldown-hint">→</span></div>
         ${kpiItemN('전체',tidTotal,tidTotalPrev)}
         ${kpiItemN('SKB',tidSkb,tidSkbPrev)}
         ${kpiItemN('타사',tidOther,tidOtherPrev)}
       </div>
       <div class="trend-kpi-section" onclick="switchMenu('daumau')" title="DAU·MAU 상세">
-        <div class="trend-kpi-section-title"><i class="ti ti-users"></i>MAU 현황 <span class="drilldown-hint">→</span></div>
+        <div class="trend-kpi-section-title"><i class="ti ti-users"></i>MAU <span class="drilldown-hint">→</span></div>
         ${kpiItemN('DAU 평균',dauVal,dauPrev)}
         ${kpiItemN('MAU',mauVal,mauPrev)}
       </div>
@@ -804,27 +807,33 @@ function renderChart(){
 
     <!-- 중앙: 단일 차트 -->
     <div class="trend-main-chart-wrap">
-      <div style="position:relative;height:340px;"><canvas id="cTrendMain"></canvas></div>
+      <div style="flex:1;min-height:200px;position:relative;"><canvas id="cTrendMain"></canvas></div>
     </div>
 
     <!-- 우측: 시청 KPI -->
     <div class="trend-kpi-panel">
       <div class="trend-kpi-section" onclick="switchMenu('viewing')" title="시청 상세">
-        <div class="trend-kpi-section-title" style="color:#378add;"><i class="ti ti-player-play"></i>VOD 시청 <span class="drilldown-hint">→</span></div>
+        <div class="trend-kpi-section-title" style="color:#378add;"><i class="ti ti-player-play"></i>VOD <span class="drilldown-hint">→</span></div>
         ${kpiItemN('시청자수',vodVCur,vodVPrev)}
         ${kpiItemN('시청건수',vodCCur,vodCPrev)}
         <div class="trend-kpi-item">
           <span class="trend-kpi-label">시청시간</span>
-          <span class="trend-kpi-val">${fmtH(vodTCur)}</span>
+          <span class="trend-kpi-val-wrap">
+            <span class="trend-kpi-val">${fmtH(vodTCur)}</span>
+            ${(()=>{const d=vodTPrev&&vodTPrev!==0?(vodTCur-vodTPrev)/Math.abs(vodTPrev):null;if(!d)return'';const ic=d>0?'▲':d<0?'▼':'';const cls=d>0?'up':d<0?'dn':'neu';return`<span class="trend-kpi-delta ${cls}">${ic}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;})()}
+          </span>
         </div>
       </div>
       <div class="trend-kpi-section" onclick="switchMenu('viewing')" title="시청 상세">
-        <div class="trend-kpi-section-title" style="color:#ef9f27;"><i class="ti ti-repeat"></i>정주행 시청 <span class="drilldown-hint">→</span></div>
+        <div class="trend-kpi-section-title" style="color:#ef9f27;"><i class="ti ti-repeat"></i>정주행 <span class="drilldown-hint">→</span></div>
         ${kpiItemN('시청자수',serVCur,serVPrev)}
         ${kpiItemN('시청건수',serCCur,serCPrev)}
         <div class="trend-kpi-item">
           <span class="trend-kpi-label">시청시간</span>
-          <span class="trend-kpi-val">${fmtH(serTCur)}</span>
+          <span class="trend-kpi-val-wrap">
+            <span class="trend-kpi-val">${fmtH(serTCur)}</span>
+            ${(()=>{const d=serTPrev&&serTPrev!==0?(serTCur-serTPrev)/Math.abs(serTPrev):null;if(!d)return'';const ic=d>0?'▲':d<0?'▼':'';const cls=d>0?'up':d<0?'dn':'neu';return`<span class="trend-kpi-delta ${cls}">${ic}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;})()}
+          </span>
         </div>
       </div>
     </div>
@@ -834,11 +843,6 @@ function renderChart(){
     <div class="trend-weekly-title">
       <i class="ti ti-calendar-week"></i>주차별 흐름
       <span class="trend-weekly-sub" id="trendWeeklySub"></span>
-      <div class="trend-page-nav" style="margin-left:auto;">
-        <button class="menu-nav-btn" onclick="wkNavigate(-1)"><i class="ti ti-chevron-left"></i></button>
-        <span class="trend-weekly-cur" id="trendWeeklyCur"></span>
-        <button class="menu-nav-btn" onclick="wkNavigate(1)"><i class="ti ti-chevron-right"></i></button>
-      </div>
     </div>
     <div id="trendWeeklyBody"></div>
   </div>
@@ -850,13 +854,27 @@ function renderChart(){
   const dauData=slice.map(r=>r.dau??null);
   const mauData=slice.map(r=>r.mau??null);
 
+  /* MoM 증감률 계산 */
+  function momRate(data, i){ if(i===0||data[i]===null||data[i-1]===null||data[i-1]===0) return null; return (data[i]-data[i-1])/Math.abs(data[i-1])*100; }
+  function momLabel(data, i){ const r=momRate(data,i); if(r===null) return ''; const icon=r>0?'▲':r<0?'▼':''; return `${icon}${r>0?'+':''}${r.toFixed(1)}%`; }
+  function momColor(data, i){ const r=momRate(data,i); if(r===null) return 'transparent'; return r>0?'rgba(29,158,117,0.85)':r<0?'rgba(163,45,45,0.85)':'rgba(136,135,128,0.7)'; }
+
+  const dlBase={
+    display:true,
+    formatter:(val,ctx)=>momLabel(ctx.dataset.data, ctx.dataIndex),
+    color:(ctx)=>momColor(ctx.dataset.data, ctx.dataIndex),
+    font:{size:9,weight:'600'},
+    padding:2,
+  };
+
   const mainOpts={
     responsive:true,maintainAspectRatio:false,
     plugins:{
       legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:10},padding:12}},
       tooltip:{mode:'index',intersect:false,callbacks:{
         label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`
-      }}
+      }},
+      datalabels:{display:false}, // 기본 비활성, dataset별로 개별 설정
     },
     scales:{
       x:{grid:{display:false},ticks:{font:{size:10},color:'#888780',maxRotation:40,autoSkip:true,maxTicksLimit:12}},
@@ -867,55 +885,45 @@ function renderChart(){
     }
   };
   chartInstances.trendMain=new Chart(document.getElementById('cTrendMain'),{type:'bar',data:{labels,datasets:[
-    {label:'페어링',   data:pTotalData,backgroundColor:'rgba(29,158,117,0.18)',borderColor:'rgba(29,158,117,0.4)',borderWidth:1,borderRadius:3,yAxisID:'y', order:4},
-    {label:'T아이디', data:tidData,   type:'line',borderColor:'#7f77dd',backgroundColor:'transparent',tension:0.3,borderWidth:2,  pointRadius:2.5,yAxisID:'y2',order:1},
-    {label:'DAU',     data:dauData,   type:'line',borderColor:'#378add',backgroundColor:'transparent',tension:0.3,borderWidth:1.5,pointRadius:2,  borderDash:[5,3],yAxisID:'y2',order:2},
-    {label:'MAU',     data:mauData,   type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,borderWidth:2,  pointRadius:2.5,yAxisID:'y2',order:3},
+    {label:'페어링',   data:pTotalData,backgroundColor:'rgba(29,158,117,0.18)',borderColor:'rgba(29,158,117,0.4)',borderWidth:1,borderRadius:3,yAxisID:'y', order:4,
+     datalabels:{...dlBase,anchor:'end',align:'end',offset:-2}},
+    {label:'T아이디', data:tidData,   type:'line',borderColor:'#7f77dd',backgroundColor:'transparent',tension:0.3,borderWidth:2,  pointRadius:2.5,yAxisID:'y2',order:1,
+     datalabels:{...dlBase,anchor:'end',align:'top',offset:2}},
+    {label:'DAU',     data:dauData,   type:'line',borderColor:'#378add',backgroundColor:'transparent',tension:0.3,borderWidth:1.5,pointRadius:2,yAxisID:'y2',order:2,
+     datalabels:{...dlBase,anchor:'end',align:'bottom',offset:2}},
+    {label:'MAU',     data:mauData,   type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,borderWidth:2,  pointRadius:2.5,yAxisID:'y2',order:3,
+     datalabels:{...dlBase,anchor:'end',align:'top',offset:14}},
   ]},options:mainOpts});
 
   const el=document.getElementById('lastUpdated');
   if(el)el.textContent=`마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
 
   /* ── 주차별 흐름 섹션 ── */
-  const selYear=cur.year, selMonth=cur.month;
-  window._trendWeekSlice=weeklyRows.filter(w=>{
-    const lastDay=new Date(w.weekStart); lastDay.setDate(w.weekStart.getDate()+6);
-    return lastDay.getFullYear()===selYear && lastDay.getMonth()+1===selMonth;
-  });
-  window._trendWeekIdx=window._trendWeekSlice.length-1; // 최신 주차부터
+  window._trendWeekSlice=weeklyRows; // 전체 주차 (2025년~ 전체)
+  window._trendWeekIdx=weeklyRows.length-1;
 
   const subEl=document.getElementById('trendWeeklySub');
-  if(subEl) subEl.textContent=`${selYear}년 ${selMonth}월 · ${window._trendWeekSlice.length}개 주차`;
+  if(subEl) subEl.textContent=weeklyRows.length>0?`${weeklyRows[0].weekStart.getFullYear()}년 ~ · ${weeklyRows.length}개 주차`:'';
 
   renderWeeklyBlock();
 }
 
 /* ── 주차별 흐름 렌더 ── */
-function wkNavigate(dir){
-  const sl=window._trendWeekSlice||[];
-  if(!sl.length)return;
-  window._trendWeekIdx=Math.max(0,Math.min(sl.length-1,(window._trendWeekIdx||0)+dir));
-  renderWeeklyBlock();
-}
-
 function renderWeeklyBlock(){
   const sl=window._trendWeekSlice||[];
   const body=document.getElementById('trendWeeklyBody');
-  const curEl=document.getElementById('trendWeeklyCur');
   if(!body)return;
 
   if(!sl.length){
-    body.innerHTML=`<div style="font-size:12px;color:var(--text-hint);padding:8px 0;">해당 월의 주차 데이터가 없습니다.</div>`;
+    body.innerHTML=`<div style="font-size:12px;color:var(--text-hint);padding:8px 0;">주차 데이터가 없습니다.</div>`;
     return;
   }
 
-  const idx=window._trendWeekIdx??sl.length-1;
+  // KPI는 전체 중 최신 주차 기준
+  const idx=sl.length-1;
   const w=sl[idx];
   const pw=idx>0?sl[idx-1]:null;
-  const wLabel=getWL(w.weekStart)||`W${getWeekNo(w.weekStart)}`;
   const fmtH=v=>v===null?'-':(v/3600).toFixed(1)+'h';
-
-  if(curEl) curEl.textContent=wLabel;
 
   function wItem(label,val,prevVal){
     if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">-</span></span></div>`;
@@ -924,8 +932,12 @@ function renderWeeklyBlock(){
     if(d!==null){const icon=d>0?'▲':d<0?'▼':'';const cls=d>0?'up':d<0?'dn':'neu';delta=`<span class="trend-kpi-delta ${cls}">${icon}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;}
     return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtN(val)}</span>${delta}</span></div>`;
   }
-  function wItemH(label,val){
-    return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtH(val)}</span></span></div>`;
+  function wItemH(label,val,prevVal){
+    if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">-</span></span></div>`;
+    const d=prevVal&&prevVal!==0?(val-prevVal)/Math.abs(prevVal):null;
+    let delta='';
+    if(d!==null){const icon=d>0?'▲':d<0?'▼':'';const cls=d>0?'up':d<0?'dn':'neu';delta=`<span class="trend-kpi-delta ${cls}">${icon}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;}
+    return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtH(val)}</span>${delta}</span></div>`;
   }
   function wSec(menu,titleHtml,items){
     return`<div class="trend-kpi-section" onclick="switchMenu('${menu}')" title="상세 보기">
@@ -938,27 +950,27 @@ function renderWeeklyBlock(){
   const pTotalPrev=pw?((pw.pairing_valid??0)+(pw.pairing_invalid??0)||null):null;
 
   const leftHTML=
-    wSec('pairing',`<i class="ti ti-wifi"></i>페어링 현황`,
+    wSec('pairing',`<i class="ti ti-wifi"></i>페어링`,
       wItem('전체',pTotal,pTotalPrev)+
       wItem('유효단말',w.pairing_valid??null,pw?(pw.pairing_valid??null):null)+
       wItem('비유효단말',w.pairing_invalid??null,pw?(pw.pairing_invalid??null):null))+
-    wSec('tid',`<i class="ti ti-id-badge"></i>T아이디 현황`,
+    wSec('tid',`<i class="ti ti-id-badge"></i>T아이디`,
       wItem('전체',w.tid??null,pw?(pw.tid??null):null)+
       wItem('SKB',w.tid_skb??null,pw?(pw.tid_skb??null):null)+
       wItem('타사',w.tid_other??null,pw?(pw.tid_other??null):null))+
-    wSec('daumau',`<i class="ti ti-users"></i>MAU 현황`,
+    wSec('daumau',`<i class="ti ti-users"></i>MAU`,
       wItem('DAU 평균',w.dau??null,pw?(pw.dau??null):null)+
       wItem('MAU',w.mau??null,pw?(pw.mau??null):null));
 
   const rightHTML=
-    wSec('viewing',`<i class="ti ti-player-play" style="color:#378add"></i><span style="color:#378add">VOD 시청</span>`,
+    wSec('viewing',`<i class="ti ti-player-play" style="color:#378add"></i><span style="color:#378add">VOD</span>`,
       wItem('시청자수',w.vod_viewers??null,pw?(pw.vod_viewers??null):null)+
       wItem('시청건수',w.vod_count??null,pw?(pw.vod_count??null):null)+
-      wItemH('시청시간',w.vod_time??null))+
-    wSec('viewing',`<i class="ti ti-repeat" style="color:#ef9f27"></i><span style="color:#ef9f27">정주행 시청</span>`,
+      wItemH('시청시간',w.vod_time??null,pw?(pw.vod_time??null):null))+
+    wSec('viewing',`<i class="ti ti-repeat" style="color:#ef9f27"></i><span style="color:#ef9f27">정주행</span>`,
       wItem('시청자수',w.serial_viewers??null,pw?(pw.serial_viewers??null):null)+
       wItem('시청건수',w.serial_count??null,pw?(pw.serial_count??null):null)+
-      wItemH('시청시간',w.serial_time??null));
+      wItemH('시청시간',w.serial_time??null,pw?(pw.serial_time??null):null));
 
   // 주차별 차트용 데이터 (해당 월 전체 주차)
   const wLabels=sl.map(r=>getWL(r.weekStart)||`W${getWeekNo(r.weekStart)}`);
@@ -967,7 +979,7 @@ function renderWeeklyBlock(){
   body.innerHTML=`<div class="trend-layout">
     <div class="trend-kpi-panel">${leftHTML}</div>
     <div class="trend-main-chart-wrap">
-      <div style="position:relative;height:280px;"><canvas id="cTrendWeekMain"></canvas></div>
+      <div style="flex:1;min-height:200px;position:relative;"><canvas id="cTrendWeekMain"></canvas></div>
     </div>
     <div class="trend-kpi-panel">${rightHTML}</div>
   </div>`;
@@ -1606,12 +1618,12 @@ function renderViewing(){
   const colLabels=slice.map(rowShortLabel);
 
   const kpiCards=[
-    {label:'VOD 시청자수',icon:'eye',value:fmtN(vodV),sub:viewerSub,delta:{cur:vodV,prev:prevVodV},sparkVals:slice.map(r=>r.vod_viewers??null)},
-    {label:'VOD 시청건수',icon:'list-numbers',value:fmtN(vodC),sub:countSub,delta:{cur:vodC,prev:prevVodC},sparkVals:slice.map(r=>r.vod_count??null)},
-    {label:'VOD 시청시간',icon:'clock',value:fmtTime(vodT),sub:'시간',delta:{cur:vodT,prev:prevVodT},sparkVals:slice.map(r=>r.vod_time??null)},
-    {label:'정주행 시청자수',icon:'eye',value:fmtN(serV),sub:viewerSub,delta:{cur:serV,prev:prevSerV},sparkVals:slice.map(r=>r.serial_viewers??null)},
-    {label:'정주행 시청건수',icon:'list-numbers',value:fmtN(serC),sub:countSub,delta:{cur:serC,prev:prevSerC},sparkVals:slice.map(r=>r.serial_count??null)},
-    {label:'정주행 시청시간',icon:'clock',value:fmtTime(serT),sub:'시간',delta:{cur:serT,prev:prevSerT},sparkVals:slice.map(r=>r.serial_time??null)},
+    {label:'VOD자수',icon:'eye',value:fmtN(vodV),sub:viewerSub,delta:{cur:vodV,prev:prevVodV},sparkVals:slice.map(r=>r.vod_viewers??null)},
+    {label:'VOD건수',icon:'list-numbers',value:fmtN(vodC),sub:countSub,delta:{cur:vodC,prev:prevVodC},sparkVals:slice.map(r=>r.vod_count??null)},
+    {label:'VOD시간',icon:'clock',value:fmtTime(vodT),sub:'시간',delta:{cur:vodT,prev:prevVodT},sparkVals:slice.map(r=>r.vod_time??null)},
+    {label:'정주행자수',icon:'eye',value:fmtN(serV),sub:viewerSub,delta:{cur:serV,prev:prevSerV},sparkVals:slice.map(r=>r.serial_viewers??null)},
+    {label:'정주행건수',icon:'list-numbers',value:fmtN(serC),sub:countSub,delta:{cur:serC,prev:prevSerC},sparkVals:slice.map(r=>r.serial_count??null)},
+    {label:'정주행시간',icon:'clock',value:fmtTime(serT),sub:'시간',delta:{cur:serT,prev:prevSerT},sparkVals:slice.map(r=>r.serial_time??null)},
   ];
   const chartConfigs=[
     {id:'cVodViewers',title:'시청자수 추이',sub:'VOD / 정주행 일평균'},
@@ -1620,12 +1632,12 @@ function renderViewing(){
   ];
   const fmtTimeV=v=>v===null?'-':(v/3600).toFixed(1)+'h';
   const metrics=[
-    {label:'VOD 시청자수',vals:slice.map(r=>r.vod_viewers??null)},
-    {label:'VOD 시청건수',vals:slice.map(r=>r.vod_count??null)},
-    {label:'VOD 시청시간',vals:slice.map(r=>r.vod_time??null),fmt:v=>v===null?'-':(v/3600).toFixed(1)+'h'},
-    {label:'정주행 시청자수',vals:slice.map(r=>r.serial_viewers??null)},
-    {label:'정주행 시청건수',vals:slice.map(r=>r.serial_count??null)},
-    {label:'정주행 시청시간',vals:slice.map(r=>r.serial_time??null),fmt:v=>v===null?'-':(v/3600).toFixed(1)+'h'},
+    {label:'VOD자수',vals:slice.map(r=>r.vod_viewers??null)},
+    {label:'VOD건수',vals:slice.map(r=>r.vod_count??null)},
+    {label:'VOD시간',vals:slice.map(r=>r.vod_time??null),fmt:v=>v===null?'-':(v/3600).toFixed(1)+'h'},
+    {label:'정주행자수',vals:slice.map(r=>r.serial_viewers??null)},
+    {label:'정주행건수',vals:slice.map(r=>r.serial_count??null)},
+    {label:'정주행시간',vals:slice.map(r=>r.serial_time??null),fmt:v=>v===null?'-':(v/3600).toFixed(1)+'h'},
   ];
 
   document.getElementById('mainContent').innerHTML=
