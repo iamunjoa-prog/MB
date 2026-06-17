@@ -230,12 +230,12 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .tbl-wrap-x tbody td.td-delta-neu{color:var(--text-hint);font-size:11px;}
 
 /* 주차별 흐름 섹션 */
-.trend-weekly-section{margin-top:16px;}
-.trend-weekly-title{font-size:13px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.trend-weekly-section{margin-top:20px;border-top:0.5px solid var(--border);padding-top:16px;}
+.trend-weekly-title{font-size:13px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
 .trend-weekly-title i{font-size:15px;color:var(--accent);}
 .trend-weekly-sub{font-size:11px;font-weight:400;color:var(--text-hint);margin-left:2px;}
-.trend-weekly-kpi-section{cursor:pointer;}
-.trend-weekly-week-label{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.05em;margin:6px 0 2px;text-transform:uppercase;}
+.trend-weekly-cur{font-size:12px;font-weight:600;color:var(--accent);min-width:90px;text-align:center;}
+.trend-weekly-week-label{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.05em;margin:6px 0 2px;}
 .trend-weekly-divider{border-top:0.5px dashed var(--border);margin:6px 0;}
 
 /* 월 트렌드 페이지 타이틀 */
@@ -834,8 +834,13 @@ function renderChart(){
     <div class="trend-weekly-title">
       <i class="ti ti-calendar-week"></i>주차별 흐름
       <span class="trend-weekly-sub" id="trendWeeklySub"></span>
+      <div class="trend-page-nav" style="margin-left:auto;">
+        <button class="menu-nav-btn" onclick="wkNavigate(-1)"><i class="ti ti-chevron-left"></i></button>
+        <span class="trend-weekly-cur" id="trendWeeklyCur"></span>
+        <button class="menu-nav-btn" onclick="wkNavigate(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
     </div>
-    <div class="trend-layout" id="trendWeeklyLayout" style="margin-bottom:0;"></div>
+    <div id="trendWeeklyBody"></div>
   </div>
   <div class="last-updated" id="lastUpdated"></div>`;
 
@@ -872,75 +877,127 @@ function renderChart(){
   if(el)el.textContent=`마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
 
   /* ── 주차별 흐름 섹션 ── */
-  // 선택 월에 속하는 주차 필터 (주 마지막일 기준)
   const selYear=cur.year, selMonth=cur.month;
-  const weekSlice=weeklyRows.filter(w=>{
+  window._trendWeekSlice=weeklyRows.filter(w=>{
     const lastDay=new Date(w.weekStart); lastDay.setDate(w.weekStart.getDate()+6);
     return lastDay.getFullYear()===selYear && lastDay.getMonth()+1===selMonth;
   });
+  window._trendWeekIdx=window._trendWeekSlice.length-1; // 최신 주차부터
 
   const subEl=document.getElementById('trendWeeklySub');
-  if(subEl) subEl.textContent=`${selYear}년 ${selMonth}월 · ${weekSlice.length}개 주차`;
+  if(subEl) subEl.textContent=`${selYear}년 ${selMonth}월 · ${window._trendWeekSlice.length}개 주차`;
 
-  if(weekSlice.length>0){
-    const wLabels=weekSlice.map(w=>getWL(w.weekStart)||`W${getWeekNo(w.weekStart)}`);
-    // 주차별 KPI 함수 (동일 형태)
-    function wKpiItemN(label,val,prevVal){
-      if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">-</span></span></div>`;
-      const d=prevVal!==null&&prevVal!==0?(val-prevVal)/Math.abs(prevVal):null;
-      let delta='';
-      if(d!==null){const icon=d>0?'▲':d<0?'▼':'';const cls=d>0?'up':d<0?'dn':'neu';delta=`<span class="trend-kpi-delta ${cls}">${icon}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;}
-      return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtN(val)}</span>${delta}</span></div>`;
-    }
+  renderWeeklyBlock();
+}
 
-    // 주차별로 마지막 주차 대비 증감 표시 (직전 주차 대비 WoW)
-    function wSection(menu, titleHtml, itemsFn){
-      return`<div class="trend-kpi-section trend-weekly-kpi-section" onclick="switchMenu('${menu}')" title="상세 보기">
-        <div class="trend-kpi-section-title">${titleHtml}<span class="drilldown-hint">→</span></div>
-        ${weekSlice.map((w,i)=>{
-          const pw=i>0?weekSlice[i-1]:null;
-          return`<div class="trend-weekly-week-label">${wLabels[i]}</div>${itemsFn(w,pw)}`;
-        }).join('<div class="trend-weekly-divider"></div>')}
-      </div>`;
-    }
+/* ── 주차별 흐름 렌더 ── */
+function wkNavigate(dir){
+  const sl=window._trendWeekSlice||[];
+  if(!sl.length)return;
+  window._trendWeekIdx=Math.max(0,Math.min(sl.length-1,(window._trendWeekIdx||0)+dir));
+  renderWeeklyBlock();
+}
 
-    const wPairing=wSection('pairing',`<i class="ti ti-wifi"></i>페어링 현황`,
-      (w,pw)=>wKpiItemN('전체',(w.pairing_valid??0)+(w.pairing_invalid??0)||null,pw?((pw.pairing_valid??0)+(pw.pairing_invalid??0)||null):null)+
-               wKpiItemN('유효단말',w.pairing_valid??null,pw?(pw.pairing_valid??null):null)+
-               wKpiItemN('비유효단말',w.pairing_invalid??null,pw?(pw.pairing_invalid??null):null));
+function renderWeeklyBlock(){
+  const sl=window._trendWeekSlice||[];
+  const body=document.getElementById('trendWeeklyBody');
+  const curEl=document.getElementById('trendWeeklyCur');
+  if(!body)return;
 
-    const wTid=wSection('tid',`<i class="ti ti-id-badge"></i>T아이디 현황`,
-      (w,pw)=>wKpiItemN('전체',w.tid??null,pw?(pw.tid??null):null)+
-               wKpiItemN('SKB',w.tid_skb??null,pw?(pw.tid_skb??null):null)+
-               wKpiItemN('타사',w.tid_other??null,pw?(pw.tid_other??null):null));
-
-    const wDau=wSection('daumau',`<i class="ti ti-users"></i>MAU 현황`,
-      (w,pw)=>wKpiItemN('DAU 평균',w.dau??null,pw?(pw.dau??null):null)+
-               wKpiItemN('MAU',w.mau??null,pw?(pw.mau??null):null));
-
-    const wVod=wSection('viewing',`<i class="ti ti-player-play" style="color:#378add"></i><span style="color:#378add">VOD 시청</span>`,
-      (w,pw)=>wKpiItemN('시청자수',w.vod_viewers??null,pw?(pw.vod_viewers??null):null)+
-               wKpiItemN('시청건수',w.vod_count??null,pw?(pw.vod_count??null):null));
-
-    const wSer=wSection('viewing',`<i class="ti ti-repeat" style="color:#ef9f27"></i><span style="color:#ef9f27">정주행 시청</span>`,
-      (w,pw)=>wKpiItemN('시청자수',w.serial_viewers??null,pw?(pw.serial_viewers??null):null)+
-               wKpiItemN('시청건수',w.serial_count??null,pw?(pw.serial_count??null):null));
-
-    // 주차 열이 많아지면 5열 그리드로
-    const wGrid=document.getElementById('trendWeeklyLayout');
-    if(wGrid){
-      wGrid.style.gridTemplateColumns=`repeat(5,1fr)`;
-      wGrid.innerHTML=`
-        <div class="trend-kpi-panel">${wPairing}</div>
-        <div class="trend-kpi-panel">${wTid}</div>
-        <div class="trend-kpi-panel">${wDau}</div>
-        <div class="trend-kpi-panel">${wVod}</div>
-        <div class="trend-kpi-panel">${wSer}</div>`;
-    }
-  } else {
-    const wGrid=document.getElementById('trendWeeklyLayout');
-    if(wGrid) wGrid.innerHTML=`<div style="font-size:12px;color:var(--text-hint);padding:8px 0;">해당 월의 주차 데이터가 없습니다.</div>`;
+  if(!sl.length){
+    body.innerHTML=`<div style="font-size:12px;color:var(--text-hint);padding:8px 0;">해당 월의 주차 데이터가 없습니다.</div>`;
+    return;
   }
+
+  const idx=window._trendWeekIdx??sl.length-1;
+  const w=sl[idx];
+  const pw=idx>0?sl[idx-1]:null;
+  const wLabel=getWL(w.weekStart)||`W${getWeekNo(w.weekStart)}`;
+  const fmtH=v=>v===null?'-':(v/3600).toFixed(1)+'h';
+
+  if(curEl) curEl.textContent=wLabel;
+
+  function wItem(label,val,prevVal){
+    if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">-</span></span></div>`;
+    const d=prevVal!==null&&prevVal!==0?(val-prevVal)/Math.abs(prevVal):null;
+    let delta='';
+    if(d!==null){const icon=d>0?'▲':d<0?'▼':'';const cls=d>0?'up':d<0?'dn':'neu';delta=`<span class="trend-kpi-delta ${cls}">${icon}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;}
+    return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtN(val)}</span>${delta}</span></div>`;
+  }
+  function wItemH(label,val){
+    return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtH(val)}</span></span></div>`;
+  }
+  function wSec(menu,titleHtml,items){
+    return`<div class="trend-kpi-section" onclick="switchMenu('${menu}')" title="상세 보기">
+      <div class="trend-kpi-section-title">${titleHtml}<span class="drilldown-hint">→</span></div>
+      ${items}
+    </div>`;
+  }
+
+  const pTotal=(w.pairing_valid??0)+(w.pairing_invalid??0)||null;
+  const pTotalPrev=pw?((pw.pairing_valid??0)+(pw.pairing_invalid??0)||null):null;
+
+  const leftHTML=
+    wSec('pairing',`<i class="ti ti-wifi"></i>페어링 현황`,
+      wItem('전체',pTotal,pTotalPrev)+
+      wItem('유효단말',w.pairing_valid??null,pw?(pw.pairing_valid??null):null)+
+      wItem('비유효단말',w.pairing_invalid??null,pw?(pw.pairing_invalid??null):null))+
+    wSec('tid',`<i class="ti ti-id-badge"></i>T아이디 현황`,
+      wItem('전체',w.tid??null,pw?(pw.tid??null):null)+
+      wItem('SKB',w.tid_skb??null,pw?(pw.tid_skb??null):null)+
+      wItem('타사',w.tid_other??null,pw?(pw.tid_other??null):null))+
+    wSec('daumau',`<i class="ti ti-users"></i>MAU 현황`,
+      wItem('DAU 평균',w.dau??null,pw?(pw.dau??null):null)+
+      wItem('MAU',w.mau??null,pw?(pw.mau??null):null));
+
+  const rightHTML=
+    wSec('viewing',`<i class="ti ti-player-play" style="color:#378add"></i><span style="color:#378add">VOD 시청</span>`,
+      wItem('시청자수',w.vod_viewers??null,pw?(pw.vod_viewers??null):null)+
+      wItem('시청건수',w.vod_count??null,pw?(pw.vod_count??null):null)+
+      wItemH('시청시간',w.vod_time??null))+
+    wSec('viewing',`<i class="ti ti-repeat" style="color:#ef9f27"></i><span style="color:#ef9f27">정주행 시청</span>`,
+      wItem('시청자수',w.serial_viewers??null,pw?(pw.serial_viewers??null):null)+
+      wItem('시청건수',w.serial_count??null,pw?(pw.serial_count??null):null)+
+      wItemH('시청시간',w.serial_time??null));
+
+  // 주차별 차트용 데이터 (해당 월 전체 주차)
+  const wLabels=sl.map(r=>getWL(r.weekStart)||`W${getWeekNo(r.weekStart)}`);
+  const wCurIdx=idx;
+
+  body.innerHTML=`<div class="trend-layout">
+    <div class="trend-kpi-panel">${leftHTML}</div>
+    <div class="trend-main-chart-wrap">
+      <div style="position:relative;height:280px;"><canvas id="cTrendWeekMain"></canvas></div>
+    </div>
+    <div class="trend-kpi-panel">${rightHTML}</div>
+  </div>`;
+
+  // 이전 주차 차트 제거
+  if(chartInstances.trendWeekMain){try{chartInstances.trendWeekMain.destroy();}catch(e){} delete chartInstances.trendWeekMain;}
+
+  const pTotalData=sl.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null);
+  const tidData=sl.map(r=>r.tid??null);
+  const dauData=sl.map(r=>r.dau??null);
+  const mauData=sl.map(r=>r.mau??null);
+  const curHL=sl.map((_,i)=>i===wCurIdx);
+
+  chartInstances.trendWeekMain=new Chart(document.getElementById('cTrendWeekMain'),{type:'bar',data:{labels:wLabels,datasets:[
+    {label:'페어링',   data:pTotalData,backgroundColor:curHL.map(b=>b?'rgba(29,158,117,0.35)':'rgba(29,158,117,0.12)'),borderColor:curHL.map(b=>b?'rgba(29,158,117,0.7)':'rgba(29,158,117,0.3)'),borderWidth:1,borderRadius:3,yAxisID:'y',order:4},
+    {label:'T아이디', data:tidData,   type:'line',borderColor:'#7f77dd',backgroundColor:'transparent',tension:0.3,borderWidth:2,pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#7f77dd':'rgba(127,119,221,0.5)'),yAxisID:'y2',order:1},
+    {label:'DAU',     data:dauData,   type:'line',borderColor:'#378add',backgroundColor:'transparent',tension:0.3,borderWidth:1.5,pointRadius:curHL.map(b=>b?4:2),pointBackgroundColor:curHL.map(b=>b?'#378add':'rgba(55,138,221,0.5)'),borderDash:[5,3],yAxisID:'y2',order:2},
+    {label:'MAU',     data:mauData,   type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,borderWidth:2,pointRadius:curHL.map(b=>b?5:2),pointBackgroundColor:curHL.map(b=>b?'#1d9e75':'rgba(29,158,117,0.5)'),yAxisID:'y2',order:3},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:10},padding:10}},
+      tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#888780',maxRotation:30,autoSkip:true,maxTicksLimit:12}},
+      y:{grid:{color:'rgba(136,135,128,0.1)'},ticks:{font:{size:9},color:'#888780',callback:fmtK},title:{display:true,text:'페어링',font:{size:9},color:'rgba(29,158,117,0.8)'}},
+      y2:{position:'right',grid:{display:false},ticks:{font:{size:9},color:'#888780',callback:fmtK},title:{display:true,text:'T아이디·DAU·MAU',font:{size:9},color:'rgba(127,119,221,0.8)'}},
+    }
+  }});
 }
 
 /* ── SHARED TABLE HELPERS ── */
