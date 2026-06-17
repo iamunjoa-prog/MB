@@ -61,7 +61,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;b
 .menu-item.active i{color:var(--accent);}
 
 /* MAIN */
-.main{margin-left:var(--sidebar-w);flex:1;padding:20px 24px;min-width:0;}
+.main{margin-left:var(--sidebar-w);flex:1;padding:20px 24px;min-width:0;overflow-x:hidden;}
 
 /* MINI KPI */
 .mini-kpi-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
@@ -230,27 +230,28 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .tbl-wrap-x tbody td.td-delta-neu{color:var(--text-hint);font-size:11px;}
 
 /* ── TREND 레이아웃 ── */
-.trend-layout{display:grid;grid-template-columns:160px 1fr 160px;gap:12px;align-items:start;margin-bottom:16px;}
-.trend-kpi-panel{display:flex;flex-direction:column;gap:8px;}
-.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
+.trend-layout{display:grid;grid-template-columns:210px 1fr 210px;gap:12px;align-items:start;margin-bottom:16px;width:100%;min-width:0;}
+.trend-kpi-panel{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
 .trend-kpi-section:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(29,158,117,0.1);}
 .trend-kpi-section:hover .trend-kpi-section-title{color:var(--accent);}
-.trend-kpi-section-title{font-size:9px;font-weight:700;color:var(--text-hint);display:flex;align-items:center;gap:4px;margin-bottom:6px;letter-spacing:.07em;text-transform:uppercase;}
+.trend-kpi-section-title{font-size:9px;font-weight:700;color:var(--text-hint);display:flex;align-items:center;gap:4px;margin-bottom:8px;letter-spacing:.07em;text-transform:uppercase;}
 .trend-kpi-section-title i{font-size:11px;}
 .trend-kpi-section-title .drilldown-hint{margin-left:auto;font-size:9px;color:var(--accent);opacity:0;transition:opacity 0.15s;}
 .trend-kpi-section:hover .drilldown-hint{opacity:1;}
-.trend-kpi-item{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:6px;padding:4px 0;border-bottom:0.5px solid var(--border);}
+.trend-kpi-item{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:6px 0;border-bottom:0.5px solid var(--border);}
 .trend-kpi-item:last-child{border-bottom:none;padding-bottom:0;}
-.trend-kpi-label{font-size:10px;color:var(--text-secondary);grid-column:1;grid-row:1;line-height:1.2;}
-.trend-kpi-val{font-size:13px;font-weight:600;color:var(--text-primary);grid-column:2;grid-row:1;text-align:right;line-height:1.2;}
-.trend-kpi-delta{font-size:9px;font-weight:500;white-space:nowrap;grid-column:2;grid-row:2;text-align:right;line-height:1.2;}
+.trend-kpi-label{font-size:11px;color:var(--text-secondary);flex-shrink:0;}
+.trend-kpi-val-wrap{display:flex;align-items:baseline;gap:5px;flex-shrink:0;}
+.trend-kpi-val{font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;}
+.trend-kpi-delta{font-size:10px;font-weight:500;white-space:nowrap;}
 .trend-kpi-delta.up{color:var(--accent);}
 .trend-kpi-delta.dn{color:var(--danger);}
 .trend-kpi-delta.neu{color:var(--text-hint);}
 
 /* 단일 차트 영역 */
-.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
-.trend-chart-title{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;min-width:0;}
+.trend-chart-title{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 
 /* 메뉴 내부 헤더 (탭 + 날짜 네비) */
 .menu-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;gap:12px;flex-wrap:wrap;}
@@ -717,18 +718,17 @@ function renderChart(){
     </div>`;
   }
   function kpiItemN(label, val, prevVal){
-    if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val">-</span></div>`;
+    if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val-wrap"><span class="trend-kpi-val">-</span></span></div>`;
     const d=prevVal!==null&&prevVal!==0?(val-prevVal)/Math.abs(prevVal):null;
-    let badge='';
+    let delta='';
     if(d!==null){
       const icon=d>0?'▲':d<0?'▼':'';
       const cls=d>0?'up':d<0?'dn':'neu';
-      badge=`<span class="trend-kpi-delta ${cls}">${icon} ${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;
+      delta=`<span class="trend-kpi-delta ${cls}">${icon}${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;
     }
     return`<div class="trend-kpi-item">
       <span class="trend-kpi-label">${label}</span>
-      <span class="trend-kpi-val">${fmtN(val)}</span>
-      ${badge}
+      <span class="trend-kpi-val-wrap"><span class="trend-kpi-val">${fmtN(val)}</span>${delta}</span>
     </div>`;
   }
 
