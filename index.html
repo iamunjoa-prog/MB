@@ -114,6 +114,14 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;b
 .beh-guide-desc{font-size:11px;color:var(--text-secondary);line-height:1.65;margin-top:2px;}
 .beh-guide-desc b{color:var(--text-primary);font-weight:600;}
 
+/* 페어링 KPI — 신규 카드 주황 강조 */
+.mini-kpi-new{border-color:rgba(239,159,39,0.45) !important;background:rgba(239,159,39,0.04);}
+.mini-kpi-new .mini-kpi-label{color:#ba7517;}
+.mini-kpi-new .mini-kpi-label i{color:#ef9f27;}
+.mini-kpi-new .sparkbar-bar{background:#ef9f27;}
+.pairing-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:0;}
+@media(max-width:900px){.pairing-kpi-row{grid-template-columns:repeat(3,1fr);}}
+
 /* 페어링 KPI 그룹 구분 */
 .kpi-group-wrap{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
 .kpi-group{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
@@ -150,9 +158,9 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .td-bold{font-weight:500;color:var(--text-primary);}
 
 /* CHARTS */
-.chart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-@media(max-width:1200px){.chart-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:720px){.chart-grid{grid-template-columns:1fr;}}
+.chart-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:14px;}
+@media(max-width:900px){.chart-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.chart-grid{grid-template-columns:1fr;}}
 .chart-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
 .chart-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:3px;}
 .chart-subtitle{font-size:11px;color:var(--text-hint);margin-bottom:10px;}
@@ -199,6 +207,38 @@ tbody td:first-child{text-align:left;color:var(--text-secondary);font-size:12px;
 .tbl-wrap-x tbody td.td-delta-up{color:var(--accent);font-size:11px;}
 .tbl-wrap-x tbody td.td-delta-dn{color:var(--danger);font-size:11px;}
 .tbl-wrap-x tbody td.td-delta-neu{color:var(--text-hint);font-size:11px;}
+
+/* ── TREND 레이아웃 ── */
+.trend-layout{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start;margin-bottom:16px;}
+.trend-kpi-panel{display:flex;flex-direction:column;gap:10px;}
+.trend-kpi-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
+.trend-kpi-section:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(29,158,117,0.12);}
+.trend-kpi-section:hover .trend-kpi-section-title{color:var(--accent);}
+.trend-kpi-section-title{font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:5px;margin-bottom:8px;letter-spacing:.04em;}
+.trend-kpi-section-title i{font-size:13px;}
+.trend-kpi-section-title .drilldown-hint{margin-left:auto;font-size:10px;color:var(--accent);opacity:0;transition:opacity 0.15s;}
+.trend-kpi-section:hover .drilldown-hint{opacity:1;}
+.trend-kpi-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border);gap:6px;}
+.trend-kpi-item:last-child{border-bottom:none;padding-bottom:0;}
+.trend-kpi-label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+.trend-kpi-val{font-size:12px;font-weight:500;color:var(--text-primary);}
+.trend-kpi-delta{font-size:10px;font-weight:500;white-space:nowrap;}
+.trend-kpi-delta.up{color:var(--accent);}
+.trend-kpi-delta.dn{color:var(--danger);}
+.trend-kpi-delta.neu{color:var(--text-hint);}
+.trend-main-chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;}
+.trend-chart-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:12px;}
+
+/* 하단 시청 */
+.trend-bottom{margin-bottom:16px;}
+.trend-bottom-title{font-size:12px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:5px;margin-bottom:8px;}
+.trend-bottom-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.trend-bottom-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color 0.15s;}
+.trend-bottom-card:hover{border-color:var(--accent);}
+.trend-bottom-card-title{font-size:11px;font-weight:500;color:var(--text-primary);margin-bottom:2px;display:flex;align-items:center;gap:4px;}
+.trend-bottom-card-title .drilldown-hint{font-size:10px;color:var(--accent);opacity:0;transition:opacity 0.15s;margin-left:4px;}
+.trend-bottom-card:hover .drilldown-hint{opacity:1;}
+.trend-bottom-card-sub{font-size:10px;color:var(--text-hint);margin-bottom:8px;}
 
 /* 메뉴 내부 헤더 (탭 + 날짜 네비) */
 .menu-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;gap:12px;flex-wrap:wrap;}
@@ -332,6 +372,8 @@ function buildDailyRows(){
 }
 
 function tidField(){return Object.keys(allData.tid?.[0]||{})[1]||'T ID 전체';}
+function tidFieldSKB(){return Object.keys(allData.tid?.[0]||{})[2]||null;}  // C열
+function tidFieldOther(){return Object.keys(allData.tid?.[0]||{})[5]||null;} // F열
 
 function buildWeeklyRows(dr){
   const weeks={};
@@ -350,9 +392,10 @@ function buildWeeklyRows(dr){
       weekStart:w.weekStart,label:getWeekLabel(w.weekStart),
       dau:avg('dau','DAU'),mau:last('dau','MAU'),
       tid:last('tid',tf),
+      tid_skb:last('tid',tidFieldSKB()),
+      tid_other:last('tid',tidFieldOther()),
       pairing_total:(last('pairing','유효단말')??0)+(last('pairing','비유효단말')??0)||null,
       pairing_valid:last('pairing','유효단말'),pairing_invalid:last('pairing','비유효단말'),
-      pairing_new:sum('pairing','신규등록'),
       pairing_new:sum('pairing','신규등록'),
       vod_viewers:avg('vod','프로필자수'),vod_count:sum('vod','시청건수'),vod_time:sum('vod','시청시간'),
       serial_viewers:avg('serial','프로필자수'),serial_count:sum('serial','시청건수'),serial_time:sum('serial','시청시간'),
@@ -377,6 +420,8 @@ function buildMonthlyRows(dr){
       year:m.year,month:m.month,label:`${m.year}년 ${m.month}월`,
       dau:avg('dau','DAU'),mau:last('dau','MAU'),
       tid:last('tid',tf),
+      tid_skb:last('tid',tidFieldSKB()),
+      tid_other:last('tid',tidFieldOther()),
       pairing_total:(last('pairing','유효단말')??0)+(last('pairing','비유효단말')??0)||null,
       pairing_valid:last('pairing','유효단말'),pairing_invalid:last('pairing','비유효단말'),
       pairing_new:sum('pairing','신규등록'),
@@ -610,126 +655,180 @@ function render(){
 
 /* ── CHART MENU ── */
 function renderChart(){
-  const timeLabel='시간';
   const rows=getRows();
   const n=12;
   const end=Math.min(currentIndex+1,rows.length);
   const slice=rows.slice(Math.max(0,end-n),end);
-  const tf=tidField();
+  const{cur,prev}=getCurPrev();
+  if(!cur){document.getElementById('mainContent').innerHTML='<div class="loading"><div class="loading-text">데이터 없음</div></div>';return;}
 
   const labels=slice.map(r=>{
-    if(currentTab==='weekly'){const ws=r.weekStart;return `${ws.getFullYear()}-${String(ws.getMonth()+1).padStart(2,'0')}-W${getWeekNo(ws)}`;}
-    return `${r.year}년 ${r.month}월`;
+    if(currentTab==='weekly'){const ws=r.weekStart;return`${ws.getFullYear()}-${String(ws.getMonth()+1).padStart(2,'0')}-W${getWeekNo(ws)}`;}
+    return`${r.year}년 ${r.month}월`;
   });
-  const g=(r,key,field,aggKey)=>r[aggKey]??null;
-  const timeDiv=3600;
 
-  const pTotal=slice.map(r=>r.pairing_total);
-  const pValid=slice.map(r=>g(r,'pairing','유효단말','pairing_valid'));
-  const pInvalid=slice.map(r=>g(r,'pairing','비유효단말','pairing_invalid'));
-  const dauA=slice.map(r=>g(r,'dau','DAU','dau'));
-  const mauA=slice.map(r=>g(r,'dau','MAU','mau'));
-  const tidA=slice.map(r=>r.tid);
-  const vodV=slice.map(r=>g(r,'vod','프로필자수','vod_viewers'));
-  const serV=slice.map(r=>g(r,'serial','프로필자수','serial_viewers'));
-  const vodC=slice.map(r=>g(r,'vod','시청건수','vod_count'));
-  const serC=slice.map(r=>g(r,'serial','시청건수','serial_count'));
-  const vodT=slice.map(r=>{const v=g(r,'vod','시청시간','vod_time');return v?v/timeDiv:null;});
-  const serT=slice.map(r=>{const v=g(r,'serial','시청시간','serial_time');return v?v/timeDiv:null;});
+  /* KPI 값 */
+  const pValid=cur.pairing_valid??null, pInvalid=cur.pairing_invalid??null;
+  const pTotal=(pValid??0)+(pInvalid??0)||null;
+  const pValidPrev=prev?(prev.pairing_valid??null):null;
+  const pInvalidPrev=prev?(prev.pairing_invalid??null):null;
+  const pTotalPrev=prev?((prev.pairing_valid??0)+(prev.pairing_invalid??0)||null):null;
+  const dauVal=cur.dau??null, dauPrev=prev?(prev.dau??null):null;
+  const mauVal=cur.mau??null, mauPrev=prev?(prev.mau??null):null;
+  const tidSkb=cur.tid_skb??null, tidSkbPrev=prev?(prev.tid_skb??null):null;
+  const tidOther=cur.tid_other??null, tidOtherPrev=prev?(prev.tid_other??null):null;
+  const tidTotal=cur.tid??null, tidTotalPrev=prev?(prev.tid??null):null;
+  const dauSub=currentTab==='weekly'?'주간 일평균':'월간 일평균';
+  const periodSub=currentTab==='weekly'?'주 마지막일':'월 마지막일';
+  const cLabel=compareLabel();
+
+  function kpiItem(label, val, prevVal, isPercPoint){
+    if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val">-</span></div>`;
+    const d=prevVal!==null&&prevVal!==0?(val-prevVal)/Math.abs(prevVal):null;
+    let badge='';
+    if(d!==null){
+      const icon=d>0?'▲':d<0?'▼':'';
+      const cls=d>0?'up':d<0?'dn':'neu';
+      const txt=isPercPoint?`${d>0?'+':''}${((val-prevVal)).toFixed(1)}%p`:`${d>0?'+':''}${(d*100).toFixed(1)}%`;
+      badge=`<span class="trend-kpi-delta ${cls}">${icon} ${txt}</span>`;
+    }
+    return`<div class="trend-kpi-item">
+      <span class="trend-kpi-label">${label}</span>
+      <span class="trend-kpi-val">${typeof val==='number'&&val>100?fmtN(val):val.toFixed?val.toFixed(1)+'%':fmtN(val)}</span>
+      ${badge}
+    </div>`;
+  }
+  function kpiItemN(label, val, prevVal){
+    if(val===null)return`<div class="trend-kpi-item"><span class="trend-kpi-label">${label}</span><span class="trend-kpi-val">-</span></div>`;
+    const d=prevVal!==null&&prevVal!==0?(val-prevVal)/Math.abs(prevVal):null;
+    let badge='';
+    if(d!==null){
+      const icon=d>0?'▲':d<0?'▼':'';
+      const cls=d>0?'up':d<0?'dn':'neu';
+      badge=`<span class="trend-kpi-delta ${cls}">${icon} ${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;
+    }
+    return`<div class="trend-kpi-item">
+      <span class="trend-kpi-label">${label}</span>
+      <span class="trend-kpi-val">${fmtN(val)}</span>
+      ${badge}
+    </div>`;
+  }
+
+  const timeDiv=3600;
+  const vodV=slice.map(r=>r.vod_viewers??null);
+  const serV=slice.map(r=>r.serial_viewers??null);
+  const vodC=slice.map(r=>r.vod_count??null);
+  const serC=slice.map(r=>r.serial_count??null);
 
   document.getElementById('mainContent').innerHTML=buildMenuHeader(false)+`
-  <div class="chart-grid">
-    <div class="chart-card chart-card-drilldown" onclick="switchMenu('pairing')" title="페어링 상세 보기">
-      <div class="chart-title">페어링 추이 <span class="drilldown-hint">상세 보기 →</span></div>
-      <div class="chart-subtitle">전체 / 유효 / 비유효</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>전체</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>유효</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#d85a30"></span>비유효</span>
+  <div class="trend-layout">
+
+    <!-- 좌측 KPI 패널 -->
+    <div class="trend-kpi-panel">
+
+      <div class="trend-kpi-section" onclick="switchMenu('pairing')" title="페어링 상세">
+        <div class="trend-kpi-section-title"><i class="ti ti-wifi"></i>페어링 현황 <span class="drilldown-hint">→</span></div>
+        ${kpiItemN('전체',pTotal,pTotalPrev)}
+        ${kpiItemN('유효단말',pValid,pValidPrev)}
+        ${kpiItemN('비유효단말',pInvalid,pInvalidPrev)}
       </div>
-      <div class="chart-canvas-wrap"><canvas id="cPairing" role="img" aria-label="페어링 추이">페어링 추이</canvas></div>
-    </div>
-    <div class="chart-card chart-card-drilldown" onclick="switchMenu('daumau')" title="DAU·MAU 상세 보기">
-      <div class="chart-title">DAU / MAU 추이 <span class="drilldown-hint">상세 보기 →</span></div>
-      <div class="chart-subtitle" id="dauChartSub"></div>
-      <div class="chart-legend" id="dauChartLegend"></div>
-      <div class="chart-canvas-wrap"><canvas id="cDau" role="img" aria-label="DAU MAU 추이">DAU/MAU 추이</canvas></div>
-    </div>
-    <div class="chart-card chart-card-drilldown" onclick="switchMenu('tid')" title="T아이디 상세 보기">
-      <div class="chart-title">T아이디 추이 <span class="drilldown-hint">상세 보기 →</span></div>
-      <div class="chart-subtitle">누적 연동 고객수</div>
-      <div class="chart-legend"><span class="legend-item"><span class="legend-dot" style="background:#7f77dd"></span>T아이디</span></div>
-      <div class="chart-canvas-wrap"><canvas id="cTid" role="img" aria-label="T아이디 추이">T아이디 추이</canvas></div>
-    </div>
-    <div class="chart-card chart-card-drilldown" onclick="switchMenu('viewing')" title="시청 상세 보기">
-      <div class="chart-title">시청자수 추이 <span class="drilldown-hint">상세 보기 →</span></div>
-      <div class="chart-subtitle">VOD / 정주행 (중복 고객 존재)</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
+
+      <div class="trend-kpi-section" onclick="switchMenu('tid')" title="T아이디 상세">
+        <div class="trend-kpi-section-title"><i class="ti ti-id-badge"></i>T아이디 현황 <span class="drilldown-hint">→</span></div>
+        ${kpiItemN('전체',tidTotal,tidTotalPrev)}
+        ${kpiItemN('SKB',tidSkb,tidSkbPrev)}
+        ${kpiItemN('타사',tidOther,tidOtherPrev)}
       </div>
-      <div class="chart-canvas-wrap"><canvas id="cViewers" role="img" aria-label="시청자수 추이">시청자수 추이</canvas></div>
-    </div>
-    <div class="chart-card chart-card-drilldown" onclick="switchMenu('viewing')" title="시청 상세 보기">
-      <div class="chart-title">시청건수 추이 <span class="drilldown-hint">상세 보기 →</span></div>
-      <div class="chart-subtitle">VOD / 정주행</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
+
+      <div class="trend-kpi-section" onclick="switchMenu('daumau')" title="DAU·MAU 상세">
+        <div class="trend-kpi-section-title"><i class="ti ti-users"></i>MAU 현황 <span class="drilldown-hint">→</span></div>
+        ${kpiItemN('DAU 평균',dauVal,dauPrev)}
+        ${kpiItemN('MAU',mauVal,mauPrev)}
       </div>
-      <div class="chart-canvas-wrap"><canvas id="cCount" role="img" aria-label="시청건수 추이">시청건수 추이</canvas></div>
+
     </div>
-    <div class="chart-card chart-card-drilldown" onclick="switchMenu('viewing')" title="시청 상세 보기">
-      <div class="chart-title">시청시간 추이 <span class="drilldown-hint">상세 보기 →</span></div>
-      <div class="chart-subtitle">VOD / 정주행 ${timeUnitLabel()}</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#378add"></span>VOD</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#ef9f27"></span>정주행</span>
+
+    <!-- 중앙 메인 차트 -->
+    <div class="trend-main-chart-wrap">
+      <div class="trend-chart-title">페어링 · DAU/MAU · T아이디 추이</div>
+      <div class="trend-chart-legend" id="trendLegend"></div>
+      <div style="position:relative;height:320px;"><canvas id="cTrendMain"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- 하단 시청 차트 -->
+  <div class="trend-bottom">
+    <div class="trend-bottom-title"><i class="ti ti-player-play"></i>시청 현황</div>
+    <div class="trend-bottom-charts">
+      <div class="trend-bottom-card" onclick="switchMenu('viewing')" title="시청 상세">
+        <div class="trend-bottom-card-title">시청자수 추이 <span class="drilldown-hint">→</span></div>
+        <div class="trend-bottom-card-sub">VOD / 정주행</div>
+        <div style="position:relative;height:110px;"><canvas id="cTrendViewers"></canvas></div>
       </div>
-      <div class="chart-canvas-wrap"><canvas id="cTime" role="img" aria-label="시청시간 추이">시청시간 추이</canvas></div>
+      <div class="trend-bottom-card" onclick="switchMenu('viewing')" title="시청 상세">
+        <div class="trend-bottom-card-title">시청건수 추이 <span class="drilldown-hint">→</span></div>
+        <div class="trend-bottom-card-sub">VOD / 정주행</div>
+        <div style="position:relative;height:110px;"><canvas id="cTrendCount"></canvas></div>
+      </div>
+      <div class="trend-bottom-card" onclick="switchMenu('viewing')" title="시청 상세">
+        <div class="trend-bottom-card-title">시청시간 추이 <span class="drilldown-hint">→</span></div>
+        <div class="trend-bottom-card-sub">VOD / 정주행 (시간)</div>
+        <div style="position:relative;height:110px;"><canvas id="cTrendTime"></canvas></div>
+      </div>
     </div>
   </div>
   <div class="last-updated" id="lastUpdated"></div>`;
 
-  const bo=baseOpts();
-  chartInstances.pairing=new Chart(document.getElementById('cPairing'),{type:'line',data:{labels,datasets:[
-    {label:'전체',data:pTotal,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.07)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
-    {label:'유효',data:pValid,borderColor:'#378add',tension:0.3,pointRadius:2,borderDash:[4,3],borderWidth:1.5},
-    {label:'비유효',data:pInvalid,borderColor:'#d85a30',tension:0.3,pointRadius:2,borderDash:[2,4],borderWidth:1.5},
-  ]},options:bo});
-  const dauOpts={...bo,scales:{...bo.scales,y2:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888780',callback:v=>fmtK(v)}}}};
-  const dauSubEl=document.getElementById('dauChartSub');
-  const dauLegEl=document.getElementById('dauChartLegend');
-  if(currentTab==='weekly'){
-    if(dauSubEl)dauSubEl.textContent='DAU 주간 일평균';
-    if(dauLegEl)dauLegEl.innerHTML='<span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span>';
-    chartInstances.dau=new Chart(document.getElementById('cDau'),{type:'bar',data:{labels,datasets:[
-      {label:'DAU 평균',data:dauA,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3},
-    ]},options:bo});
-  } else {
-    if(dauSubEl)dauSubEl.textContent='DAU 월평균 바 · MAU 라인(우축)';
-    if(dauLegEl)dauLegEl.innerHTML='<span class="legend-item"><span class="legend-dot" style="background:#378add"></span>DAU</span><span class="legend-item"><span class="legend-dot" style="background:#1d9e75"></span>MAU</span>';
-    chartInstances.dau=new Chart(document.getElementById('cDau'),{type:'bar',data:{labels,datasets:[
-      {label:'DAU',data:dauA,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3,yAxisID:'y'},
-      {label:'MAU',data:mauA,type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,pointRadius:2,borderWidth:2,yAxisID:'y2'},
-    ]},options:dauOpts});
-  }
-  chartInstances.tid=new Chart(document.getElementById('cTid'),{type:'line',data:{labels,datasets:[
-    {label:'T아이디',data:tidA,borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.07)',tension:0.3,pointRadius:2,fill:true,borderWidth:2},
-  ]},options:bo});
-  chartInstances.viewers=new Chart(document.getElementById('cViewers'),{type:'line',data:{labels,datasets:[
-    {label:'VOD',data:vodV,borderColor:'#378add',tension:0.3,pointRadius:2,borderWidth:2},
-    {label:'정주행',data:serV,borderColor:'#ef9f27',tension:0.3,pointRadius:2,borderWidth:2,borderDash:[4,3]},
-  ]},options:bo});
-  chartInstances.count=new Chart(document.getElementById('cCount'),{type:'bar',data:{labels,datasets:[
-    {label:'VOD',data:vodC,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3},
-    {label:'정주행',data:serC,backgroundColor:'rgba(239,159,39,0.6)',borderRadius:3},
-  ]},options:bo});
-  const timeOpts={...JSON.parse(JSON.stringify(bo)),scales:{...bo.scales,y:{...bo.scales.y,ticks:{...bo.scales.y.ticks,callback:v=>`${v.toFixed(1)}${timeLabel}` }}}};
-  chartInstances.time=new Chart(document.getElementById('cTime'),{type:'bar',data:{labels,datasets:[
-    {label:'VOD',data:vodT,backgroundColor:'rgba(55,138,221,0.6)',borderRadius:3},
-    {label:'정주행',data:serT,backgroundColor:'rgba(239,159,39,0.6)',borderRadius:3},
-  ]},options:timeOpts});
+  /* ── 메인 차트: 페어링(bar) + DAU(line 좌) + T아이디(line 우) ── */
+  const pTotalData=slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null);
+  const dauData=slice.map(r=>r.dau??null);
+  const tidData=slice.map(r=>r.tid??null);
+  const mauData=slice.map(r=>r.mau??null);
+
+  const mainOpts={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:true,position:'top',labels:{boxWidth:12,font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#888780',maxRotation:45,autoSkip:true,maxTicksLimit:12}},
+      y:{grid:{color:'rgba(136,135,128,0.13)'},ticks:{font:{size:10},color:'#1d9e75',callback:fmtK},title:{display:true,text:'페어링',font:{size:9},color:'#1d9e75'}},
+      y2:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#378add',callback:fmtK},title:{display:true,text:'DAU/MAU',font:{size:9},color:'#378add'}},
+      y3:{position:'right',grid:{display:false},ticks:{font:{size:10},color:'#7f77dd',callback:fmtK},title:{display:true,text:'T아이디',font:{size:9},color:'#7f77dd'},offset:true},
+    }
+  };
+
+  chartInstances.trendMain=new Chart(document.getElementById('cTrendMain'),{type:'bar',data:{labels,datasets:[
+    {label:'페어링 전체',data:pTotalData,backgroundColor:'rgba(29,158,117,0.25)',borderColor:'#1d9e75',borderWidth:1,borderRadius:3,yAxisID:'y',order:2},
+    {label:'MAU',data:mauData,type:'line',borderColor:'#1d9e75',backgroundColor:'transparent',tension:0.3,borderWidth:2,pointRadius:2,borderDash:[5,3],yAxisID:'y',order:1},
+    {label:'DAU',data:dauData,type:'line',borderColor:'#378add',backgroundColor:'transparent',tension:0.3,borderWidth:2,pointRadius:2,yAxisID:'y2',order:1},
+    {label:'T아이디',data:tidData,type:'line',borderColor:'#7f77dd',backgroundColor:'transparent',tension:0.3,borderWidth:2,pointRadius:2,yAxisID:'y3',order:1},
+  ]},options:mainOpts});
+
+  /* ── 하단 시청 소형 차트 ── */
+  const smOpts={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,font:{size:9}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ko-KR')}`}}},
+    scales:{x:{display:false},y:{display:false}}
+  };
+  chartInstances.trendViewers=new Chart(document.getElementById('cTrendViewers'),{type:'line',data:{labels,datasets:[
+    {label:'VOD',data:vodV,borderColor:'#378add',tension:0.3,pointRadius:0,borderWidth:1.5,fill:false},
+    {label:'정주행',data:serV,borderColor:'#ef9f27',tension:0.3,pointRadius:0,borderWidth:1.5,borderDash:[3,2],fill:false},
+  ]},options:smOpts});
+  chartInstances.trendCount=new Chart(document.getElementById('cTrendCount'),{type:'line',data:{labels,datasets:[
+    {label:'VOD',data:vodC,borderColor:'#378add',tension:0.3,pointRadius:0,borderWidth:1.5,fill:false},
+    {label:'정주행',data:serC,borderColor:'#ef9f27',tension:0.3,pointRadius:0,borderWidth:1.5,borderDash:[3,2],fill:false},
+  ]},options:smOpts});
+  const vodT=slice.map(r=>r.vod_time?(r.vod_time/3600):null);
+  const serT=slice.map(r=>r.serial_time?(r.serial_time/3600):null);
+  const timeSmOpts={...smOpts,plugins:{...smOpts.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}h`}}}};
+  chartInstances.trendTime=new Chart(document.getElementById('cTrendTime'),{type:'line',data:{labels,datasets:[
+    {label:'VOD',data:vodT,borderColor:'#378add',tension:0.3,pointRadius:0,borderWidth:1.5,fill:false},
+    {label:'정주행',data:serT,borderColor:'#ef9f27',tension:0.3,pointRadius:0,borderWidth:1.5,borderDash:[3,2],fill:false},
+  ]},options:timeSmOpts});
+
   const el=document.getElementById('lastUpdated');
   if(el)el.textContent=`마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
 }
@@ -827,13 +926,12 @@ function baseOptsDetail(timeCallback){
   return o;
 }
 
-/* ── PAIRING 전용: KPI를 유효/비유효 그룹 | 신규 그룹으로 분리 렌더 ── */
+/* ── PAIRING 전용: 5개 한 줄, 신규 카드만 주황 강조 ── */
 function buildKpiSectionPairing(kpiCards, chartConfigs, sliceArr){
   const n=sliceArr.length; const curIdx=n-1;
-  const validCards=kpiCards.filter(k=>k.kpiGroup!=='new');
-  const newCards=kpiCards.filter(k=>k.kpiGroup==='new');
 
   function renderCard(k){
+    const isNew=k.kpiGroup==='new';
     const d=k.delta?fmtDelta(k.delta.cur,k.delta.prev):null;
     const icon=d?(d.cls==='up'?'▲':d.cls==='down'?'▼':''):'';
     const badge=d?`<span class="mini-badge ${d.cls}">${icon} ${d.text}</span>`:'';
@@ -852,7 +950,8 @@ function buildKpiSectionPairing(kpiCards, chartConfigs, sliceArr){
       return`<div class="mini-kpi-mom"><i class="ti ti-calendar-month" aria-hidden="true"></i>전월 동기간 ${momDisp}${momDelta}</div>`;
     })();
     const spark=k.sparkVals?sparkbarHtml(k.sparkVals,curIdx):'';
-    return`<div class="mini-kpi${k.accent?' accent':''}">
+    const extraCls=(k.accent?' accent':'')+(isNew?' mini-kpi-new':'');
+    return`<div class="mini-kpi${extraCls}">
       <div class="mini-kpi-label"><i class="ti ti-${k.icon}" aria-hidden="true"></i>${k.label}</div>
       <div class="mini-kpi-value">${k.value}</div>
       ${k.sub?`<div class="mini-kpi-sub">${k.sub}</div>`:''}
@@ -868,17 +967,8 @@ function buildKpiSectionPairing(kpiCards, chartConfigs, sliceArr){
       <div class="detail-chart-wrap"><canvas id="${c.id}"></canvas></div>
     </div>`).join('');
 
-  return`<div class="kpi-group-wrap">
-    <div class="kpi-group">
-      <div class="kpi-group-label"><i class="ti ti-device-mobile-check"></i>유효 · 비유효</div>
-      <div class="mini-kpi-row">${validCards.map(renderCard).join('')}</div>
-    </div>
-    <div class="kpi-group kpi-group-new">
-      <div class="kpi-group-label new-label"><i class="ti ti-device-mobile-plus"></i>신규 단말</div>
-      <div class="mini-kpi-row">${newCards.map(renderCard).join('')}</div>
-    </div>
-  </div>
-  <div class="detail-chart-grid" style="grid-template-columns:${cols}">${chartCards}</div>`;
+  return`<div class="mini-kpi-row pairing-kpi-row">${kpiCards.map(renderCard).join('')}</div>
+  <div class="detail-chart-grid" style="grid-template-columns:${cols};margin-top:16px;">${chartCards}</div>`;
 }
 
 /* 신규 섹션 전용 전치표 (주황 테마) */
@@ -927,27 +1017,41 @@ function renderPairing(){
   const momPI=mdr?.pairing?num(mdr.pairing['비유효단말']):null;
   const momPT=(momPV??0)+(momPI??0)||null;
   const momVR=momPT?(momPV/momPT*100):null;
+  // 신규: 전월 동기간 = dailyRows에서 전월 1일~동일일 누적합
+  const momDay=mom.momDay;
+  const momStart=new Date(momDay.getFullYear(),momDay.getMonth(),1).toISOString().slice(0,10);
+  const momEnd=momDay.toISOString().slice(0,10);
+  const momPNew=dailyRows.filter(r=>{const dk=r.date.toISOString().slice(0,10);return dk>=momStart&&dk<=momEnd&&r.pairing?.['신규등록'];})
+    .reduce((s,r)=>s+num(r.pairing['신규등록']),0)||null;
+  const momNR=momPT&&momPNew?(momPNew/momPT*100):null;
 
   const slice=getSlice(); const curIdx=slice.length-1; const colLabels=slice.map(rowShortLabel);
   const curHL=slice.map((_,i)=>i===curIdx);
 
   const kpiCards=[
+    // 1. 페어링 전체
     {label:'페어링 전체',icon:'wifi',value:fmtN(pTotal),sub:periodSub,
      delta:{cur:pTotal,prev:pTotalPrev},accent:true,momVal:momPT,
      sparkVals:slice.map(r=>(r.pairing_valid??0)+(r.pairing_invalid??0)||null)},
+    // 2. 신규 단말 — 주간이면 WoW+전월동기간, 월간이면 MoM
+    {label:'신규 단말',icon:'device-mobile-plus',value:fmtN(pNew),sub:newSub,
+     delta:{cur:pNew,prev:pNewPrev},kpiGroup:'new',
+     momVal:momPNew,
+     sparkVals:slice.map(r=>r.pairing_new??null)},
+    // 3. 유효단말
     {label:'유효단말',icon:'device-mobile-check',value:fmtN(pValid),sub:periodSub,
      delta:{cur:pValid,prev:pValidPrev},momVal:momPV,
      sparkVals:slice.map(r=>r.pairing_valid??null)},
+    // 4. 유효비율
     {label:'유효비율',icon:'chart-pie',value:fmtRatio(validRatio),
      sub:`${fmtN(pValid)} / ${fmtN(pTotal)}`,
      delta:{cur:validRatio,prev:validRatioPrev},momVal:momVR,momFmt:fmtRatio,
      sparkVals:slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return t?(r.pairing_valid/t*100):null;})},
-    {label:'신규 단말',icon:'device-mobile-plus',value:fmtN(pNew),sub:newSub,
-     delta:{cur:pNew,prev:pNewPrev},kpiGroup:'new',
-     sparkVals:slice.map(r=>r.pairing_new??null)},
+    // 5. 신규 비중
     {label:'신규 비중',icon:'chart-donut',value:fmtRatio(newRatio),
      sub:`${fmtN(pNew)} / ${fmtN(pTotal)}`,
      delta:{cur:newRatio,prev:newRatioPrev},kpiGroup:'new',
+     momVal:momNR,momFmt:fmtRatio,
      sparkVals:slice.map(r=>{const t=(r.pairing_valid??0)+(r.pairing_invalid??0)||null;return(r.pairing_new&&t)?(r.pairing_new/t*100):null;})},
   ];
 
