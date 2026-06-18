@@ -30,6 +30,16 @@
     color: var(--text-primary);
     min-height: 100vh;
     display: flex;
+    overflow-x: hidden;
+  }
+
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+    padding: 32px 36px;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   /* ── 사이드바 ── */
@@ -107,12 +117,6 @@
   .data-source span { color: var(--accent); font-weight: 500; }
 
   /* ── 메인 ── */
-  .main {
-    margin-left: var(--sidebar-w);
-    flex: 1;
-    min-height: 100vh;
-    padding: 32px 36px;
-  }
 
   .page-header {
     display: flex;
@@ -401,9 +405,12 @@
   }
   .table-scroll {
     overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
   }
   .mau-table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: 13px;
     table-layout: auto;
@@ -537,8 +544,11 @@
     <!-- 중앙 차트 컬럼 -->
     <div class="charts-col">
       <div class="chart-card">
-        <div class="chart-title">MAU Trend</div>
-        <div class="chart-sub">월별 변화</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+          <div class="chart-title">MAU Trend</div>
+          <button class="dl-btn" onclick="openTrendPopup()" style="font-size:11px;padding:4px 10px;">전체 기간 ↗</button>
+        </div>
+        <div class="chart-sub">최근 12개월</div>
         <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
       </div>
       <div class="chart-card">
@@ -590,6 +600,22 @@
 
 </main>
 
+<!-- 전체 기간 팝업 -->
+<div id="trend-popup" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 32px;width:min(90vw,860px);box-shadow:0 24px 60px rgba(0,0,0,0.18);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1d1d1f;">MAU Trend — 전체 기간</div>
+        <div style="font-size:11px;color:#aeaeb2;margin-top:2px;">전체 데이터 기준</div>
+      </div>
+      <button onclick="closeTrendPopup()" style="font-size:18px;background:none;border:none;cursor:pointer;color:#6e6e73;line-height:1;">✕</button>
+    </div>
+    <div style="position:relative;height:320px;">
+      <canvas id="trend-chart-full"></canvas>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════
 // ① 설정: 구글 시트 ID를 여기에 입력하세요
@@ -640,7 +666,7 @@ let miniChart     = null;
 // 구글 시트 CSV 로드
 // ══════════════════════════════════════════════
 async function loadData() {
-  if (SHEET_ID === '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY') {
+  if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
     useSampleData();
     return;
   }
@@ -875,12 +901,15 @@ function renderMiniChart() {
   });
 }
 
-function renderTrendChart() {
-  const labels = months.map(m => formatMonth(m, true));
+function buildTrendDatasets(targetMonths) {
+  const labels = targetMonths.map(m => {
+    const y = m.slice(0,4), mo = parseInt(m.slice(4,6),10);
+    return `${y.slice(2)}년 ${mo}월`;
+  });
   const datasets = [
     {
       label: '전체',
-      data: months.map(m => (getMonthData(m)[TOTAL_KEY] || 0) / 10000),
+      data: targetMonths.map(m => (getMonthData(m)[TOTAL_KEY] || 0) / 10000),
       borderColor: TOTAL_COLOR,
       backgroundColor: 'transparent',
       borderWidth: 2.5,
@@ -890,7 +919,7 @@ function renderTrendChart() {
     },
     ...SEGMENTS.map(seg => ({
       label: seg.label,
-      data: months.map(m => (getMonthData(m)[seg.key] || 0) / 10000),
+      data: targetMonths.map(m => (getMonthData(m)[seg.key] || 0) / 10000),
       borderColor: seg.color,
       backgroundColor: 'transparent',
       borderWidth: 1.5,
@@ -899,46 +928,61 @@ function renderTrendChart() {
       tension: 0.35,
     }))
   ];
+  return { labels, datasets };
+}
+
+function trendChartOptions() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { font: { size: 11, family: '-apple-system' }, boxWidth: 12, padding: 16, usePointStyle: true }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(255,255,255,0.95)',
+        titleColor: '#1d1d1f',
+        bodyColor: '#6e6e73',
+        borderColor: 'rgba(0,0,0,0.08)',
+        borderWidth: 1,
+        padding: 10,
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}만명` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#aeaeb2' } },
+      y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 11 }, color: '#aeaeb2', callback: v => v + '만' } }
+    }
+  };
+}
+
+function renderTrendChart() {
+  // 최근 12개월만
+  const recent12 = months.slice(-12);
+  const { labels, datasets } = buildTrendDatasets(recent12);
 
   if (trendChart) trendChart.destroy();
   const ctx = document.getElementById('trend-chart').getContext('2d');
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { font: { size: 11, family: '-apple-system' }, boxWidth: 12, padding: 16, usePointStyle: true }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(255,255,255,0.95)',
-          titleColor: '#1d1d1f',
-          bodyColor: '#6e6e73',
-          borderColor: 'rgba(0,0,0,0.08)',
-          borderWidth: 1,
-          padding: 10,
-          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}만명` }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { size: 11 }, color: '#aeaeb2' }
-        },
-        y: {
-          grid: { color: 'rgba(0,0,0,0.04)' },
-          ticks: {
-            font: { size: 11 }, color: '#aeaeb2',
-            callback: v => v + '만'
-          }
-        }
-      }
-    }
-  });
+  trendChart = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: trendChartOptions() });
+}
+
+let trendFullChart = null;
+
+function openTrendPopup() {
+  const popup = document.getElementById('trend-popup');
+  popup.style.display = 'flex';
+
+  const { labels, datasets } = buildTrendDatasets(months);
+  if (trendFullChart) trendFullChart.destroy();
+  const ctx = document.getElementById('trend-chart-full').getContext('2d');
+  trendFullChart = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: trendChartOptions() });
+}
+
+function closeTrendPopup() {
+  document.getElementById('trend-popup').style.display = 'none';
+  if (trendFullChart) { trendFullChart.destroy(); trendFullChart = null; }
 }
 
 function renderRatioChart(thisData, totalUV, prevData, prevTotalUV, selMonth, prevMonth) {
@@ -1012,7 +1056,8 @@ function renderRatioChart(thisData, totalUV, prevData, prevTotalUV, selMonth, pr
 }
 
 function renderMAUTable() {
-  // 행 순서: 전체 MAU → 하위 고객군 (요청 순서)
+  const selMonth = document.getElementById('month-select').value;
+
   const TABLE_ROWS = [
     { key: TOTAL_KEY,         label: 'MAU',    isTotal: true },
     { key: '10_Btv연결',      label: '페어링', isTotal: false },
@@ -1022,13 +1067,18 @@ function renderMAUTable() {
     { key: '08_VOD구매',      label: '구매',   isTotal: false },
   ];
 
-  // 헤더: 행 레이블 + 월 목록
+  // 헤더: 해당 월 파란색 강조
   const thead = document.getElementById('table-head');
   thead.innerHTML = `<th>고객군</th>` +
     months.map(m => {
-      const y = m.slice(0,4);
+      const y  = m.slice(0,4);
       const mo = parseInt(m.slice(4,6), 10);
-      return `<th>${y.slice(2)}년 ${mo}월</th>`;
+      const isSelected = m === selMonth;
+      const style = isSelected
+        ? 'background:#0071e3;color:#fff;border-bottom:2px solid #0071e3;'
+        : '';
+      const id = isSelected ? 'th-selected' : '';
+      return `<th ${id ? `id="${id}"` : ''} style="${style}">${y.slice(2)}년 ${mo}월</th>`;
     }).join('');
 
   // 본문
@@ -1039,13 +1089,12 @@ function renderMAUTable() {
     const tr = document.createElement('tr');
     tr.className = row.isTotal ? 'row-total' : 'row-seg';
 
-    // 행 레이블
     let labelCell = `<td>${row.isTotal ? '' : '　'}${row.label}</td>`;
 
-    // 월별 값 + MoM
     const cells = months.map((m, i) => {
       const cur  = (getMonthData(m)[row.key] || 0);
       const prev = i > 0 ? (getMonthData(months[i-1])[row.key] || 0) : null;
+      const isSelected = m === selMonth;
 
       const valStr = cur >= 10000
         ? (cur / 10000).toFixed(1) + '만'
@@ -1060,11 +1109,27 @@ function renderMAUTable() {
         else               momStr = `<span class="cell-flat">—</span>`;
       }
 
-      return `<td>${valStr}${momStr ? `<br><span style="font-size:10px;">${momStr}</span>` : ''}</td>`;
+      const cellStyle = isSelected
+        ? 'style="background:#f0f6ff;font-weight:600;color:#0071e3;"'
+        : '';
+
+      return `<td ${cellStyle}>${valStr}${momStr ? `<br><span style="font-size:10px;">${momStr}</span>` : ''}</td>`;
     }).join('');
 
     tr.innerHTML = labelCell + cells;
     tbody.appendChild(tr);
+  });
+
+  // 해당 월 컬럼으로 자동 스크롤
+  requestAnimationFrame(() => {
+    const thSelected = document.getElementById('th-selected');
+    const scrollWrap = document.querySelector('.table-scroll');
+    if (thSelected && scrollWrap) {
+      const thLeft    = thSelected.offsetLeft;
+      const thWidth   = thSelected.offsetWidth;
+      const wrapWidth = scrollWrap.offsetWidth;
+      scrollWrap.scrollLeft = thLeft - wrapWidth / 2 + thWidth / 2;
+    }
   });
 }
 
@@ -1170,6 +1235,11 @@ async function downloadImage() {
   a.download = `MAU_상세DATA_${new Date().toISOString().slice(0,10)}.png`;
   a.click();
 }
+
+// 팝업 바깥 클릭 시 닫기
+document.getElementById('trend-popup').addEventListener('click', function(e) {
+  if (e.target === this) closeTrendPopup();
+});
 
 // ══════════════════════════════════════════════
 // 시작
