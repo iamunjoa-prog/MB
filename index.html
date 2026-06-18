@@ -608,7 +608,10 @@
         <div style="font-size:15px;font-weight:700;color:#1d1d1f;">MAU Trend — 전체 기간</div>
         <div style="font-size:11px;color:#aeaeb2;margin-top:2px;">전체 데이터 기준</div>
       </div>
-      <button onclick="closeTrendPopup()" style="font-size:18px;background:none;border:none;cursor:pointer;color:#6e6e73;line-height:1;">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="dl-btn" onclick="downloadTrendImage()">🖼 이미지 저장</button>
+        <button onclick="closeTrendPopup()" style="font-size:18px;background:none;border:none;cursor:pointer;color:#6e6e73;line-height:1;">✕</button>
+      </div>
     </div>
     <div style="position:relative;height:320px;">
       <canvas id="trend-chart-full"></canvas>
@@ -666,13 +669,13 @@ let miniChart     = null;
 // 구글 시트 CSV 로드
 // ══════════════════════════════════════════════
 async function loadData() {
-  if (SHEET_ID === '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY') {
+  if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
     useSampleData();
     return;
   }
 
   // export 방식 — 탭 구분 TSV로 받아서 인코딩 문제 우회
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}&t=${Date.now()}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=UV&t=${Date.now()}`;
 
   try {
     const res = await fetch(url);
@@ -755,7 +758,6 @@ function parseCSV(text) {
 
 function useSampleData() {
   allData = SAMPLE.map(([dateCode, segment, uv]) => ({ dateCode, segment, uv }));
-  showBanner('📋 샘플 데이터 미리보기 — SHEET_ID를 입력하면 실제 데이터로 연결됩니다.', 'info');
   buildMonthList();
   initMonthSelect();
   renderPage();
@@ -980,6 +982,21 @@ function openTrendPopup() {
   trendFullChart = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: trendChartOptions() });
 }
 
+async function downloadTrendImage() {
+  if (!window.html2canvas) {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    document.head.appendChild(script);
+    await new Promise(res => script.onload = res);
+  }
+  const target = document.getElementById('trend-popup').querySelector('div');
+  const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#ffffff' });
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `MAU_Trend_전체기간_${new Date().toISOString().slice(0,10)}.png`;
+  a.click();
+}
+
 function closeTrendPopup() {
   document.getElementById('trend-popup').style.display = 'none';
   if (trendFullChart) { trendFullChart.destroy(); trendFullChart = null; }
@@ -1010,13 +1027,15 @@ function renderRatioChart(thisData, totalUV, prevData, prevTotalUV, selMonth, pr
             position: 'bottom',
             labels: {
               font: { size: 10, family: '-apple-system' },
-              boxWidth: 8, padding: 8,
-              usePointStyle: true,
+              boxWidth: 8,
+              boxHeight: 8,
+              padding: 8,
+              usePointStyle: false,
               generateLabels: chart => {
                 return chart.data.labels.map((lbl, i) => {
                   const val = chart.data.datasets[0].data[i];
                   const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
-                  return { text: `${lbl} ${pct}%`, fillStyle: colors[i], hidden: false, index: i };
+                  return { text: `${lbl} ${pct}%`, fillStyle: colors[i], strokeStyle: colors[i], hidden: false, index: i };
                 });
               }
             }
