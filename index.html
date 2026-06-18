@@ -764,8 +764,8 @@
         </div>
         <div class="chart-card">
           <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
-            <div class="chart-title">유효·휴면 비중</div>
-            <div class="chart-sub" style="margin-bottom:0;">STB·단말 기준 비교</div>
+            <div class="chart-title">유효·휴면 Trend</div>
+            <div class="chart-sub" style="margin-bottom:0;">단말 기준 월별</div>
           </div>
           <div class="chart-wrap"><canvas id="pairing-ratio-chart"></canvas></div>
         </div>
@@ -1833,10 +1833,10 @@ function renderTidKPI(thisData, prevData, selMonth, prevMonth) {
   `;
   leftCol.appendChild(totalCard);
 
-  // 자사, 페어링 → 좌
+  // 자사(SKB), 타사(Non-SKB) → 좌
   [
-    { key: '자사',    color: '#e8820c', topColor: '#e8820c' },
-    { key: '페어링', color: '#f5a34e', topColor: '#f5a34e' },
+    { key: '자사',  label: '자사 (SKB)',      topColor: '#e8820c' },
+    { key: '타사',  label: '타사 (Non-SKB)', topColor: '#d4a05a' },
   ].forEach(seg => {
     const val  = thisData[seg.key] || 0;
     const prev = prevData?.[seg.key] || 0;
@@ -1845,17 +1845,17 @@ function renderTidKPI(thisData, prevData, selMonth, prevMonth) {
     card.className = 'kpi-card';
     card.innerHTML = `
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${seg.topColor};border-radius:14px 14px 0 0;"></div>
-      <div class="c-label">${seg.key}</div>
+      <div class="c-label">${seg.label}</div>
       <div class="c-value">${fmt(val)}<span>명</span></div>
       <div class="c-meta">${momBadge(val,prev)}<span class="ratio-pill">비중 ${ratio}%</span></div>
     `;
     leftCol.appendChild(card);
   });
 
-  // 미페어링, 타사 → 우
+  // 페어링, 미페어링 → 우
   [
-    { key: '미페어링', color: '#f9c88a', topColor: '#f9c88a' },
-    { key: '타사',     color: '#fde4c0', topColor: '#d4a05a' },
+    { key: '페어링',  label: '페어링',   topColor: '#f5a34e' },
+    { key: '미페어링',label: '미페어링', topColor: '#f9c88a' },
   ].forEach(seg => {
     const val  = thisData[seg.key] || 0;
     const prev = prevData?.[seg.key] || 0;
@@ -1864,7 +1864,7 @@ function renderTidKPI(thisData, prevData, selMonth, prevMonth) {
     card.className = 'kpi-card';
     card.innerHTML = `
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${seg.topColor};border-radius:14px 14px 0 0;"></div>
-      <div class="c-label">${seg.key}</div>
+      <div class="c-label">${seg.label}</div>
       <div class="c-value">${fmt(val)}<span>명</span></div>
       <div class="c-meta">${momBadge(val,prev)}<span class="ratio-pill">비중 ${ratio}%</span></div>
     `;
@@ -2220,7 +2220,7 @@ function renderPairingPage() {
   const filteredDates = getPairingFilteredDates();
   renderPairingKPI(current, previous);
   renderPairingTrendChart(filteredDates);
-  renderPairingRatioChart(current);
+  renderPairingRatioChart(filteredDates);
   renderPairingTable(filteredDates, selectedDate);
 }
 
@@ -2238,29 +2238,62 @@ function pairingMetricCard(label, value, previous, color, total, note) {
     </div>`;
 }
 
-function renderPairingKPI(current, previous) {
-  const left = document.getElementById('pairing-kpi-left');
-  const right = document.getElementById('pairing-kpi-right');
-  left.innerHTML = `
-    <div class="kpi-card" style="border-color:${PAIRING_COLOR};border-width:1.5px;">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${PAIRING_COLOR};border-radius:14px 14px 0 0;"></div>
-      <div class="c-label">단말 기준 페어링</div>
-      <div class="c-value" style="font-size:21px;">${fmt(current.deviceTotal)}<span>건</span></div>
-      <div class="c-meta">
-        ${momBadge(current.deviceTotal, previous?.deviceTotal || 0)}
-        <span class="ratio-pill">메인 KPI</span>
+function pairingDualCard(title, deviceVal, devicePrev, stbVal, stbPrev, topColor, borderStyle, extraBottom) {
+  const deviceMom = momBadge(deviceVal, devicePrev || 0);
+  const stbMom    = momBadge(stbVal,    stbPrev    || 0);
+  return `
+    <div class="kpi-card" style="${borderStyle || ''}">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${topColor};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label" style="margin-bottom:12px;">${title}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-tertiary);margin-bottom:3px;">단말 기준</div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;">
+            <span style="font-size:17px;font-weight:700;letter-spacing:-0.5px;">${fmt(deviceVal)}<span style="font-size:11px;font-weight:500;color:var(--text-secondary);margin-left:2px;">대</span></span>
+            ${deviceMom}
+          </div>
+        </div>
+        <div style="border-top:1px solid rgba(0,0,0,0.05);padding-top:10px;">
+          <div style="font-size:10px;font-weight:600;color:var(--text-tertiary);margin-bottom:3px;">STB 기준</div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;">
+            <span style="font-size:17px;font-weight:700;letter-spacing:-0.5px;">${fmt(stbVal)}<span style="font-size:11px;font-weight:500;color:var(--text-secondary);margin-left:2px;">대</span></span>
+            ${stbMom}
+          </div>
+        </div>
       </div>
-      <div class="mini-chart-wrap"><canvas id="pairing-mini-chart"></canvas></div>
-    </div>
-    ${pairingMetricCard('STB 기준 · 전체', current.stbTotal, previous?.stbTotal, PAIRING_STB_COLOR, current.stbTotal, '전체')}
-    ${pairingMetricCard('STB 기준 · 유효', current.stbValid, previous?.stbValid, '#a58fec', current.stbTotal)}
-    ${pairingMetricCard('STB 기준 · 휴면(2년 이상)', current.stbDormant, previous?.stbDormant, '#c4b6f2', current.stbTotal)}
-  `;
-  right.innerHTML = `
-    ${pairingMetricCard('단말 기준 · 전체', current.deviceTotal, previous?.deviceTotal, PAIRING_DEVICE_COLOR, current.deviceTotal, '전체')}
-    ${pairingMetricCard('단말 기준 · 유효', current.deviceValid, previous?.deviceValid, '#7657d7', current.deviceTotal)}
-    ${pairingMetricCard('단말 기준 · 휴면(2년 이상)', current.deviceDormant, previous?.deviceDormant, '#b7a6ed', current.deviceTotal)}
-  `;
+      ${extraBottom || ''}
+    </div>`;
+}
+
+function renderPairingKPI(current, previous) {
+  const left  = document.getElementById('pairing-kpi-left');
+  const right = document.getElementById('pairing-kpi-right');
+
+  // 좌: 페어링 (메인)
+  left.innerHTML = pairingDualCard(
+    '페어링',
+    current.deviceTotal, previous?.deviceTotal,
+    current.stbTotal,    previous?.stbTotal,
+    PAIRING_COLOR,
+    `border-color:${PAIRING_COLOR};border-width:1.5px;`,
+    `<div class="mini-chart-wrap" style="margin-top:12px;"><canvas id="pairing-mini-chart"></canvas></div>`
+  );
+
+  // 우: 유효 페어링 + 비유효(휴면) 페어링
+  right.innerHTML =
+    pairingDualCard(
+      '유효 페어링',
+      current.deviceValid, previous?.deviceValid,
+      current.stbValid,    previous?.stbValid,
+      '#8f73e8', '', ''
+    ) +
+    pairingDualCard(
+      '비유효 (휴면) 페어링',
+      current.deviceDormant, previous?.deviceDormant,
+      current.stbDormant,    previous?.stbDormant,
+      '#c4b6f2', '', ''
+    );
+
   requestAnimationFrame(renderPairingMiniChart);
 }
 
@@ -2291,10 +2324,10 @@ function buildPairingTrendData(targetDates) {
   return {
     labels: targetDates.map(formatPairingDate),
     datasets: [
-      {label:'STB 전체', key:'stbTotal', color:PAIRING_STB_COLOR, dash:[]},
-      {label:'STB 유효', key:'stbValid', color:'#b09df0', dash:[5,4]},
       {label:'단말 전체', key:'deviceTotal', color:PAIRING_DEVICE_COLOR, dash:[]},
-      {label:'단말 유효', key:'deviceValid', color:'#8c72df', dash:[5,4]}
+      {label:'단말 유효', key:'deviceValid', color:'#8c72df', dash:[5,4]},
+      {label:'STB 전체', key:'stbTotal', color:PAIRING_STB_COLOR, dash:[]},
+      {label:'STB 유효', key:'stbValid', color:'#b09df0', dash:[5,4]}
     ].map(item => ({
       label:item.label,
       data:targetDates.map(date => getPairingData(date)[item.key] || 0),
@@ -2335,30 +2368,52 @@ function renderPairingTrendChart(targetDates) {
   );
 }
 
-function renderPairingRatioChart(current) {
+function renderPairingRatioChart(filteredDates) {
   if (pairingRatioChart) pairingRatioChart.destroy();
-  const stbValidRate = current.stbTotal ? current.stbValid / current.stbTotal * 100 : 0;
-  const deviceValidRate = current.deviceTotal ? current.deviceValid / current.deviceTotal * 100 : 0;
+  const dates = filteredDates?.length ? filteredDates : pairingDates.slice(-12);
+  const labels = dates.map(formatPairingDate);
+
   pairingRatioChart = new Chart(
     document.getElementById('pairing-ratio-chart').getContext('2d'),
     {
-      type:'bar',
-      data:{
-        labels:['STB 기준','단말 기준'],
-        datasets:[
-          {label:'유효',data:[stbValidRate,deviceValidRate],backgroundColor:'#7657d7',borderRadius:5,borderSkipped:false},
-          {label:'휴면(2년 이상)',data:[100-stbValidRate,100-deviceValidRate],backgroundColor:'#d8cff7',borderRadius:5,borderSkipped:false}
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '단말 유효',
+            data: dates.map(d => getPairingData(d).deviceValid || 0),
+            backgroundColor: PAIRING_DEVICE_COLOR,
+            borderRadius: 4,
+            borderSkipped: false,
+          },
+          {
+            label: '단말 휴면',
+            data: dates.map(d => getPairingData(d).deviceDormant || 0),
+            backgroundColor: '#d8cff7',
+            borderRadius: 4,
+            borderSkipped: false,
+          }
         ]
       },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{
-          legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:12}},
-          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}}
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, boxHeight: 10, padding: 12 } },
+          tooltip: {
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            titleColor: '#1d1d1f',
+            bodyColor: '#6e6e73',
+            borderColor: 'rgba(0,0,0,0.08)',
+            borderWidth: 1,
+            callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y)}대` }
+          }
         },
-        scales:{
-          x:{stacked:true,grid:{display:false},ticks:{font:{size:11},color:'#6e6e73'}},
-          y:{stacked:true,max:100,grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>v+'%',font:{size:10},color:'#aeaeb2'}}
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#aeaeb2', maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 }, color: '#aeaeb2', callback: v => fmt(v) } }
         }
       }
     }
@@ -2366,12 +2421,12 @@ function renderPairingRatioChart(current) {
 }
 
 const PAIRING_TABLE_ROWS = [
+  {key:'deviceTotal',label:'단말 기준 · 전체',group:'device',isTotal:true},
+  {key:'deviceValid',label:'단말 기준 · 유효',group:'device'},
+  {key:'deviceDormant',label:'단말 기준 · 휴면',group:'device'},
   {key:'stbTotal',label:'STB 기준 · 전체',group:'stb',isTotal:true},
   {key:'stbValid',label:'STB 기준 · 유효',group:'stb'},
   {key:'stbDormant',label:'STB 기준 · 휴면',group:'stb'},
-  {key:'deviceTotal',label:'단말 기준 · 전체',group:'device',isTotal:true},
-  {key:'deviceValid',label:'단말 기준 · 유효',group:'device'},
-  {key:'deviceDormant',label:'단말 기준 · 휴면',group:'device'}
 ];
 
 function renderPairingTable(targetDates, selectedDate) {
