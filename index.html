@@ -523,7 +523,7 @@
   .cell-down { color: #c0392b; }
   .cell-flat { color: var(--text-tertiary); }
 
-  /* ── 파생지표 탭 ── */
+  /* ── 교차 분석 탭 ── */
   .derived-tab {
     font-size: 12px;
     font-weight: 500;
@@ -575,7 +575,7 @@
     <span class="nav-icon">📱</span> 페어링
   </a>
   <a class="nav-item" onclick="navigate('derived',this)">
-    <span class="nav-icon">📐</span> 파생지표
+    <span class="nav-icon">📐</span> 교차 분석
   </a>
 
   <div class="sidebar-footer">
@@ -825,13 +825,13 @@
     </div>
   </div><!-- /page-pairing -->
 
-  <!-- ══ 파생지표 페이지 ══ -->
+  <!-- ══ 교차 분석 페이지 ══ -->
   <div id="page-derived" style="display:none;">
 
     <div class="page-header">
       <div>
-        <div class="page-title">파생지표</div>
-        <div class="page-sub">MAU · T아이디 · 페어링 교차 분석</div>
+        <div class="page-title">교차 분석</div>
+        <div class="page-sub">MAU · T아이디 · 페어링 지표 교차 분석</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="month-selector" style="gap:8px;">
@@ -848,54 +848,56 @@
       </div>
     </div>
 
-    <!-- 그룹 탭 -->
-    <div style="display:flex;gap:6px;margin-bottom:20px;">
-      <button class="derived-tab active" onclick="switchDerivedTab('pairing-eff',this)">📌 페어링 효율</button>
-      <button class="derived-tab" onclick="switchDerivedTab('app-act',this)">📱 앱 활성화</button>
-      <button class="derived-tab" onclick="switchDerivedTab('cross',this)">🔗 교차 지표</button>
-    </div>
-
     <!-- ① 페어링 효율 -->
-    <div id="derived-pairing-eff">
-      <div class="kpi-grid-derived" id="derived-kpi-pairing"></div>
-      <div class="chart-card" style="margin-top:14px;">
-        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
-          <div class="chart-title">페어링 효율 Trend</div>
-          <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+    <div style="margin-bottom:24px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:12px;">페어링 효율 지표</div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;gap:10px;" id="derived-kpi-pairing"></div>
+        <div class="chart-card" style="min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+            <div class="chart-title">페어링 효율 Trend</div>
+            <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+          </div>
+          <div class="chart-wrap" style="height:220px;"><canvas id="derived-pairing-chart"></canvas></div>
         </div>
-        <div class="chart-wrap" style="height:220px;"><canvas id="derived-pairing-chart"></canvas></div>
       </div>
     </div>
 
     <!-- ② 앱 활성화 -->
-    <div id="derived-app-act" style="display:none;">
-      <div class="kpi-grid-derived" id="derived-kpi-app"></div>
-      <div class="chart-card" style="margin-top:14px;">
-        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
-          <div class="chart-title">앱 활성화 Trend</div>
-          <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+    <div style="margin-bottom:24px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:12px;">앱 활성화 지표</div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;gap:10px;" id="derived-kpi-app"></div>
+        <div class="chart-card" style="min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+            <div class="chart-title">앱 활성화 Trend</div>
+            <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+          </div>
+          <div class="chart-wrap" style="height:300px;"><canvas id="derived-app-chart"></canvas></div>
         </div>
-        <div class="chart-wrap" style="height:220px;"><canvas id="derived-app-chart"></canvas></div>
       </div>
     </div>
 
     <!-- ③ 교차 지표 -->
-    <div id="derived-cross" style="display:none;">
-      <div class="kpi-grid-derived" id="derived-kpi-cross"></div>
-      <div class="chart-card" style="margin-top:14px;">
-        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
-          <div class="chart-title">교차 지표 Trend</div>
-          <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+    <div style="margin-bottom:24px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:12px;">교차 지표</div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;gap:10px;" id="derived-kpi-cross"></div>
+        <div class="chart-card" style="min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+            <div class="chart-title">교차 지표 Trend</div>
+            <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+          </div>
+          <div class="chart-wrap" style="height:160px;"><canvas id="derived-cross-chart"></canvas></div>
         </div>
-        <div class="chart-wrap" style="height:220px;"><canvas id="derived-cross-chart"></canvas></div>
       </div>
     </div>
 
-    <!-- 파생지표 표 -->
+    <!-- 교차 분석 표 -->
     <div class="table-card" style="margin-top:14px;" id="derived-table-card">
       <div class="table-header">
         <div style="display:flex;align-items:baseline;gap:8px;">
-          <div class="chart-title" style="font-weight:700;">파생지표 상세 DATA</div>
+          <div class="chart-title" style="font-weight:700;">교차 분석 상세 DATA</div>
           <div style="font-size:11px;color:var(--text-tertiary);font-weight:400;">월별 파생지표 전체</div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -2965,16 +2967,6 @@ function renderDerivedTable(filtered, selMonth) {
     const th = document.getElementById('derived-th-selected');
     const sw = document.querySelector('#derived-table-card .table-scroll');
     if (th && sw) sw.scrollLeft = th.offsetLeft - sw.offsetWidth/2 + th.offsetWidth/2;
-  });
-}
-
-// ── 탭 전환 ──
-function switchDerivedTab(tab, el) {
-  currentDerivedTab = tab;
-  document.querySelectorAll('.derived-tab').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  ['pairing-eff','app-act','cross'].forEach(t => {
-    document.getElementById(`derived-${t}`).style.display = t===tab ? 'block' : 'none';
   });
 }
 
