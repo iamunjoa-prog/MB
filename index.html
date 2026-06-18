@@ -364,6 +364,27 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font);
+    color: var(--text-secondary);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .dl-btn:hover {
+    background: var(--surface);
+    color: var(--text-primary);
+    border-color: rgba(0,0,0,0.15);
+  }
+
   /* ── MAU 표 ── */
   .table-card {
     background: var(--surface);
@@ -543,11 +564,15 @@
   </div>
 
   <!-- MAU 월별 표 -->
-  <div class="table-card">
+  <div class="table-card" id="table-card">
     <div class="table-header">
-      <div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
         <div class="chart-title" style="font-weight:700;">MAU 상세 DATA</div>
-        <div class="chart-sub">고객군별 이용자 수</div>
+        <div style="font-size:11px;color:var(--text-tertiary);font-weight:400;">고객군별 이용자 수</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="dl-btn" onclick="downloadExcel()">⬇ 엑셀</button>
+        <button class="dl-btn" onclick="downloadImage()">🖼 이미지</button>
       </div>
     </div>
     <div class="table-scroll">
@@ -555,6 +580,11 @@
         <thead><tr id="table-head"></tr></thead>
         <tbody id="table-body"></tbody>
       </table>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+      <p style="font-size:11px;color:var(--text-tertiary);line-height:1.6;">
+        * 모바일 B tv MAU: PCID 기준으로 추출된 UV
+      </p>
     </div>
   </div>
 
@@ -564,7 +594,7 @@
 // ══════════════════════════════════════════════
 // ① 설정: 구글 시트 ID를 여기에 입력하세요
 // ══════════════════════════════════════════════
-const SHEET_ID = '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY';   // ← 시트 ID
+const SHEET_ID = '1eDv5l59RnYDvibgBVnnaSAFi6';   // ← 시트 ID
 const SHEET_TAB = 'UV';                  // 탭 이름
 
 // ══════════════════════════════════════════════
@@ -610,32 +640,25 @@ let miniChart     = null;
 // 구글 시트 CSV 로드
 // ══════════════════════════════════════════════
 async function loadData() {
-  if (SHEET_ID === '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY') {
+  if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
     useSampleData();
     return;
   }
 
   // export 방식 — 탭 구분 TSV로 받아서 인코딩 문제 우회
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=tsv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`;
 
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const buffer = await res.arrayBuffer();
-
-    // UTF-8 먼저 시도, 깨지면 EUC-KR로 재시도
-    let text = new TextDecoder('utf-8').decode(buffer);
-    if (text.includes('?') || text.includes('\ufffd')) {
-      text = new TextDecoder('euc-kr').decode(buffer);
-    }
-
+    const text = await res.text();
     console.log('[원본 첫 3줄]', text.split('\n').slice(0,3));
 
     if (text.includes('accounts.google.com')) {
       throw new Error('시트가 비공개 상태입니다. 공유 설정을 확인해주세요.');
     }
 
-    parseTSV(text);
+    parseCSV(text);
     document.getElementById('sheet-link').textContent = 'Google Sheets ✓';
 
   } catch(e) {
@@ -1095,6 +1118,57 @@ function navigate(page) {
   if (page !== 'mau') {
     alert(`"${page}" 탭은 준비 중입니다.`);
   }
+}
+
+// ══════════════════════════════════════════════
+// 다운로드
+// ══════════════════════════════════════════════
+function downloadExcel() {
+  const TABLE_ROWS = [
+    { key: TOTAL_KEY,          label: 'MAU' },
+    { key: '10_Btv연결',       label: '페어링' },
+    { key: '09_T아이디연결',   label: 'T아이디' },
+    { key: '02_월정액고객',    label: '월정액' },
+    { key: '11_시청고객',      label: '시청' },
+    { key: '08_VOD구매',       label: '구매' },
+  ];
+
+  // 헤더 행
+  const header = ['고객군', ...months.map(m => {
+    const y = m.slice(0,4), mo = parseInt(m.slice(4,6),10);
+    return `${y}년 ${mo}월`;
+  })];
+
+  // 데이터 행
+  const rows = TABLE_ROWS.map(row => {
+    const vals = months.map(m => getMonthData(m)[row.key] || 0);
+    return [row.label, ...vals];
+  });
+
+  // CSV 생성 (BOM 포함 → 엑셀 한글 깨짐 방지)
+  const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `MAU_상세DATA_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+async function downloadImage() {
+  // html2canvas 동적 로드
+  if (!window.html2canvas) {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    document.head.appendChild(script);
+    await new Promise(res => script.onload = res);
+  }
+  const card = document.getElementById('table-card');
+  const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#ffffff' });
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `MAU_상세DATA_${new Date().toISOString().slice(0,10)}.png`;
+  a.click();
 }
 
 // ══════════════════════════════════════════════
