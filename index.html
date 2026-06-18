@@ -265,16 +265,17 @@
     height: 3px;
     border-radius: var(--radius-md) var(--radius-md) 0 0;
   }
-  .kpi-card.c-pairing::before { background: #a5a4e0; }
-  .kpi-card.c-watch::before   { background: #7dccd9; }
-  .kpi-card.c-buy::before     { background: #f5c07a; }
-  .kpi-card.c-tid::before     { background: #7dd89a; }
+  .kpi-card.c-pairing::before { background: #5e8ce4; }
+  .kpi-card.c-watch::before   { background: #85b0ee; }
+  .kpi-card.c-buy::before     { background: #aac4f0; }
+  .kpi-card.c-tid::before     { background: #c3d5f5; }
   .kpi-card.c-total {
-    background: #f2f2f7;
-    border-color: rgba(0,0,0,0.06);
+    background: var(--surface);
+    border-color: #0071e3;
+    border-width: 1.5px;
   }
-  .kpi-card.c-total::before { background: #c7c7cc; }
-  .kpi-card.c-sub::before   { background: #b0b0c4; }
+  .kpi-card.c-total::before { background: #0071e3; }
+  .kpi-card.c-sub::before   { background: #dde8fb; }
 
   .kpi-card .c-label {
     font-size: 11px;
@@ -322,15 +323,15 @@
     border: 1px solid var(--border);
   }
   .chart-card .chart-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
   .chart-card .chart-sub {
     font-size: 10px;
     color: var(--text-tertiary);
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
   .chart-wrap {
     position: relative;
@@ -388,18 +389,23 @@
   }
   .mau-table th {
     text-align: right;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
-    color: var(--text-tertiary);
-    padding: 0 14px 10px;
-    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 10px 14px 12px;
+    background: #f5f5f7;
+    border-bottom: 2px solid var(--border);
     white-space: nowrap;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
   .mau-table th:first-child {
     text-align: left;
-    padding-left: 0;
+    padding-left: 14px;
+    border-radius: var(--radius-sm) 0 0 0;
     min-width: 90px;
+  }
+  .mau-table th:last-child {
+    border-radius: 0 var(--radius-sm) 0 0;
   }
   .mau-table td {
     text-align: right;
@@ -411,7 +417,7 @@
   }
   .mau-table td:first-child {
     text-align: left;
-    padding-left: 0;
+    padding-left: 14px;
     font-weight: 500;
     color: var(--text-secondary);
     font-size: 12px;
@@ -511,11 +517,11 @@
     <div class="charts-col">
       <div class="chart-card">
         <div class="chart-title">고객군별 MAU 추이</div>
-        <div class="chart-sub">월별 고객군 변화</div>
+        <div class="chart-sub">월별 변화</div>
         <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">이번 달 고객군 비중</div>
+        <div class="chart-title">이번 달 비중</div>
         <div class="chart-sub">전체 MAU 대비</div>
         <div class="chart-wrap"><canvas id="ratio-chart"></canvas></div>
       </div>
@@ -531,8 +537,8 @@
   <div class="table-card">
     <div class="table-header">
       <div>
-        <div class="chart-title">MAU 월별 추이</div>
-        <div class="chart-sub">고객군별 월간 활성 이용자 수</div>
+        <div class="chart-title">월별 MAU</div>
+        <div class="chart-sub">고객군별 이용자 수</div>
       </div>
     </div>
     <div class="table-scroll">
@@ -549,18 +555,18 @@
 // ══════════════════════════════════════════════
 // ① 설정: 구글 시트 ID를 여기에 입력하세요
 // ══════════════════════════════════════════════
-const SHEET_ID = '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY';   // ← 여기에 시트 ID
+const SHEET_ID = 'YOUR_SHEET_ID_HERE';   // ← 여기에 시트 ID
 const SHEET_TAB = 'UV';                  // 탭 이름
 
 // ══════════════════════════════════════════════
 // ② 고객군 정의 (B열 값 → 표시명 + 스타일)
 // ══════════════════════════════════════════════
 const SEGMENTS = [
-  { key: '10_Btv연결',    label: '페어링',   cls: 'c-pairing', color: '#5856d6' },
-  { key: '11_시청고객',   label: '시청',     cls: 'c-watch',   color: '#30b0c7' },
-  { key: '08_VOD구매',    label: '구매',     cls: 'c-buy',     color: '#ff9500' },
-  { key: '09_T아이디연결',label: 'T아이디',  cls: 'c-tid',     color: '#34c759' },
-  { key: '02_월정액고객', label: '월정액',   cls: 'c-sub',     color: '#8e8ea0' },
+  { key: '10_Btv연결',    label: '페어링',   cls: 'c-pairing', color: '#5e8ce4' },
+  { key: '11_시청고객',   label: '시청',     cls: 'c-watch',   color: '#85b0ee' },
+  { key: '08_VOD구매',    label: '구매',     cls: 'c-buy',     color: '#aac4f0' },
+  { key: '09_T아이디연결',label: 'T아이디',  cls: 'c-tid',     color: '#c3d5f5' },
+  { key: '02_월정액고객', label: '월정액',   cls: 'c-sub',     color: '#dde8fb' },
 ];
 const TOTAL_COLOR = '#0071e3';   // 전체 MAU 포인트 컬러
 const TOTAL_KEY = '00_전체';
@@ -594,35 +600,65 @@ let miniChart   = null;
 // 구글 시트 CSV 로드
 // ══════════════════════════════════════════════
 async function loadData() {
-  if (SHEET_ID === '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY') {
+  if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
     useSampleData();
     return;
   }
+
+  // gviz 방식 (공유 시트에서 가장 안정적)
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('fetch failed');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
+
+    // 로그인 페이지로 리다이렉트된 경우 (시트 비공개)
+    if (text.includes('accounts.google.com') || text.includes('signin')) {
+      throw new Error('시트가 비공개 상태입니다. 공유 설정을 확인해주세요.');
+    }
+    // 응답이 너무 짧으면 데이터 없음
+    if (text.trim().length < 10) {
+      throw new Error('데이터가 비어있거나 탭명이 다릅니다.');
+    }
+
     parseCSV(text);
     document.getElementById('sheet-link').textContent = 'Google Sheets ✓';
+
   } catch(e) {
-    showBanner('⚠ 시트 연결 실패 — 샘플 데이터로 표시 중입니다.', 'warn');
+    console.error('[시트 연결 오류]', e.message);
+    showBanner(`⚠ 연결 실패: ${e.message}`, 'warn');
     useSampleData();
   }
 }
 
 function parseCSV(text) {
-  const rows = text.trim().split('\n').slice(1); // 헤더 제거
+  const lines = text.trim().split('\n');
+  console.log('[CSV 원본 첫 3줄]', lines.slice(0, 3));
+
+  // 첫 행이 헤더인지 확인 (숫자로 시작하지 않으면 헤더로 간주해 스킵)
+  const startIdx = isNaN(lines[0]?.split(',')[0]?.replace(/"/g,'').trim()) ? 1 : 0;
+  const rows = lines.slice(startIdx);
+
   allData = [];
-  rows.forEach(row => {
-    const cols = row.split(',').map(c => c.replace(/^"|"$/g,'').trim());
+  rows.forEach((row, i) => {
+    // 따옴표 안의 쉼표 처리
+    const cols = row.match(/(".*?"|[^,]+)(?=,|$)/g)
+      ?.map(c => c.replace(/^"|"$/g,'').trim()) || [];
     const dateCode = cols[0];
     const segment  = cols[1];
-    const uv       = parseInt(cols[2].replace(/,/g,''), 10);
+    const uv       = parseInt((cols[2] || '').replace(/,/g,''), 10);
     if (dateCode && segment && !isNaN(uv)) {
       allData.push({ dateCode, segment, uv });
     }
   });
+
+  console.log(`[파싱 완료] ${allData.length}건`);
+
+  if (allData.length === 0) {
+    throw new Error('파싱된 데이터가 없습니다. 컬럼 구조를 확인해주세요.');
+  }
+
   buildMonthList();
   initMonthSelect();
   renderPage();
@@ -919,7 +955,11 @@ function renderMAUTable() {
   // 헤더: 행 레이블 + 월 목록
   const thead = document.getElementById('table-head');
   thead.innerHTML = `<th>고객군</th>` +
-    months.map(m => `<th>${formatMonth(m, true)}<br><span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">${m.slice(0,4)}</span></th>`).join('');
+    months.map(m => {
+      const y = m.slice(0,4);
+      const mo = parseInt(m.slice(4,6), 10);
+      return `<th>${y.slice(2)}년 ${mo}월</th>`;
+    }).join('');
 
   // 본문
   const tbody = document.getElementById('table-body');
