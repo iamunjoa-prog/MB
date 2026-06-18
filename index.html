@@ -523,6 +523,30 @@
   .cell-down { color: #c0392b; }
   .cell-flat { color: var(--text-tertiary); }
 
+  /* ── 파생지표 탭 ── */
+  .derived-tab {
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font);
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .derived-tab.active {
+    background: var(--text-primary);
+    color: #fff;
+    border-color: transparent;
+  }
+  .kpi-grid-derived {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
   /* ── 반응형 ── */
   @media (max-width: 1100px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -549,6 +573,9 @@
   </a>
   <a class="nav-item" onclick="navigate('pairing',this)">
     <span class="nav-icon">📱</span> 페어링
+  </a>
+  <a class="nav-item" onclick="navigate('derived',this)">
+    <span class="nav-icon">📐</span> 파생지표
   </a>
 
   <div class="sidebar-footer">
@@ -798,9 +825,131 @@
     </div>
   </div><!-- /page-pairing -->
 
+  <!-- ══ 파생지표 페이지 ══ -->
+  <div id="page-derived" style="display:none;">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">파생지표</div>
+        <div class="page-sub">MAU · T아이디 · 페어링 교차 분석</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="month-selector" style="gap:8px;">
+          <span style="font-size:13px;color:var(--text-tertiary);">조회 기간</span>
+          <span id="derived-period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 1년</span>
+          <button class="dl-btn" onclick="openDerivedPeriodModal()" style="font-size:11px;padding:4px 10px;">상세 설정</button>
+        </div>
+        <div class="month-selector">
+          <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
+          <select id="derived-month-select" onchange="renderDerivedPage()">
+            <option value="">— 선택 —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 그룹 탭 -->
+    <div style="display:flex;gap:6px;margin-bottom:20px;">
+      <button class="derived-tab active" onclick="switchDerivedTab('pairing-eff',this)">📌 페어링 효율</button>
+      <button class="derived-tab" onclick="switchDerivedTab('app-act',this)">📱 앱 활성화</button>
+      <button class="derived-tab" onclick="switchDerivedTab('cross',this)">🔗 교차 지표</button>
+    </div>
+
+    <!-- ① 페어링 효율 -->
+    <div id="derived-pairing-eff">
+      <div class="kpi-grid-derived" id="derived-kpi-pairing"></div>
+      <div class="chart-card" style="margin-top:14px;">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">페어링 효율 Trend</div>
+          <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+        </div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="derived-pairing-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ② 앱 활성화 -->
+    <div id="derived-app-act" style="display:none;">
+      <div class="kpi-grid-derived" id="derived-kpi-app"></div>
+      <div class="chart-card" style="margin-top:14px;">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">앱 활성화 Trend</div>
+          <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+        </div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="derived-app-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ③ 교차 지표 -->
+    <div id="derived-cross" style="display:none;">
+      <div class="kpi-grid-derived" id="derived-kpi-cross"></div>
+      <div class="chart-card" style="margin-top:14px;">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">교차 지표 Trend</div>
+          <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
+        </div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="derived-cross-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 파생지표 표 -->
+    <div class="table-card" style="margin-top:14px;" id="derived-table-card">
+      <div class="table-header">
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <div class="chart-title" style="font-weight:700;">파생지표 상세 DATA</div>
+          <div style="font-size:11px;color:var(--text-tertiary);font-weight:400;">월별 파생지표 전체</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="dl-btn" onclick="downloadDerivedExcel()">⬇ 엑셀</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="mau-table" id="derived-table">
+          <thead><tr id="derived-table-head"></tr></thead>
+          <tbody id="derived-table-body"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+        <p style="font-size:11px;color:var(--text-tertiary);line-height:1.8;">
+          * 전체 단말 수: 600만대 (임시 고정값 · 추후 시트 연결 예정)<br>
+          * 파생지표는 MAU · T아이디 · 페어링 시트 데이터 교차 계산
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /page-derived -->
+
 </main>
 
-<!-- 페어링 전체 기간 팝업 -->
+<!-- 파생지표 기간 설정 모달 -->
+<div id="derived-period-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:28px 32px;width:360px;box-shadow:0 20px 50px rgba(0,0,0,0.15);">
+    <div style="font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:6px;">조회 기간 설정</div>
+    <div style="font-size:12px;color:#aeaeb2;margin-bottom:22px;">시작월과 종료월을 선택하세요</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">시작월</div>
+        <select id="derived-period-start" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">종료월</div>
+        <select id="derived-period-end" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+    </div>
+    <div style="margin-bottom:22px;">
+      <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:8px;">빠른 선택</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="quick-btn" onclick="setDerivedQuickPeriod(6)">최근 6개월</button>
+        <button class="quick-btn" onclick="setDerivedQuickPeriod(12)">최근 1년</button>
+        <button class="quick-btn" onclick="setDerivedQuickPeriod(24)">최근 2년</button>
+        <button class="quick-btn" onclick="setDerivedQuickPeriod(0)">전체 기간</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="dl-btn" onclick="closeDerivedPeriodModal()">취소</button>
+      <button onclick="applyDerivedPeriod()" style="font-size:13px;font-weight:600;font-family:-apple-system,sans-serif;background:#1d1d1f;color:#fff;border:none;border-radius:9px;padding:8px 20px;cursor:pointer;">적용</button>
+    </div>
+  </div>
+</div>
 <div id="pairing-trend-popup" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;padding:28px 32px;width:min(90vw,860px);box-shadow:0 24px 60px rgba(0,0,0,0.18);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
@@ -1087,6 +1236,7 @@ function parseCSV(text) {
 
   buildMonthList();
   initMonthSelect();
+  initDerivedMonthSelect();
   renderPage();
 }
 
@@ -1094,6 +1244,7 @@ function useSampleData() {
   allData = SAMPLE.map(([dateCode, segment, uv]) => ({ dateCode, segment, uv }));
   buildMonthList();
   initMonthSelect();
+  initDerivedMonthSelect();
   renderPage();
 }
 
@@ -1445,16 +1596,16 @@ function renderRatioChart(thisData, totalUV, prevData, prevTotalUV, selMonth, pr
       labels,
       datasets: [
         {
-          label: thisLabel,
-          data: thisValues,
-          backgroundColor: colors,
+          label: prevLabel,
+          data: prevValues,
+          backgroundColor: colors.map(c => c + '55'),
           borderRadius: 5,
           borderSkipped: false,
         },
         {
-          label: prevLabel,
-          data: prevValues,
-          backgroundColor: colors.map(c => c + '55'),
+          label: thisLabel,
+          data: thisValues,
+          backgroundColor: colors,
           borderRadius: 5,
           borderSkipped: false,
         }
@@ -1629,16 +1780,21 @@ function navigate(page, el) {
   document.getElementById('page-mau').style.display = page==='mau' ? 'block' : 'none';
   document.getElementById('page-tid').style.display = page==='tid' ? 'block' : 'none';
   document.getElementById('page-pairing').style.display = page==='pairing' ? 'block' : 'none';
+  document.getElementById('page-derived').style.display = page==='derived' ? 'block' : 'none';
   const themes = {
     mau: ['#0071e3', '#e8f1fb'],
     tid: ['#e8820c', '#fff1df'],
-    pairing: ['#7c5ce7', '#f0ecff']
+    pairing: ['#7c5ce7', '#f0ecff'],
+    derived: ['#1d1d1f', '#f5f5f7']
   };
   const [accent, light] = themes[page] || themes.mau;
   document.documentElement.style.setProperty('--accent', accent);
   document.documentElement.style.setProperty('--accent-light', light);
-  if (page==='tid' && tidMonths.length===0) loadTidData();
+  if (page==='tid'     && tidMonths.length===0)    loadTidData();
   if (page==='pairing' && pairingDates.length===0) loadPairingData();
+  if (page==='derived') {
+    if (months.length > 0) { initDerivedMonthSelect(); renderDerivedPage(); }
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1950,8 +2106,8 @@ function renderTidRatioChart(thisData, prevData, selMonth, prevMonth) {
     document.getElementById('tid-ratio-chart').getContext('2d'),
     { type:'bar', data:{ labels:segs,
         datasets:[
-          {label:thisLabel, data:thisValues, backgroundColor:colors, borderRadius:5, borderSkipped:false},
           {label:prevLabel, data:prevValues, backgroundColor:colors.map(c=>c+'55'), borderRadius:5, borderSkipped:false},
+          {label:thisLabel, data:thisValues, backgroundColor:colors, borderRadius:5, borderSkipped:false},
         ]},
       options:{responsive:true,maintainAspectRatio:false,
         interaction:{mode:'index',intersect:false},
@@ -2381,14 +2537,14 @@ function renderPairingRatioChart(filteredDates) {
         labels,
         datasets: [
           {
-            label: '단말 유효',
+            label: '유효 단말',
             data: dates.map(d => getPairingData(d).deviceValid || 0),
             backgroundColor: PAIRING_DEVICE_COLOR,
             borderRadius: 4,
             borderSkipped: false,
           },
           {
-            label: '단말 휴면',
+            label: '휴면 단말',
             data: dates.map(d => getPairingData(d).deviceDormant || 0),
             backgroundColor: '#d8cff7',
             borderRadius: 4,
@@ -2562,6 +2718,313 @@ document.getElementById('trend-popup').addEventListener('click', function(e) {
 // ══════════════════════════════════════════════
 // 시작
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// 파생지표
+// ══════════════════════════════════════════════
+const TOTAL_DEVICE = 6000000; // 전체 단말 수 (임시 600만대)
+
+let derivedPeriodStart = null;
+let derivedPeriodEnd   = null;
+let derivedChartP = null, derivedChartA = null, derivedChartC = null;
+let currentDerivedTab = 'pairing-eff';
+
+// 공통 월 목록 — MAU 기준 (가장 많은 데이터)
+function getDerivedMonths() {
+  return months; // MAU months
+}
+
+function getDerivedFilteredMonths() {
+  const all = getDerivedMonths();
+  if (!derivedPeriodStart || !derivedPeriodEnd) return all.slice(-12);
+  return all.filter(m => m.slice(0,6) >= derivedPeriodStart && m.slice(0,6) <= derivedPeriodEnd);
+}
+
+// 파생지표 계산
+function calcDerived(dateCode) {
+  const mau   = getMonthData(dateCode);
+  const tid   = getTidMonthData ? getTidMonthData(dateCode) : {};
+  const pair  = (() => {
+    // 페어링은 YYYY-MM-DD 형태라 변환 필요
+    const ym = dateCode.slice(0,6);
+    const pDate = pairingDates?.find(d => d.slice(0,7).replace(/-/g,'') === ym);
+    return pDate ? getPairingData(pDate) : {};
+  })();
+
+  const mauTotal   = mau[TOTAL_KEY]        || 0;
+  const mauPairing = mau['10_Btv연결']     || 0;
+  const mauWatch   = mau['11_시청고객']    || 0;
+  const mauBuy     = mau['08_VOD구매']     || 0;
+  const mauTid     = mau['09_T아이디연결'] || 0;
+  const tidTotal   = tid.total             || 0;
+  const tidPairing = tid['페어링']         || 0;
+  const pairDevice = pair.deviceTotal      || 0;
+  const pairValid  = pair.deviceValid      || 0;
+
+  return {
+    // 페어링 효율
+    pairingRate:    TOTAL_DEVICE > 0 ? pairDevice / TOTAL_DEVICE * 100 : 0,
+    validRate:      pairDevice   > 0 ? pairValid  / pairDevice  * 100 : 0,
+    pairingGrowth:  pairDevice, // MoM용 원값
+
+    // 앱 활성화
+    stickiness:     mauTotal > 0 ? mauWatch   / mauTotal * 100 : 0,
+    tidLinkRate:    mauTotal > 0 ? mauTid     / mauTotal * 100 : 0,
+    buyConvRate:    mauTotal > 0 ? mauBuy     / mauTotal * 100 : 0,
+    pairingMauRate: mauTotal > 0 ? mauPairing / mauTotal * 100 : 0,
+
+    // 교차
+    pairingMauContr: mauTotal   > 0 ? mauPairing / mauTotal  * 100 : 0,
+    tidPairingRate:  tidTotal   > 0 ? tidPairing / tidTotal   * 100 : 0,
+  };
+}
+
+function initDerivedMonthSelect() {
+  const sel = document.getElementById('derived-month-select');
+  sel.innerHTML = '';
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = formatMonth(m);
+    sel.appendChild(opt);
+  });
+  sel.value = months[months.length - 1];
+}
+
+function renderDerivedPage() {
+  const selMonth = document.getElementById('derived-month-select').value;
+  if (!selMonth) return;
+  const filtered = getDerivedFilteredMonths();
+  const idx      = months.indexOf(selMonth);
+  const prevMonth = idx > 0 ? months[idx-1] : null;
+  const cur  = calcDerived(selMonth);
+  const prev = prevMonth ? calcDerived(prevMonth) : null;
+
+  renderDerivedKPI(cur, prev);
+  renderDerivedCharts(filtered);
+  renderDerivedTable(filtered, selMonth);
+}
+
+// ── KPI 카드 ──
+function derivedKpiCard(label, value, prevValue, unit, color, note) {
+  const isRate = unit === '%';
+  const valStr = isRate ? value.toFixed(1) + '%' : fmt(value) + unit;
+  let momHtml = '';
+  if (prevValue !== null && prevValue !== undefined) {
+    const diff = value - prevValue;
+    const diffStr = isRate
+      ? (diff > 0 ? `+${diff.toFixed(1)}%p` : diff < 0 ? `${diff.toFixed(1)}%p` : '—')
+      : (diff > 0 ? `+${fmt(Math.abs(diff))}${unit}` : diff < 0 ? `-${fmt(Math.abs(diff))}${unit}` : '—');
+    const cls = diff > 0 ? 'cell-up' : diff < 0 ? 'cell-down' : 'cell-flat';
+    momHtml = `<span class="${cls}" style="font-size:11px;">${diffStr}</span>`;
+  }
+  return `
+    <div class="kpi-card">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${color};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label">${label}</div>
+      <div style="font-size:18px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;">${valStr}</div>
+      <div class="c-meta">
+        ${momHtml}
+        ${note ? `<span class="ratio-pill">${note}</span>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderDerivedKPI(cur, prev) {
+  // 페어링 효율
+  document.getElementById('derived-kpi-pairing').innerHTML = [
+    derivedKpiCard('페어링률', cur.pairingRate, prev?.pairingRate, '%', '#7c5ce7', '단말/600만'),
+    derivedKpiCard('유효 페어링률', cur.validRate, prev?.validRate, '%', '#8f73e8', '유효/전체'),
+    derivedKpiCard('페어링 단말 순증', cur.pairingGrowth - (prev?.pairingGrowth||0), null, '대', '#a58fec', 'MoM'),
+  ].join('');
+
+  // 앱 활성화
+  document.getElementById('derived-kpi-app').innerHTML = [
+    derivedKpiCard('Stickiness', cur.stickiness, prev?.stickiness, '%', '#0071e3', '시청/MAU'),
+    derivedKpiCard('T아이디 연동률', cur.tidLinkRate, prev?.tidLinkRate, '%', '#e8820c', 'T아이디/MAU'),
+    derivedKpiCard('구매 전환율', cur.buyConvRate, prev?.buyConvRate, '%', '#34c759', '구매/MAU'),
+    derivedKpiCard('페어링 MAU 비율', cur.pairingMauRate, prev?.pairingMauRate, '%', '#5e8ce4', '페어링MAU/MAU'),
+  ].join('');
+
+  // 교차
+  document.getElementById('derived-kpi-cross').innerHTML = [
+    derivedKpiCard('페어링 MAU 기여율', cur.pairingMauContr, prev?.pairingMauContr, '%', '#5856d6', '페어링MAU/전체MAU'),
+    derivedKpiCard('T아이디 페어링률', cur.tidPairingRate, prev?.tidPairingRate, '%', '#f5a34e', 'TID페어링/TID전체'),
+  ].join('');
+}
+
+// ── 차트 ──
+function renderDerivedCharts(filtered) {
+  const labels = filtered.map(m => { const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10); return `${y.slice(2)}년 ${mo}월`; });
+  const derived = filtered.map(m => calcDerived(m));
+
+  const chartOpts = (yLabel) => ({
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:14,usePointStyle:true}},
+      tooltip:{backgroundColor:'rgba(255,255,255,0.95)',titleColor:'#1d1d1f',bodyColor:'#6e6e73',
+        borderColor:'rgba(0,0,0,0.08)',borderWidth:1,padding:10,
+        callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}${yLabel}`}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:11},color:'#aeaeb2'}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#aeaeb2',callback:v=>v.toFixed(1)+yLabel}}
+    }
+  });
+
+  function line(label, data, color, dash=[]) {
+    return {label, data, borderColor:color, backgroundColor:'transparent',
+      borderWidth:2, borderDash:dash, pointRadius:3, pointBackgroundColor:color, tension:0.35};
+  }
+
+  // 페어링 효율 차트
+  if (derivedChartP) derivedChartP.destroy();
+  derivedChartP = new Chart(document.getElementById('derived-pairing-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[
+      line('페어링률(%)', derived.map(d=>d.pairingRate), '#7c5ce7'),
+      line('유효 페어링률(%)', derived.map(d=>d.validRate), '#b09df0', [5,4]),
+    ]},
+    options: chartOpts('%')
+  });
+
+  // 앱 활성화 차트
+  if (derivedChartA) derivedChartA.destroy();
+  derivedChartA = new Chart(document.getElementById('derived-app-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[
+      line('Stickiness(%)', derived.map(d=>d.stickiness), '#0071e3'),
+      line('T아이디 연동률(%)', derived.map(d=>d.tidLinkRate), '#e8820c'),
+      line('구매 전환율(%)', derived.map(d=>d.buyConvRate), '#34c759'),
+      line('페어링 MAU 비율(%)', derived.map(d=>d.pairingMauRate), '#5e8ce4', [5,4]),
+    ]},
+    options: chartOpts('%')
+  });
+
+  // 교차 지표 차트
+  if (derivedChartC) derivedChartC.destroy();
+  derivedChartC = new Chart(document.getElementById('derived-cross-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[
+      line('페어링 MAU 기여율(%)', derived.map(d=>d.pairingMauContr), '#5856d6'),
+      line('T아이디 페어링률(%)', derived.map(d=>d.tidPairingRate), '#f5a34e'),
+    ]},
+    options: chartOpts('%')
+  });
+}
+
+// ── 표 ──
+const DERIVED_TABLE_ROWS = [
+  { key:'pairingRate',    label:'페어링률',          unit:'%',  group:'페어링 효율' },
+  { key:'validRate',      label:'유효 페어링률',      unit:'%',  group:'페어링 효율' },
+  { key:'stickiness',     label:'Stickiness',        unit:'%',  group:'앱 활성화'   },
+  { key:'tidLinkRate',    label:'T아이디 연동률',     unit:'%',  group:'앱 활성화'   },
+  { key:'buyConvRate',    label:'구매 전환율',        unit:'%',  group:'앱 활성화'   },
+  { key:'pairingMauRate', label:'페어링 MAU 비율',    unit:'%',  group:'앱 활성화'   },
+  { key:'pairingMauContr',label:'페어링 MAU 기여율',  unit:'%',  group:'교차 지표'   },
+  { key:'tidPairingRate', label:'T아이디 페어링률',   unit:'%',  group:'교차 지표'   },
+];
+
+function renderDerivedTable(filtered, selMonth) {
+  const thead = document.getElementById('derived-table-head');
+  thead.innerHTML = '<th>지표</th>' + filtered.map(m => {
+    const y=m.slice(0,4), mo=parseInt(m.slice(4,6),10);
+    const isSel = m===selMonth;
+    return `<th ${isSel?'id="derived-th-selected"':''} style="${isSel?'background:#1d1d1f;color:#fff;border-bottom:2px solid #1d1d1f;':''}">${y.slice(2)}년 ${mo}월</th>`;
+  }).join('');
+
+  const tbody = document.getElementById('derived-table-body');
+  const derivedData = filtered.map(m => ({ m, d: calcDerived(m) }));
+
+  let lastGroup = '';
+  tbody.innerHTML = DERIVED_TABLE_ROWS.map(row => {
+    const groupHeader = row.group !== lastGroup
+      ? `<tr><td colspan="${filtered.length+1}" style="font-size:10px;font-weight:600;color:var(--text-tertiary);padding:10px 14px 4px;background:#f9f9f9;text-transform:uppercase;letter-spacing:0.05em;">${row.group}</td></tr>`
+      : '';
+    lastGroup = row.group;
+
+    const cells = derivedData.map(({m, d}, i) => {
+      const val  = d[row.key] || 0;
+      const prev = i > 0 ? (derivedData[i-1].d[row.key] || 0) : null;
+      const isSel = m === selMonth;
+      const valStr = val.toFixed(1) + row.unit;
+      let momStr = '';
+      if (prev !== null) {
+        const diff = val - prev;
+        const diffStr = diff > 0 ? `+${diff.toFixed(1)}%p` : diff < 0 ? `${diff.toFixed(1)}%p` : '—';
+        const cls = diff > 0 ? 'cell-up' : diff < 0 ? 'cell-down' : 'cell-flat';
+        momStr = `<span class="${cls}">${diffStr}</span>`;
+      }
+      return `<td style="${isSel?'background:#f5f5f7;font-weight:600;':''}">${valStr}${momStr?`<br><span style="font-size:10px;">${momStr}</span>`:''}</td>`;
+    }).join('');
+
+    return `${groupHeader}<tr class="row-seg"><td style="padding-left:14px;">${row.label}</td>${cells}</tr>`;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    const th = document.getElementById('derived-th-selected');
+    const sw = document.querySelector('#derived-table-card .table-scroll');
+    if (th && sw) sw.scrollLeft = th.offsetLeft - sw.offsetWidth/2 + th.offsetWidth/2;
+  });
+}
+
+// ── 탭 전환 ──
+function switchDerivedTab(tab, el) {
+  currentDerivedTab = tab;
+  document.querySelectorAll('.derived-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  ['pairing-eff','app-act','cross'].forEach(t => {
+    document.getElementById(`derived-${t}`).style.display = t===tab ? 'block' : 'none';
+  });
+}
+
+// ── 기간 모달 ──
+function openDerivedPeriodModal() {
+  const ss=document.getElementById('derived-period-start'), es=document.getElementById('derived-period-end');
+  ss.innerHTML = es.innerHTML = '';
+  months.forEach(m => {
+    const y=m.slice(0,4), mo=parseInt(m.slice(4,6),10), ym=m.slice(0,6);
+    ss.innerHTML += `<option value="${ym}">${y}년 ${mo}월</option>`;
+    es.innerHTML += `<option value="${ym}">${y}년 ${mo}월</option>`;
+  });
+  ss.value = derivedPeriodStart || months.slice(-12)[0]?.slice(0,6);
+  es.value = derivedPeriodEnd   || months[months.length-1]?.slice(0,6);
+  document.getElementById('derived-period-modal').style.display = 'flex';
+}
+function closeDerivedPeriodModal() { document.getElementById('derived-period-modal').style.display='none'; }
+function setDerivedQuickPeriod(n) {
+  const ss=document.getElementById('derived-period-start'), es=document.getElementById('derived-period-end');
+  es.value = months[months.length-1]?.slice(0,6);
+  ss.value = n===0 ? months[0]?.slice(0,6) : months.slice(-n)[0]?.slice(0,6)||months[0]?.slice(0,6);
+}
+function applyDerivedPeriod() {
+  const s=document.getElementById('derived-period-start').value, e=document.getElementById('derived-period-end').value;
+  if(s>e){alert('시작월이 종료월보다 늦을 수 없어요.');return;}
+  derivedPeriodStart=s; derivedPeriodEnd=e;
+  const sy=s.slice(0,4),sm=parseInt(s.slice(4,6),10),ey=e.slice(0,4),em=parseInt(e.slice(4,6),10);
+  document.getElementById('derived-period-display').textContent=`${sy.slice(2)}.${String(sm).padStart(2,'0')} ~ ${ey.slice(2)}.${String(em).padStart(2,'0')}`;
+  closeDerivedPeriodModal(); renderDerivedPage();
+}
+
+// ── 엑셀 다운로드 ──
+function downloadDerivedExcel() {
+  const filtered = getDerivedFilteredMonths();
+  const header = ['지표', ...filtered.map(m => { const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10); return `${y}년 ${mo}월`; })];
+  const rows = DERIVED_TABLE_ROWS.map(row => {
+    const vals = filtered.map(m => calcDerived(m)[row.key]?.toFixed(2) || '0');
+    return [`${row.label}(${row.unit})`, ...vals];
+  });
+  const csv = [header,...rows].map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = `파생지표_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+document.getElementById('derived-period-modal').addEventListener('click', function(e) {
+  if(e.target===this) closeDerivedPeriodModal();
+});
+
 loadData();
 </script>
 </body>
