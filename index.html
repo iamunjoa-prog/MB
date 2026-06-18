@@ -656,7 +656,7 @@
   <!-- 헤더 -->
   <div class="page-header">
     <div>
-      <div class="page-title" style="color:#e8820c;">T아이디</div>
+      <div class="page-title">T아이디</div>
       <div class="page-sub">T아이디 연결 고객 · 고객군별 현황</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
@@ -727,17 +727,17 @@
   <div id="page-pairing" style="display:none;">
     <div class="page-header">
       <div>
-        <div class="page-title" style="color:#7c5ce7;">페어링</div>
+        <div class="page-title">페어링</div>
         <div class="page-sub">STB·단말 기준 페어링 및 유효·휴면 현황</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="month-selector" style="gap:8px;">
           <span style="font-size:13px;color:var(--text-tertiary);">조회 기간</span>
-          <span id="pairing-period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 12개 기준일</span>
+          <span id="pairing-period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 1년</span>
           <button class="dl-btn" onclick="openPairingPeriodModal()" style="font-size:11px;padding:4px 10px;">상세 설정</button>
         </div>
         <div class="month-selector">
-          <span style="font-size:13px;color:var(--text-tertiary);">기준일</span>
+          <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
           <select id="pairing-date-select" onchange="renderPairingPage()">
             <option value="">— 선택 —</option>
           </select>
@@ -2126,8 +2126,8 @@ function normalizePairingDate(value) {
 
 function formatPairingDate(value) {
   if (!value) return '';
-  const [y,m,d] = value.split('-');
-  return `${y.slice(2)}.${m}.${d}`;
+  const [y,m] = value.split('-');
+  return `${y.slice(2)}년 ${parseInt(m,10)}월`;
 }
 
 async function loadPairingData() {
@@ -2148,16 +2148,18 @@ async function loadPairingData() {
 
 function parsePairingCSV(text) {
   const lines = text.replace(/\r/g, '').split('\n').filter(line => line.trim());
-  const byDate = new Map();
+  const byMonth = new Map(); // key: YYYYMM, value: 최대 날짜 데이터
+
   lines.slice(1).forEach(line => {
     const cols = parsePairingCsvLine(line);
     const date = normalizePairingDate(cols[0]);
     if (!date) return;
+    const ym = date.slice(0, 7); // YYYY-MM
     const stbTotal = pairingNum(cols[1]);
     const deviceTotal = pairingNum(cols[2]);
     const stbValid = Math.min(stbTotal, pairingNum(cols[3]));
     const deviceValid = Math.min(deviceTotal, pairingNum(cols[4]));
-    byDate.set(date, {
+    const entry = {
       date,
       stbTotal,
       stbValid,
@@ -2165,10 +2167,14 @@ function parsePairingCSV(text) {
       deviceTotal,
       deviceValid,
       deviceDormant: Math.max(0, deviceTotal - deviceValid)
-    });
+    };
+    // 같은 월에서 날짜가 더 큰(말일에 가까운) 데이터로 덮어쓰기
+    if (!byMonth.has(ym) || date > byMonth.get(ym).date) {
+      byMonth.set(ym, entry);
+    }
   });
 
-  pairingAllData = Array.from(byDate.values()).sort((a,b) => a.date.localeCompare(b.date));
+  pairingAllData = Array.from(byMonth.values()).sort((a,b) => a.date.localeCompare(b.date));
   pairingDates = pairingAllData.map(d => d.date);
   if (!pairingDates.length) {
     showPairingBanner('⚠ 페어링 탭에서 유효한 데이터를 찾지 못했습니다.', 'warn');
@@ -2190,7 +2196,7 @@ function showPairingBanner(message, type) {
 function initPairingDateSelect() {
   const select = document.getElementById('pairing-date-select');
   select.innerHTML = pairingDates.map(date =>
-    `<option value="${date}">${date}</option>`
+    `<option value="${date}">${formatPairingDate(date)}</option>`
   ).join('');
   select.value = pairingDates[pairingDates.length - 1];
 }
@@ -2419,7 +2425,7 @@ function closePairingTrendPopup() {
 function openPairingPeriodModal() {
   const start = document.getElementById('pairing-period-start');
   const end = document.getElementById('pairing-period-end');
-  const options = pairingDates.map(date => `<option value="${date}">${date}</option>`).join('');
+  const options = pairingDates.map(date => `<option value="${date}">${formatPairingDate(date)}</option>`).join('');
   start.innerHTML = options;
   end.innerHTML = options;
   start.value = pairingPeriodStart || pairingDates.slice(-12)[0] || pairingDates[0];
@@ -2441,7 +2447,7 @@ function setPairingQuickPeriod(count) {
 function applyPairingPeriod() {
   const start = document.getElementById('pairing-period-start').value;
   const end = document.getElementById('pairing-period-end').value;
-  if (start > end) { alert('시작일이 종료일보다 늦을 수 없어요.'); return; }
+  if (start > end) { alert('시작월이 종료월보다 늦을 수 없어요.'); return; }
   pairingPeriodStart = start;
   pairingPeriodEnd = end;
   document.getElementById('pairing-period-display').textContent = `${formatPairingDate(start)} ~ ${formatPairingDate(end)}`;
