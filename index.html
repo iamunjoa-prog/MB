@@ -563,9 +563,15 @@
     <div class="app-sub">B tv · 월별 지표</div>
   </div>
 
+  <div class="nav-section">홈</div>
+
+  <a class="nav-item active" onclick="navigate('home',this)">
+    <span class="nav-icon">🏠</span> 메인
+  </a>
+
   <div class="nav-section">지표</div>
 
-  <a class="nav-item active" onclick="navigate('mau',this)">
+  <a class="nav-item" onclick="navigate('mau',this)">
     <span class="nav-icon">📊</span> MAU
   </a>
   <a class="nav-item" onclick="navigate('tid',this)">
@@ -589,8 +595,76 @@
 <!-- ── 메인 ── -->
 <main class="main">
 
+  <!-- ══ 메인 홈 페이지 ══ -->
+  <div id="page-home">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">안녕하세요 👋</div>
+        <div class="page-sub">B tv 앱 이용 현황 · 월별 핵심 지표</div>
+      </div>
+      <div class="month-selector">
+        <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
+        <select id="home-month-select" onchange="renderHomePage()">
+          <option value="">— 선택 —</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 핵심 KPI 3개 -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;" id="home-kpi-row"></div>
+
+    <!-- 차트 2개 -->
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:20px;">
+      <div class="chart-card">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">모바일 B tv 핵심 지표 Trend</div>
+          <div class="chart-sub" style="margin-bottom:0;">최근 12개월</div>
+        </div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="home-mau-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">고객 Seg. 비중</div>
+          <div class="chart-sub" style="margin-bottom:0;">MAU 당</div>
+        </div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="home-seg-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 교차 분석 핵심 지표 -->
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="display:flex;align-items:baseline;gap:7px;">
+          <div class="chart-title" style="font-weight:700;">교차 분석 핵심 지표</div>
+          <div class="chart-sub" style="margin-bottom:0;">전월 대비</div>
+        </div>
+        <button class="dl-btn" onclick="navigate('derived', document.querySelector('[onclick*=derived]'))" style="font-size:11px;padding:4px 10px;">자세히 보기 →</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;" id="home-derived-row"></div>
+    </div>
+
+    <!-- 월별 요약 표 -->
+    <div class="table-card" id="home-table-card">
+      <div class="table-header">
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <div class="chart-title" style="font-weight:700;">월별 핵심 지표</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">MAU · 페어링 · T아이디</div>
+        </div>
+        <button class="dl-btn" onclick="downloadHomeExcel()">⬇ 엑셀</button>
+      </div>
+      <div class="table-scroll">
+        <table class="mau-table" id="home-table">
+          <thead><tr id="home-table-head"></tr></thead>
+          <tbody id="home-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /page-home -->
+
   <!-- ══ MAU 페이지 ══ -->
-  <div id="page-mau">
+  <div id="page-mau" style="display:none;">
 
   <!-- 헤더 -->
   <div class="page-header">
@@ -873,7 +947,7 @@
             <div class="chart-title">앱 활성화 Trend</div>
             <div class="chart-sub" style="margin-bottom:0;">월별 추이</div>
           </div>
-          <div class="chart-wrap" style="height:300px;"><canvas id="derived-app-chart"></canvas></div>
+          <div class="chart-wrap" style="height:220px;"><canvas id="derived-app-chart"></canvas></div>
         </div>
       </div>
     </div>
@@ -1238,16 +1312,20 @@ function parseCSV(text) {
 
   buildMonthList();
   initMonthSelect();
+  initHomeMonthSelect();
   initDerivedMonthSelect();
   renderPage();
+  renderHomePage();
 }
 
 function useSampleData() {
   allData = SAMPLE.map(([dateCode, segment, uv]) => ({ dateCode, segment, uv }));
   buildMonthList();
   initMonthSelect();
+  initHomeMonthSelect();
   initDerivedMonthSelect();
   renderPage();
+  renderHomePage();
 }
 
 function buildMonthList() {
@@ -1779,24 +1857,260 @@ function showBanner(msg, type) {
 function navigate(page, el) {
   document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
   if (el) el.classList.add('active');
-  document.getElementById('page-mau').style.display = page==='mau' ? 'block' : 'none';
-  document.getElementById('page-tid').style.display = page==='tid' ? 'block' : 'none';
+  document.getElementById('page-home').style.display    = page==='home'    ? 'block' : 'none';
+  document.getElementById('page-mau').style.display     = page==='mau'     ? 'block' : 'none';
+  document.getElementById('page-tid').style.display     = page==='tid'     ? 'block' : 'none';
   document.getElementById('page-pairing').style.display = page==='pairing' ? 'block' : 'none';
   document.getElementById('page-derived').style.display = page==='derived' ? 'block' : 'none';
   const themes = {
-    mau: ['#0071e3', '#e8f1fb'],
-    tid: ['#e8820c', '#fff1df'],
+    home:    ['#1d1d1f', '#f5f5f7'],
+    mau:     ['#0071e3', '#e8f1fb'],
+    tid:     ['#e8820c', '#fff1df'],
     pairing: ['#7c5ce7', '#f0ecff'],
     derived: ['#1d1d1f', '#f5f5f7']
   };
-  const [accent, light] = themes[page] || themes.mau;
+  const [accent, light] = themes[page] || themes.home;
   document.documentElement.style.setProperty('--accent', accent);
   document.documentElement.style.setProperty('--accent-light', light);
   if (page==='tid'     && tidMonths.length===0)    loadTidData();
   if (page==='pairing' && pairingDates.length===0) loadPairingData();
   if (page==='derived') {
+    if (pairingDates.length===0) loadPairingData();
+    if (tidMonths.length===0)    loadTidData();
     if (months.length > 0) { initDerivedMonthSelect(); renderDerivedPage(); }
   }
+  if (page==='home' && months.length > 0) renderHomePage();
+}
+
+// ══════════════════════════════════════════════
+// 메인 홈 대시보드
+// ══════════════════════════════════════════════
+let homeMAUChart = null, homeSegChart = null;
+
+function initHomeMonthSelect() {
+  const sel = document.getElementById('home-month-select');
+  sel.innerHTML = '';
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = formatMonth(m);
+    sel.appendChild(opt);
+  });
+  sel.value = months[months.length - 1];
+}
+
+function renderHomePage() {
+  const selMonth = document.getElementById('home-month-select').value;
+  if (!selMonth) return;
+  const idx = months.indexOf(selMonth);
+  const prevMonth = idx > 0 ? months[idx-1] : null;
+  const thisData  = getMonthData(selMonth);
+  const prevData  = prevMonth ? getMonthData(prevMonth) : null;
+  const totalUV   = thisData[TOTAL_KEY] || 0;
+  const prevTotalUV = prevData ? (prevData[TOTAL_KEY] || 0) : 0;
+
+  // 페어링 데이터
+  const ym = selMonth.slice(0,6);
+  const pairDate = pairingDates?.find(d => d.slice(0,7).replace(/-/g,'') === ym);
+  const pairData = pairDate ? getPairingData(pairDate) : {};
+  const prevPairDate = prevMonth ? pairingDates?.find(d => d.slice(0,7).replace(/-/g,'') === prevMonth.slice(0,6)) : null;
+  const prevPairData = prevPairDate ? getPairingData(prevPairDate) : {};
+
+  // T아이디 데이터
+  const tidData = getTidMonthData ? getTidMonthData(selMonth) : {};
+  const prevTidData = prevMonth && getTidMonthData ? getTidMonthData(prevMonth) : {};
+
+  // ── KPI 카드 3개 ──
+  const kpiRow = document.getElementById('home-kpi-row');
+  kpiRow.innerHTML = [
+    homeKpiCard('MAU', totalUV, prevTotalUV, '명', '#0071e3', 'mau'),
+    homeKpiCard('페어링 (단말)', pairData.deviceTotal||0, prevPairData.deviceTotal||0, '대', '#7c5ce7', 'pairing'),
+    homeKpiCard('T아이디', tidData.total||0, prevTidData.total||0, '명', '#e8820c', 'tid'),
+  ].join('');
+
+  // ── MAU · 페어링 · T아이디 Trend ──
+  const recent12 = months.slice(-12);
+  const trendLabels = recent12.map(m => { const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10); return `${y.slice(2)}년 ${mo}월`; });
+  if (homeMAUChart) homeMAUChart.destroy();
+  homeMAUChart = new Chart(document.getElementById('home-mau-chart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [
+        { label:'MAU', data: recent12.map(m=>(getMonthData(m)[TOTAL_KEY]||0)/10000),
+          borderColor:'#0071e3', backgroundColor:'rgba(0,113,227,0.06)', fill:true,
+          borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#0071e3', tension:0.35 },
+        { label:'페어링 (단말)', data: recent12.map(m => {
+            const ym = m.slice(0,6);
+            const pd = pairingDates?.find(d => d.replace(/-/g,'').slice(0,6) === ym);
+            return pd ? (getPairingData(pd).deviceTotal||0)/10000 : null;
+          }), borderColor:'#7c5ce7', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:2.5, pointBackgroundColor:'#7c5ce7', tension:0.35, spanGaps:true },
+        { label:'T아이디', data: recent12.map(m => getTidMonthData ? (getTidMonthData(m).total||0)/10000 : null),
+          borderColor:'#e8820c', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:2.5, pointBackgroundColor:'#e8820c', tension:0.35, spanGaps:true },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:14,usePointStyle:true}},
+        tooltip:{backgroundColor:'rgba(255,255,255,0.95)',titleColor:'#1d1d1f',bodyColor:'#6e6e73',
+          borderColor:'rgba(0,0,0,0.08)',borderWidth:1,
+          callbacks:{label:c=>c.parsed.y!==null?` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}만명`:` ${c.dataset.label}: -`}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11},color:'#aeaeb2'}},
+        y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#aeaeb2',callback:v=>v+'만'}}
+      }
+    }
+  });
+
+  // ── Seg. 비중 바 차트 ──
+  const segLabels = SEGMENTS.map(s=>s.label);
+  const segValues = SEGMENTS.map(s => totalUV>0 ? +((thisData[s.key]||0)/totalUV*100).toFixed(1) : 0);
+  const segColors = SEGMENTS.map(s=>s.color);
+  if (homeSegChart) homeSegChart.destroy();
+  homeSegChart = new Chart(document.getElementById('home-seg-chart').getContext('2d'), {
+    type:'bar',
+    data:{ labels:segLabels, datasets:[{
+      data:segValues, backgroundColor:segColors, borderRadius:5, borderSkipped:false
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'rgba(255,255,255,0.95)',titleColor:'#1d1d1f',bodyColor:'#6e6e73',
+          borderColor:'rgba(0,0,0,0.08)',borderWidth:1,
+          callbacks:{label:c=>` ${c.parsed.y}%`}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11},color:'#aeaeb2'}},
+        y:{grid:{color:'rgba(0,0,0,0.04)'},max:100,ticks:{font:{size:11},color:'#aeaeb2',callback:v=>v+'%'}}
+      }
+    }
+  });
+
+  // ── 월별 요약 표 ──
+  renderHomeTable(selMonth);
+
+  // ── 교차 분석 핵심 지표 ──
+  const der = calcDerived(selMonth);
+  const derPrev = prevMonth ? calcDerived(prevMonth) : null;
+  document.getElementById('home-derived-row').innerHTML = [
+    homeDerivedCard('Stickiness', der.stickiness, derPrev?.stickiness, '%', '시청/MAU'),
+    homeDerivedCard('T아이디 연동률', der.tidLinkRate, derPrev?.tidLinkRate, '%', 'T아이디/MAU'),
+    homeDerivedCard('페어링률', der.pairingRate, derPrev?.pairingRate, '%', '단말/600만'),
+    homeDerivedCard('유효 페어링률', der.validRate, derPrev?.validRate, '%', '유효/전체'),
+  ].join('');
+}
+
+function homeKpiCard(label, val, prev, unit, color, page) {
+  const valStr = val >= 10000 ? (val/10000).toFixed(1)+'만' : val.toLocaleString();
+  const diff = val - (prev||0);
+  const pct  = prev > 0 ? ((diff/prev)*100).toFixed(1) : null;
+  const momHtml = pct !== null
+    ? `<span class="${diff>=0?'cell-up':'cell-down'}" style="font-size:12px;">${diff>=0?'+':''}${pct}%</span>`
+    : '<span class="cell-flat" style="font-size:12px;">—</span>';
+  return `
+    <div class="kpi-card" onclick="navigate('${page}', document.querySelector('[onclick*=\'${page}\']'))"
+         style="border-color:${color};border-width:1.5px;cursor:pointer;transition:box-shadow 0.15s;"
+         onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.10)'"
+         onmouseout="this.style.boxShadow='none'">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${color};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label">${label}</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:8px;">${valStr}<span style="font-size:13px;font-weight:500;color:var(--text-secondary);margin-left:2px;">${unit}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        ${momHtml}
+        <span style="font-size:11px;color:${color};font-weight:500;">자세히 →</span>
+      </div>
+    </div>`;
+}
+
+function renderHomeTable(selMonth) {
+  const thead = document.getElementById('home-table-head');
+  const tbody = document.getElementById('home-table-body');
+  if (!thead || !tbody) return;
+
+  // 헤더
+  thead.innerHTML = '<th>지표</th>' + months.map(m => {
+    const y=m.slice(0,4), mo=parseInt(m.slice(4,6),10);
+    const isSel = m === selMonth;
+    return `<th ${isSel?'id="home-th-selected"':''} style="${isSel?'background:#1d1d1f;color:#fff;border-bottom:2px solid #1d1d1f;':''}">${y.slice(2)}년 ${mo}월</th>`;
+  }).join('');
+
+  // 행 데이터
+  const rows = [
+    { label: 'MAU', fn: m => getMonthData(m)[TOTAL_KEY] || 0, unit: '만명' },
+    { label: '페어링 (단말)', fn: m => {
+        const ym = m.slice(0,6);
+        const pd = pairingDates?.find(d => d.replace(/-/g,'').slice(0,6) === ym);
+        return pd ? (getPairingData(pd).deviceTotal || 0) : 0;
+      }, unit: '만대' },
+    { label: 'T아이디', fn: m => getTidMonthData ? (getTidMonthData(m).total || 0) : 0, unit: '만명' },
+  ];
+
+  tbody.innerHTML = rows.map((row, ri) => {
+    const isTotal = ri === 0;
+    const cells = months.map((m, i) => {
+      const cur  = row.fn(m);
+      const prev = i > 0 ? row.fn(months[i-1]) : null;
+      const isSel = m === selMonth;
+      const valStr = cur >= 10000 ? (cur/10000).toFixed(1)+'만' : cur.toLocaleString();
+      let momStr = '';
+      if (prev !== null && prev > 0) {
+        const diff = cur - prev;
+        const pct = ((diff/prev)*100).toFixed(1);
+        if (diff > 0)      momStr = `<span class="cell-up">+${pct}%</span>`;
+        else if (diff < 0) momStr = `<span class="cell-down">▼${Math.abs(pct)}%</span>`;
+        else               momStr = `<span class="cell-flat">—</span>`;
+      }
+      const cs = isSel ? (isTotal ? 'background:#f0f6ff;font-weight:700;color:#0071e3;' : 'background:#f5f5f7;font-weight:600;') : '';
+      return `<td style="${cs}">${valStr}${momStr?`<br><span style="font-size:10px;">${momStr}</span>`:''}</td>`;
+    }).join('');
+    return `<tr class="${isTotal?'row-total':'row-seg'}"><td style="padding-left:14px;">${row.label}</td>${cells}</tr>`;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    const th = document.getElementById('home-th-selected');
+    const sw = document.querySelector('#home-table-card .table-scroll');
+    if (th && sw) sw.scrollLeft = th.offsetLeft - sw.offsetWidth/2 + th.offsetWidth/2;
+  });
+}
+
+function downloadHomeExcel() {
+  const header = ['지표', ...months.map(m => { const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10); return `${y}년 ${mo}월`; })];
+  const rows = [
+    ['MAU', ...months.map(m => getMonthData(m)[TOTAL_KEY]||0)],
+    ['페어링(단말)', ...months.map(m => {
+      const ym=m.slice(0,6);
+      const pd=pairingDates?.find(d=>d.replace(/-/g,'').slice(0,6)===ym);
+      return pd ? (getPairingData(pd).deviceTotal||0) : 0;
+    })],
+    ['T아이디', ...months.map(m => getTidMonthData?(getTidMonthData(m).total||0):0)],
+  ];
+  const csv = [header,...rows].map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = `핵심지표_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function homeDerivedCard(label, val, prev, unit, note) {
+  const valStr = val.toFixed(1) + unit;
+  const diff = prev !== null && prev !== undefined ? val - prev : null;
+  const diffStr = diff !== null ? (diff>0?`+${diff.toFixed(1)}%p`:diff<0?`${diff.toFixed(1)}%p`:'—') : '—';
+  const cls = diff > 0 ? 'cell-up' : diff < 0 ? 'cell-down' : 'cell-flat';
+  return `
+    <div class="kpi-card">
+      <div class="c-label">${label}</div>
+      <div style="font-size:18px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;">${valStr}</div>
+      <div class="c-meta">
+        <span class="${cls}" style="font-size:11px;">${diffStr}</span>
+        <span class="ratio-pill">${note}</span>
+      </div>
+    </div>`;
 }
 
 // ══════════════════════════════════════════════
@@ -2746,9 +3060,13 @@ function calcDerived(dateCode) {
   const mau   = getMonthData(dateCode);
   const tid   = getTidMonthData ? getTidMonthData(dateCode) : {};
   const pair  = (() => {
-    // 페어링은 YYYY-MM-DD 형태라 변환 필요
+    if (!pairingDates || pairingDates.length === 0) return {};
     const ym = dateCode.slice(0,6);
-    const pDate = pairingDates?.find(d => d.slice(0,7).replace(/-/g,'') === ym);
+    // pairingDates는 YYYY-MM-DD 형태
+    const pDate = pairingDates.find(d => {
+      const dym = d.replace(/-/g,'').slice(0,6);
+      return dym === ym;
+    });
     return pDate ? getPairingData(pDate) : {};
   })();
 
@@ -2844,7 +3162,6 @@ function renderDerivedKPI(cur, prev) {
     derivedKpiCard('Stickiness', cur.stickiness, prev?.stickiness, '%', '#0071e3', '시청/MAU'),
     derivedKpiCard('T아이디 연동률', cur.tidLinkRate, prev?.tidLinkRate, '%', '#e8820c', 'T아이디/MAU'),
     derivedKpiCard('구매 전환율', cur.buyConvRate, prev?.buyConvRate, '%', '#34c759', '구매/MAU'),
-    derivedKpiCard('페어링 MAU 비율', cur.pairingMauRate, prev?.pairingMauRate, '%', '#5e8ce4', '페어링MAU/MAU'),
   ].join('');
 
   // 교차
@@ -2898,7 +3215,6 @@ function renderDerivedCharts(filtered) {
       line('Stickiness(%)', derived.map(d=>d.stickiness), '#0071e3'),
       line('T아이디 연동률(%)', derived.map(d=>d.tidLinkRate), '#e8820c'),
       line('구매 전환율(%)', derived.map(d=>d.buyConvRate), '#34c759'),
-      line('페어링 MAU 비율(%)', derived.map(d=>d.pairingMauRate), '#5e8ce4', [5,4]),
     ]},
     options: chartOpts('%')
   });
