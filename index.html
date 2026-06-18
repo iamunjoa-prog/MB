@@ -368,6 +368,24 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .quick-btn {
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--font);
+    color: var(--text-secondary);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .quick-btn:hover {
+    background: #0071e3;
+    color: #fff;
+    border-color: #0071e3;
+  }
+
   .dl-btn {
     display: inline-flex;
     align-items: center;
@@ -512,13 +530,13 @@
 
   <div class="nav-section">지표</div>
 
-  <a class="nav-item active" onclick="navigate('mau')">
+  <a class="nav-item active" onclick="navigate('mau',this)">
     <span class="nav-icon">📊</span> MAU
   </a>
-  <a class="nav-item" onclick="navigate('tid')">
+  <a class="nav-item" onclick="navigate('tid',this)">
     <span class="nav-icon">🆔</span> T아이디
   </a>
-  <a class="nav-item" onclick="navigate('pairing')">
+  <a class="nav-item" onclick="navigate('pairing',this)">
     <span class="nav-icon">📱</span> 페어링
   </a>
 
@@ -533,17 +551,27 @@
 <!-- ── 메인 ── -->
 <main class="main">
 
+  <!-- ══ MAU 페이지 ══ -->
+  <div id="page-mau">
+
   <!-- 헤더 -->
   <div class="page-header">
     <div>
       <div class="page-title">MAU</div>
       <div class="page-sub">월간 활성 이용자 · 고객군별 현황</div>
     </div>
-    <div class="month-selector">
-      <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
-      <select id="month-select" onchange="renderPage()">
-        <option value="">— 선택 —</option>
-      </select>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="month-selector" style="gap:8px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">조회 기간</span>
+        <span id="period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 1년</span>
+        <button class="dl-btn" onclick="openPeriodModal()" style="font-size:11px;padding:4px 10px;">상세 설정</button>
+      </div>
+      <div class="month-selector">
+        <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
+        <select id="month-select" onchange="renderPage()">
+          <option value="">— 선택 —</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -609,9 +637,167 @@
     </div>
   </div>
 
+  </div><!-- /page-mau -->
+
+  <!-- ══ T아이디 페이지 ══ -->
+  <div id="page-tid" style="display:none;">
+
+  <!-- 헤더 -->
+  <div class="page-header">
+    <div>
+      <div class="page-title" style="color:#e8820c;">T아이디</div>
+      <div class="page-sub">T아이디 연결 고객 · 고객군별 현황</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="month-selector" style="gap:8px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">조회 기간</span>
+        <span id="tid-period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 1년</span>
+        <button class="dl-btn" onclick="openTidPeriodModal()" style="font-size:11px;padding:4px 10px;">상세 설정</button>
+      </div>
+      <div class="month-selector">
+        <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
+        <select id="tid-month-select" onchange="renderTidPage()">
+          <option value="">— 선택 —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="tid-status-banner" style="display:none;border-radius:var(--radius-sm);padding:10px 16px;font-size:12px;margin-bottom:20px;"></div>
+
+  <!-- KPI + 차트 3열 레이아웃 -->
+  <div class="center-layout">
+    <div class="kpi-col" id="tid-kpi-left"></div>
+    <div class="charts-col">
+      <div class="chart-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="display:flex;align-items:baseline;gap:7px;">
+            <div class="chart-title">T아이디 Trend</div>
+            <div class="chart-sub" style="margin-bottom:0;">최근 12개월</div>
+          </div>
+          <button class="dl-btn" onclick="openTidTrendPopup()" style="font-size:11px;padding:4px 10px;">전체 기간 ↗</button>
+        </div>
+        <div class="chart-wrap"><canvas id="tid-trend-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">고객 Seg. 비중</div>
+          <div class="chart-sub" style="margin-bottom:0;">전체 T아이디 대비</div>
+        </div>
+        <div class="chart-wrap"><canvas id="tid-ratio-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="kpi-col" id="tid-kpi-right"></div>
+  </div>
+
+  <!-- T아이디 상세 표 -->
+  <div class="table-card" id="tid-table-card">
+    <div class="table-header">
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <div class="chart-title" style="font-weight:700;">T아이디 상세 DATA</div>
+        <div style="font-size:11px;color:var(--text-tertiary);font-weight:400;">고객군별 이용자 수</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="dl-btn" onclick="downloadTidExcel()">⬇ 엑셀</button>
+        <button class="dl-btn" onclick="downloadTidImage()">🖼 이미지</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="mau-table" id="tid-table">
+        <thead><tr id="tid-table-head"></tr></thead>
+        <tbody id="tid-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  </div><!-- /page-tid -->
+
 </main>
 
-<!-- 전체 기간 팝업 -->
+<!-- T아이디 전체 기간 팝업 -->
+<div id="tid-trend-popup" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 32px;width:min(90vw,860px);box-shadow:0 24px 60px rgba(0,0,0,0.18);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1d1d1f;">T아이디 Trend — 전체 기간</div>
+        <div style="font-size:11px;color:#aeaeb2;margin-top:2px;">전체 데이터 기준</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="dl-btn" onclick="downloadTidTrendImage()">🖼 이미지 저장</button>
+        <button onclick="closeTidTrendPopup()" style="font-size:18px;background:none;border:none;cursor:pointer;color:#6e6e73;line-height:1;">✕</button>
+      </div>
+    </div>
+    <div style="position:relative;height:320px;">
+      <canvas id="tid-trend-chart-full"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- T아이디 기간 설정 모달 -->
+<div id="tid-period-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:28px 32px;width:360px;box-shadow:0 20px 50px rgba(0,0,0,0.15);">
+    <div style="font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:6px;">조회 기간 설정</div>
+    <div style="font-size:12px;color:#aeaeb2;margin-bottom:22px;">시작월과 종료월을 선택하세요</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">시작월</div>
+        <select id="tid-period-start" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">종료월</div>
+        <select id="tid-period-end" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+    </div>
+    <div style="margin-bottom:22px;">
+      <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:8px;">빠른 선택</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="quick-btn" onclick="setTidQuickPeriod(6)">최근 6개월</button>
+        <button class="quick-btn" onclick="setTidQuickPeriod(12)">최근 1년</button>
+        <button class="quick-btn" onclick="setTidQuickPeriod(24)">최근 2년</button>
+        <button class="quick-btn" onclick="setTidQuickPeriod(0)">전체 기간</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="dl-btn" onclick="closeTidPeriodModal()">취소</button>
+      <button onclick="applyTidPeriod()" style="font-size:13px;font-weight:600;font-family:-apple-system,sans-serif;background:#e8820c;color:#fff;border:none;border-radius:9px;padding:8px 20px;cursor:pointer;">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- 기간 설정 모달 -->
+<div id="period-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:28px 32px;width:360px;box-shadow:0 20px 50px rgba(0,0,0,0.15);">
+    <div style="font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:6px;">조회 기간 설정</div>
+    <div style="font-size:12px;color:#aeaeb2;margin-bottom:22px;">시작월과 종료월을 선택하세요</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">시작월</div>
+        <select id="period-start" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">종료월</div>
+        <select id="period-end" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+    </div>
+
+    <!-- 빠른 선택 -->
+    <div style="margin-bottom:22px;">
+      <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:8px;">빠른 선택</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="quick-btn" onclick="setQuickPeriod(6)">최근 6개월</button>
+        <button class="quick-btn" onclick="setQuickPeriod(12)">최근 1년</button>
+        <button class="quick-btn" onclick="setQuickPeriod(24)">최근 2년</button>
+        <button class="quick-btn" onclick="setQuickPeriod(0)">전체 기간</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="dl-btn" onclick="closePeriodModal()">취소</button>
+      <button onclick="applyPeriod()" style="font-size:13px;font-weight:600;font-family:-apple-system,sans-serif;background:#0071e3;color:#fff;border:none;border-radius:9px;padding:8px 20px;cursor:pointer;">적용</button>
+    </div>
+  </div>
+</div>
 <div id="trend-popup" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;padding:28px 32px;width:min(90vw,860px);box-shadow:0 24px 60px rgba(0,0,0,0.18);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
@@ -636,6 +822,7 @@
 // ══════════════════════════════════════════════
 const SHEET_ID  = '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY';
 const SHEET_GID = '1687437787';   // UV 탭 gid
+// T아이디 탭명: TID (SHEET_ID 동일 사용)
 
 // ══════════════════════════════════════════════
 // ② 고객군 정의 (B열 값 → 표시명 + 스타일)
@@ -809,10 +996,86 @@ function initMonthSelect() {
 // ══════════════════════════════════════════════
 // 렌더링
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// 조회 기간 상태
+// ══════════════════════════════════════════════
+let periodStart = null; // YYYYMM 형태
+let periodEnd   = null;
+
+function getFilteredMonths() {
+  if (!periodStart || !periodEnd) {
+    // 기본: 최근 12개월
+    return months.slice(-12);
+  }
+  return months.filter(m => {
+    const ym = m.slice(0,6);
+    return ym >= periodStart && ym <= periodEnd;
+  });
+}
+
+function openPeriodModal() {
+  // 시작/종료 셀렉트 채우기
+  const startSel = document.getElementById('period-start');
+  const endSel   = document.getElementById('period-end');
+  startSel.innerHTML = '';
+  endSel.innerHTML   = '';
+  months.forEach(m => {
+    const y = m.slice(0,4), mo = parseInt(m.slice(4,6),10);
+    const label = `${y}년 ${mo}월`;
+    const ym = m.slice(0,6);
+    startSel.innerHTML += `<option value="${ym}">${label}</option>`;
+    endSel.innerHTML   += `<option value="${ym}">${label}</option>`;
+  });
+  // 현재 설정값 반영
+  const curStart = periodStart || months.slice(-12)[0]?.slice(0,6);
+  const curEnd   = periodEnd   || months[months.length-1]?.slice(0,6);
+  startSel.value = curStart;
+  endSel.value   = curEnd;
+
+  document.getElementById('period-modal').style.display = 'flex';
+}
+
+function closePeriodModal() {
+  document.getElementById('period-modal').style.display = 'none';
+}
+
+function setQuickPeriod(n) {
+  const startSel = document.getElementById('period-start');
+  const endSel   = document.getElementById('period-end');
+  const endYM    = months[months.length-1]?.slice(0,6);
+  endSel.value   = endYM;
+  if (n === 0) {
+    startSel.value = months[0]?.slice(0,6);
+  } else {
+    startSel.value = months.slice(-n)[0]?.slice(0,6) || months[0]?.slice(0,6);
+  }
+}
+
+function applyPeriod() {
+  const s = document.getElementById('period-start').value;
+  const e = document.getElementById('period-end').value;
+  if (s > e) {
+    alert('시작월이 종료월보다 늦을 수 없어요.');
+    return;
+  }
+  periodStart = s;
+  periodEnd   = e;
+
+  // 표시 텍스트 업데이트
+  const sy = s.slice(0,4), sm = parseInt(s.slice(4,6),10);
+  const ey = e.slice(0,4), em = parseInt(e.slice(4,6),10);
+  document.getElementById('period-display').textContent =
+    `${sy.slice(2)}.${String(sm).padStart(2,'0')} ~ ${ey.slice(2)}.${String(em).padStart(2,'0')}`;
+
+  closePeriodModal();
+  renderPage();
+}
+
 function renderPage() {
   const selMonth = document.getElementById('month-select').value;
   if (!selMonth) return;
 
+  const filteredMonths = getFilteredMonths();
   const prevMonth = months[months.indexOf(selMonth) - 1] || null;
 
   // 이번 달 데이터
@@ -822,20 +1085,20 @@ function renderPage() {
   const totalUV = thisMonthData[TOTAL_KEY] || 0;
   const prevTotalUV = prevMonthData ? (prevMonthData[TOTAL_KEY] || 0) : 0;
 
-  // 고객군 KPI 카드 (전체 포함) — 미니차트 canvas도 여기서 삽입됨
+  // 고객군 KPI 카드
   renderKPIGrid(thisMonthData, prevMonthData, totalUV, prevTotalUV);
 
-  // 미니 바 차트 (canvas가 DOM에 추가된 뒤 실행)
+  // 미니 바 차트
   renderMiniChart();
 
-  // 추이 차트
-  renderTrendChart();
+  // 추이 차트 (조회기간 반영)
+  renderTrendChart(filteredMonths);
 
-  // 비율 도넛 (해당월 + 전월)
+  // 비율 바 차트
   renderRatioChart(thisMonthData, totalUV, prevMonthData, prevTotalUV, selMonth, prevMonth);
 
-  // 월별 MAU 표
-  renderMAUTable();
+  // 월별 MAU 표 (조회기간 반영)
+  renderMAUTable(filteredMonths);
 }
 
 function getMonthData(dateCode) {
@@ -846,9 +1109,9 @@ function getMonthData(dateCode) {
 }
 
 function renderKPIGrid(thisData, prevData, totalUV, prevTotalUV) {
-  // 좌: 전체(메인) + 페어링 + 시청  /  우: 구매 + T아이디 + 월정액
-  const leftSegs  = SEGMENTS.slice(0, 2);   // 페어링, 시청
-  const rightSegs = SEGMENTS.slice(2);       // 구매, T아이디, 월정액
+  // 좌: 전체(메인) + 페어링 + T아이디  /  우: 월정액 + 시청 + 구매
+  const leftSegs  = [SEGMENTS[0], SEGMENTS[3]]; // 페어링, T아이디
+  const rightSegs = [SEGMENTS[4], SEGMENTS[1], SEGMENTS[2]]; // 월정액, 시청, 구매
 
   function makeSegCard(seg) {
     const val   = thisData[seg.key]  || 0;
@@ -861,7 +1124,7 @@ function renderKPIGrid(thisData, prevData, totalUV, prevTotalUV) {
       <div class="c-value">${fmt(val)}<span>명</span></div>
       <div class="c-meta">
         ${momBadge(val, prev)}
-        <span class="ratio-pill">${ratio}%</span>
+        <span class="ratio-pill">비중 ${ratio}%</span>
       </div>
     `;
     return card;
@@ -985,9 +1248,8 @@ function trendChartOptions() {
   };
 }
 
-function renderTrendChart() {
-  // 최근 12개월만
-  const recent12 = months.slice(-12);
+function renderTrendChart(filteredMonths) {
+  const recent12 = (filteredMonths || months).slice(-12);
   const { labels, datasets } = buildTrendDatasets(recent12);
 
   if (trendChart) trendChart.destroy();
@@ -1102,8 +1364,9 @@ function renderRatioChart(thisData, totalUV, prevData, prevTotalUV, selMonth, pr
   });
 }
 
-function renderMAUTable() {
+function renderMAUTable(filteredMonths) {
   const selMonth = document.getElementById('month-select').value;
+  const targetMonths = filteredMonths || months;
 
   const TABLE_ROWS = [
     { key: TOTAL_KEY,         label: 'MAU',    isTotal: true },
@@ -1117,7 +1380,7 @@ function renderMAUTable() {
   // 헤더: 해당 월 파란색 강조
   const thead = document.getElementById('table-head');
   thead.innerHTML = `<th>고객군</th>` +
-    months.map(m => {
+    targetMonths.map(m => {
       const y  = m.slice(0,4);
       const mo = parseInt(m.slice(4,6), 10);
       const isSelected = m === selMonth;
@@ -1138,9 +1401,10 @@ function renderMAUTable() {
 
     let labelCell = `<td>${row.isTotal ? '' : '　'}${row.label}</td>`;
 
-    const cells = months.map((m, i) => {
+    const cells = targetMonths.map((m, i) => {
       const cur  = (getMonthData(m)[row.key] || 0);
-      const prev = i > 0 ? (getMonthData(months[i-1])[row.key] || 0) : null;
+      const prevM = i > 0 ? targetMonths[i-1] : null;
+      const prev = prevM ? (getMonthData(prevM)[row.key] || 0) : null;
       const isSelected = m === selMonth;
 
       const valStr = cur >= 10000
@@ -1151,7 +1415,7 @@ function renderMAUTable() {
       if (prev !== null && prev > 0) {
         const diff = cur - prev;
         const pct  = ((diff / prev) * 100).toFixed(1);
-        if (diff > 0)      momStr = `<span class="cell-up">▲${pct}%</span>`;
+        if (diff > 0)      momStr = `<span class="cell-up">+${pct}%</span>`;
         else if (diff < 0) momStr = `<span class="cell-down">▼${Math.abs(pct)}%</span>`;
         else               momStr = `<span class="cell-flat">—</span>`;
       }
@@ -1209,7 +1473,7 @@ function momBadge(cur, prev) {
   if (!prev) return '<span class="mom-badge flat">—</span>';
   const diff = cur - prev;
   const pct  = prev > 0 ? ((diff / prev) * 100).toFixed(1) : '0';
-  if (diff > 0) return `<span class="mom-badge up">▲ ${pct}%</span>`;
+  if (diff > 0) return `<span class="mom-badge up">+${pct}%</span>`;
   if (diff < 0) return `<span class="mom-badge down">▼ ${Math.abs(pct)}%</span>`;
   return '<span class="mom-badge flat">— 0%</span>';
 }
@@ -1223,13 +1487,12 @@ function showBanner(msg, type) {
   b.style.color       = type === 'warn' ? '#856404' : '#0c4a8f';
 }
 
-function navigate(page) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  // 추후 T아이디·페어링 탭 추가 시 여기서 전환
-  if (page !== 'mau') {
-    alert(`"${page}" 탭은 준비 중입니다.`);
-  }
+function navigate(page, el) {
+  document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('page-mau').style.display = page==='mau' ? 'block' : 'none';
+  document.getElementById('page-tid').style.display = page==='tid' ? 'block' : 'none';
+  if (page==='tid' && tidMonths.length===0) loadTidData();
 }
 
 // ══════════════════════════════════════════════
@@ -1283,7 +1546,394 @@ async function downloadImage() {
   a.click();
 }
 
-// 팝업 바깥 클릭 시 닫기
+document.getElementById('period-modal').addEventListener('click', function(e) {
+  if (e.target === this) closePeriodModal();
+});
+
+// ══════════════════════════════════════════════
+// T아이디 설정
+// ══════════════════════════════════════════════
+const TID_SHEET_TAB = 'TID';
+const TID_TOTAL_COLOR = '#e8820c';
+
+const TID_SEGMENTS = [
+  { col: 2, label: '자사',     color: '#e8820c' },
+  { col: 3, label: '페어링',  color: '#f5a34e' },
+  { col: 4, label: '미페어링',color: '#f9c88a' },
+  { col: 5, label: '타사',     color: '#fde4c0' },
+];
+const TID_TOTAL_COL = 1; // B열 = index 1
+
+let tidAllData  = []; // { dateCode, total, 자사, 페어링, 미페어링, 타사 }
+let tidMonths   = [];
+let tidPeriodStart = null;
+let tidPeriodEnd   = null;
+let tidTrendChart     = null;
+let tidRatioChart     = null;
+let tidTrendFullChart = null;
+
+// ── 데이터 로드 ──
+async function loadTidData() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(TID_SHEET_TAB)}&t=${Date.now()}`;
+  try {
+    const res  = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    if (text.includes('accounts.google.com')) throw new Error('시트 비공개');
+    parseTidCSV(text);
+  } catch(e) {
+    console.error('[TID 연결 오류]', e.message);
+  }
+}
+
+function parseTidCSV(text) {
+  const lines = text.trim().split('\n').slice(1); // 헤더 제거
+  const raw = {};
+
+  lines.forEach(line => {
+    if (!line.trim()) return;
+    const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g)
+      ?.map(c => c.replace(/^"|"$/g,'').trim()) || [];
+    const dateCode = cols[0]?.replace(/\D/g,'');
+    if (!dateCode || dateCode.length !== 8) return;
+    const ym = dateCode.slice(0,6);
+    // 같은 월 내 최대 날짜(말일)만 유지
+    if (!raw[ym] || dateCode > raw[ym].dateCode) {
+      raw[ym] = {
+        dateCode,
+        total:   parseNum(cols[1]),
+        자사:    parseNum(cols[2]),
+        페어링:  parseNum(cols[3]),
+        미페어링:parseNum(cols[4]),
+        타사:    parseNum(cols[5]),
+      };
+    }
+  });
+
+  tidAllData = Object.values(raw).sort((a,b) => a.dateCode.localeCompare(b.dateCode));
+  tidMonths  = tidAllData.map(d => d.dateCode);
+  console.log(`[TID 파싱] ${tidAllData.length}개월`);
+  initTidMonthSelect();
+  renderTidPage();
+}
+
+function parseNum(v) {
+  return parseInt((v||'').replace(/,/g,''), 10) || 0;
+}
+
+function getTidMonthData(dateCode) {
+  return tidAllData.find(d => d.dateCode === dateCode) || {};
+}
+
+function getTidFilteredMonths() {
+  if (!tidPeriodStart || !tidPeriodEnd) return tidMonths.slice(-12);
+  return tidMonths.filter(m => {
+    const ym = m.slice(0,6);
+    return ym >= tidPeriodStart && ym <= tidPeriodEnd;
+  });
+}
+
+function initTidMonthSelect() {
+  const sel = document.getElementById('tid-month-select');
+  sel.innerHTML = '';
+  tidMonths.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = formatMonth(m);
+    sel.appendChild(opt);
+  });
+  sel.value = tidMonths[tidMonths.length - 1];
+}
+
+// ── 렌더링 ──
+function renderTidPage() {
+  const selMonth = document.getElementById('tid-month-select').value;
+  if (!selMonth) return;
+
+  const filtered  = getTidFilteredMonths();
+  const idx       = tidMonths.indexOf(selMonth);
+  const prevMonth = idx > 0 ? tidMonths[idx - 1] : null;
+  const thisData  = getTidMonthData(selMonth);
+  const prevData  = prevMonth ? getTidMonthData(prevMonth) : null;
+
+  renderTidKPI(thisData, prevData, selMonth, prevMonth);
+  renderTidTrendChart(filtered);
+  renderTidRatioChart(thisData, prevData, selMonth, prevMonth);
+  renderTidTable(filtered, selMonth);
+}
+
+function renderTidKPI(thisData, prevData, selMonth, prevMonth) {
+  // 좌: 전체(메인) + 자사 + 페어링  /  우: 미페어링 + 타사
+  const leftCol  = document.getElementById('tid-kpi-left');
+  const rightCol = document.getElementById('tid-kpi-right');
+  leftCol.innerHTML = rightCol.innerHTML = '';
+
+  const total     = thisData.total || 0;
+  const prevTotal = prevData?.total || 0;
+
+  // 전체 메인 카드
+  const totalCard = document.createElement('div');
+  totalCard.className = 'kpi-card';
+  totalCard.style.cssText = `border-color:#e8820c;border-width:1.5px;`;
+  totalCard.innerHTML = `
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#e8820c;border-radius:14px 14px 0 0;"></div>
+    <div class="c-label" style="color:var(--text-tertiary);">T아이디</div>
+    <div class="c-value" style="font-size:18px;">${fmt(total)}<span>명</span></div>
+    <div class="c-meta" style="margin-bottom:10px;">
+      ${momBadge(total, prevTotal)}
+      <span style="font-size:11px;color:var(--text-tertiary);">기준 월</span>
+    </div>
+    <div class="mini-chart-wrap"><canvas id="tid-mini-chart"></canvas></div>
+  `;
+  leftCol.appendChild(totalCard);
+
+  // 자사, 페어링 → 좌
+  [
+    { key: '자사',    color: '#e8820c', topColor: '#e8820c' },
+    { key: '페어링', color: '#f5a34e', topColor: '#f5a34e' },
+  ].forEach(seg => {
+    const val  = thisData[seg.key] || 0;
+    const prev = prevData?.[seg.key] || 0;
+    const ratio = total > 0 ? ((val/total)*100).toFixed(1) : '—';
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.innerHTML = `
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${seg.topColor};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label">${seg.key}</div>
+      <div class="c-value">${fmt(val)}<span>명</span></div>
+      <div class="c-meta">${momBadge(val,prev)}<span class="ratio-pill">비중 ${ratio}%</span></div>
+    `;
+    leftCol.appendChild(card);
+  });
+
+  // 미페어링, 타사 → 우
+  [
+    { key: '미페어링', color: '#f9c88a', topColor: '#f9c88a' },
+    { key: '타사',     color: '#fde4c0', topColor: '#d4a05a' },
+  ].forEach(seg => {
+    const val  = thisData[seg.key] || 0;
+    const prev = prevData?.[seg.key] || 0;
+    const ratio = total > 0 ? ((val/total)*100).toFixed(1) : '—';
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.innerHTML = `
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${seg.topColor};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label">${seg.key}</div>
+      <div class="c-value">${fmt(val)}<span>명</span></div>
+      <div class="c-meta">${momBadge(val,prev)}<span class="ratio-pill">비중 ${ratio}%</span></div>
+    `;
+    rightCol.appendChild(card);
+  });
+
+  // 미니 바 차트
+  requestAnimationFrame(() => renderTidMiniChart());
+}
+
+function renderTidMiniChart() {
+  const recent = tidMonths.slice(-6);
+  const values = recent.map(m => (getTidMonthData(m).total || 0) / 10000);
+  const ctx = document.getElementById('tid-mini-chart');
+  if (!ctx) return;
+  new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: { labels: recent.map(m => parseInt(m.slice(4,6),10)+'월'),
+      datasets: [{ data: values,
+        backgroundColor: values.map((_,i) => i===values.length-1 ? TID_TOTAL_COLOR : '#fde4c0'),
+        borderRadius: 4, borderSkipped: false }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.y.toFixed(1)}만명`}}},
+      scales:{x:{display:false},y:{display:false,beginAtZero:false}} }
+  });
+}
+
+function buildTidDatasets(targetMonths) {
+  const labels = targetMonths.map(m => { const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10); return `${y.slice(2)}년 ${mo}월`; });
+  const keys = ['total','자사','페어링','미페어링','타사'];
+  const colors = [TID_TOTAL_COLOR,'#e8820c','#f5a34e','#f9c88a','#d4a05a'];
+  const lbls   = ['전체','자사','페어링','미페어링','타사'];
+  const datasets = keys.map((k,i) => ({
+    label: lbls[i],
+    data: targetMonths.map(m => (getTidMonthData(m)[k]||0)/10000),
+    borderColor: colors[i], backgroundColor:'transparent',
+    borderWidth: k==='total'?2.5:1.5, pointRadius: k==='total'?3.5:2.5,
+    pointBackgroundColor: colors[i], tension:0.35,
+  }));
+  return { labels, datasets };
+}
+
+function tidChartOptions() {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'bottom', labels:{font:{size:11,family:'-apple-system'},boxWidth:12,padding:14,usePointStyle:true}},
+      tooltip:{backgroundColor:'rgba(255,255,255,0.95)',titleColor:'#1d1d1f',bodyColor:'#6e6e73',
+        borderColor:'rgba(0,0,0,0.08)',borderWidth:1,padding:10,
+        callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}만명`}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:11},color:'#aeaeb2'}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#aeaeb2',callback:v=>v+'만'}}
+    }
+  };
+}
+
+function renderTidTrendChart(filteredMonths) {
+  const target = (filteredMonths||tidMonths).slice(-12);
+  const {labels,datasets} = buildTidDatasets(target);
+  if (tidTrendChart) tidTrendChart.destroy();
+  tidTrendChart = new Chart(
+    document.getElementById('tid-trend-chart').getContext('2d'),
+    {type:'line', data:{labels,datasets}, options:tidChartOptions()}
+  );
+}
+
+function renderTidRatioChart(thisData, prevData, selMonth, prevMonth) {
+  const segs = ['자사','페어링','미페어링','타사'];
+  const colors = ['#e8820c','#f5a34e','#f9c88a','#d4a05a'];
+  const total     = thisData?.total || 0;
+  const prevTotal = prevData?.total || 0;
+  const thisValues = segs.map(k => total>0 ? +((thisData[k]||0)/total*100).toFixed(1) : 0);
+  const prevValues = segs.map(k => prevTotal>0 ? +((prevData?.[k]||0)/prevTotal*100).toFixed(1) : 0);
+  const thisLabel  = selMonth  ? formatMonth(selMonth)  : '해당 월';
+  const prevLabel  = prevMonth ? formatMonth(prevMonth) : '전월';
+
+  if (tidRatioChart) tidRatioChart.destroy();
+  tidRatioChart = new Chart(
+    document.getElementById('tid-ratio-chart').getContext('2d'),
+    { type:'bar', data:{ labels:segs,
+        datasets:[
+          {label:thisLabel, data:thisValues, backgroundColor:colors, borderRadius:5, borderSkipped:false},
+          {label:prevLabel, data:prevValues, backgroundColor:colors.map(c=>c+'55'), borderRadius:5, borderSkipped:false},
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,boxHeight:10,padding:10}},
+          tooltip:{backgroundColor:'rgba(255,255,255,0.95)',titleColor:'#1d1d1f',bodyColor:'#6e6e73',
+            borderColor:'rgba(0,0,0,0.08)',borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#aeaeb2'}},
+          y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},color:'#aeaeb2',callback:v=>v+'%'},max:100}}}
+    }
+  );
+}
+
+function renderTidTable(filteredMonths, selMonth) {
+  const targetMonths = filteredMonths || tidMonths;
+  const ROWS = [
+    {key:'total',    label:'T아이디', isTotal:true},
+    {key:'자사',     label:'자사',    isTotal:false},
+    {key:'페어링',   label:'페어링',  isTotal:false},
+    {key:'미페어링', label:'미페어링',isTotal:false},
+    {key:'타사',     label:'타사',    isTotal:false},
+  ];
+
+  const thead = document.getElementById('tid-table-head');
+  thead.innerHTML = `<th>고객군</th>` + targetMonths.map(m => {
+    const y=m.slice(0,4), mo=parseInt(m.slice(4,6),10);
+    const isSel = m===selMonth;
+    return `<th ${isSel?'id="tid-th-selected"':''} style="${isSel?'background:#e8820c;color:#fff;border-bottom:2px solid #e8820c;':''}">${y.slice(2)}년 ${mo}월</th>`;
+  }).join('');
+
+  const tbody = document.getElementById('tid-table-body');
+  tbody.innerHTML = '';
+  ROWS.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.className = row.isTotal ? 'row-total' : 'row-seg';
+    const cells = targetMonths.map((m,i) => {
+      const cur   = getTidMonthData(m)[row.key] || 0;
+      const prevM = i>0 ? targetMonths[i-1] : null;
+      const prev  = prevM ? (getTidMonthData(prevM)[row.key]||0) : null;
+      const isSel = m===selMonth;
+      const valStr = cur>=10000 ? (cur/10000).toFixed(1)+'만' : cur.toLocaleString();
+      let momStr = '';
+      if (prev!==null && prev>0) {
+        const diff=cur-prev, pct=((diff/prev)*100).toFixed(1);
+        if(diff>0)      momStr=`<span class="cell-up">+${pct}%</span>`;
+        else if(diff<0) momStr=`<span class="cell-down">▼${Math.abs(pct)}%</span>`;
+        else            momStr=`<span class="cell-flat">—</span>`;
+      }
+      const cs = isSel?'style="background:#fff8f0;font-weight:600;color:#e8820c;"':'';
+      return `<td ${cs}>${valStr}${momStr?`<br><span style="font-size:10px;">${momStr}</span>`:''}</td>`;
+    }).join('');
+    tr.innerHTML = `<td>${row.isTotal?'':'　'}${row.label}</td>${cells}`;
+    tbody.appendChild(tr);
+  });
+
+  requestAnimationFrame(() => {
+    const th = document.getElementById('tid-th-selected');
+    const sw = document.querySelector('#tid-table-card .table-scroll');
+    if (th&&sw) sw.scrollLeft = th.offsetLeft - sw.offsetWidth/2 + th.offsetWidth/2;
+  });
+}
+
+// ── TID 전체기간 팝업 ──
+function openTidTrendPopup() {
+  document.getElementById('tid-trend-popup').style.display='flex';
+  const {labels,datasets} = buildTidDatasets(tidMonths);
+  if(tidTrendFullChart) tidTrendFullChart.destroy();
+  tidTrendFullChart = new Chart(
+    document.getElementById('tid-trend-chart-full').getContext('2d'),
+    {type:'line',data:{labels,datasets},options:tidChartOptions()}
+  );
+}
+function closeTidTrendPopup() {
+  document.getElementById('tid-trend-popup').style.display='none';
+  if(tidTrendFullChart){tidTrendFullChart.destroy();tidTrendFullChart=null;}
+}
+async function downloadTidTrendImage() {
+  if(!window.html2canvas){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';document.head.appendChild(s);await new Promise(r=>s.onload=r);}
+  const t=document.getElementById('tid-trend-popup').querySelector('div');
+  const c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff'});
+  const a=document.createElement('a');a.href=c.toDataURL('image/png');
+  a.download=`TID_Trend_전체기간_${new Date().toISOString().slice(0,10)}.png`;a.click();
+}
+
+// ── TID 기간 모달 ──
+function openTidPeriodModal() {
+  const ss=document.getElementById('tid-period-start'),es=document.getElementById('tid-period-end');
+  ss.innerHTML=es.innerHTML='';
+  tidMonths.forEach(m=>{const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10),ym=m.slice(0,6);
+    ss.innerHTML+=`<option value="${ym}">${y}년 ${mo}월</option>`;
+    es.innerHTML+=`<option value="${ym}">${y}년 ${mo}월</option>`;
+  });
+  ss.value=tidPeriodStart||tidMonths.slice(-12)[0]?.slice(0,6);
+  es.value=tidPeriodEnd  ||tidMonths[tidMonths.length-1]?.slice(0,6);
+  document.getElementById('tid-period-modal').style.display='flex';
+}
+function closeTidPeriodModal(){document.getElementById('tid-period-modal').style.display='none';}
+function setTidQuickPeriod(n){
+  const ss=document.getElementById('tid-period-start'),es=document.getElementById('tid-period-end');
+  es.value=tidMonths[tidMonths.length-1]?.slice(0,6);
+  ss.value=n===0?tidMonths[0]?.slice(0,6):tidMonths.slice(-n)[0]?.slice(0,6)||tidMonths[0]?.slice(0,6);
+}
+function applyTidPeriod(){
+  const s=document.getElementById('tid-period-start').value,e=document.getElementById('tid-period-end').value;
+  if(s>e){alert('시작월이 종료월보다 늦을 수 없어요.');return;}
+  tidPeriodStart=s;tidPeriodEnd=e;
+  const sy=s.slice(0,4),sm=parseInt(s.slice(4,6),10),ey=e.slice(0,4),em=parseInt(e.slice(4,6),10);
+  document.getElementById('tid-period-display').textContent=`${sy.slice(2)}.${String(sm).padStart(2,'0')} ~ ${ey.slice(2)}.${String(em).padStart(2,'0')}`;
+  closeTidPeriodModal();renderTidPage();
+}
+
+// ── 다운로드 ──
+function downloadTidExcel() {
+  const header=['고객군',...tidMonths.map(m=>{const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10);return `${y}년 ${mo}월`;})];
+  const ROWS=[{key:'total',label:'T아이디'},{key:'자사',label:'자사'},{key:'페어링',label:'페어링'},{key:'미페어링',label:'미페어링'},{key:'타사',label:'타사'}];
+  const rows=ROWS.map(r=>[r.label,...tidMonths.map(m=>getTidMonthData(m)[r.key]||0)]);
+  const csv=[header,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`TID_상세DATA_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+async function downloadTidImage(){
+  if(!window.html2canvas){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';document.head.appendChild(s);await new Promise(r=>s.onload=r);}
+  const c=await html2canvas(document.getElementById('tid-table-card'),{scale:2,backgroundColor:'#ffffff'});
+  const a=document.createElement('a');a.href=c.toDataURL('image/png');
+  a.download=`TID_상세DATA_${new Date().toISOString().slice(0,10)}.png`;a.click();
+}
+
+document.getElementById('tid-trend-popup').addEventListener('click',function(e){if(e.target===this)closeTidTrendPopup();});
+document.getElementById('tid-period-modal').addEventListener('click',function(e){if(e.target===this)closeTidPeriodModal();});
 document.getElementById('trend-popup').addEventListener('click', function(e) {
   if (e.target === this) closeTrendPopup();
 });
