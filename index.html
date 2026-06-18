@@ -503,6 +503,17 @@
     color: var(--text-secondary);
     font-size: 12px;
   }
+  #pairing-table tr.row-total td {
+    background: #f3efff;
+    color: var(--text-primary);
+  }
+  #pairing-table tr.row-total td:first-child {
+    background: #f3efff;
+    color: #6d4ed2;
+  }
+  #pairing-table tr.row-seg td:first-child {
+    background: #fff;
+  }
   .mau-table tr.row-seg td {
     color: var(--text-secondary);
     font-size: 12px;
@@ -712,7 +723,132 @@
 
   </div><!-- /page-tid -->
 
+  <!-- ══ 페어링 페이지 ══ -->
+  <div id="page-pairing" style="display:none;">
+    <div class="page-header">
+      <div>
+        <div class="page-title" style="color:#7c5ce7;">페어링</div>
+        <div class="page-sub">STB·단말 기준 페어링 및 유효·휴면 현황</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="month-selector" style="gap:8px;">
+          <span style="font-size:13px;color:var(--text-tertiary);">조회 기간</span>
+          <span id="pairing-period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 12개 기준일</span>
+          <button class="dl-btn" onclick="openPairingPeriodModal()" style="font-size:11px;padding:4px 10px;">상세 설정</button>
+        </div>
+        <div class="month-selector">
+          <span style="font-size:13px;color:var(--text-tertiary);">기준일</span>
+          <select id="pairing-date-select" onchange="renderPairingPage()">
+            <option value="">— 선택 —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="pairing-status-banner" style="display:none;border-radius:var(--radius-sm);padding:10px 16px;font-size:12px;margin-bottom:20px;"></div>
+
+    <div class="center-layout">
+      <div class="kpi-col" id="pairing-kpi-left">
+        <div class="loading" style="min-height:120px;"><div class="spinner"></div></div>
+      </div>
+      <div class="charts-col">
+        <div class="chart-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="display:flex;align-items:baseline;gap:7px;">
+              <div class="chart-title">페어링 Trend</div>
+              <div class="chart-sub" style="margin-bottom:0;">전체·유효 추이</div>
+            </div>
+            <button class="dl-btn" onclick="openPairingTrendPopup()" style="font-size:11px;padding:4px 10px;">전체 기간 ↗</button>
+          </div>
+          <div class="chart-wrap"><canvas id="pairing-trend-chart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+            <div class="chart-title">유효·휴면 비중</div>
+            <div class="chart-sub" style="margin-bottom:0;">STB·단말 기준 비교</div>
+          </div>
+          <div class="chart-wrap"><canvas id="pairing-ratio-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="kpi-col" id="pairing-kpi-right"></div>
+    </div>
+
+    <div class="table-card" id="pairing-table-card">
+      <div class="table-header">
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <div class="chart-title" style="font-weight:700;">페어링 상세 DATA</div>
+          <div style="font-size:11px;color:var(--text-tertiary);font-weight:400;">기준일별 전체·유효·휴면 수</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="dl-btn" onclick="downloadPairingExcel()">⬇ 엑셀</button>
+          <button class="dl-btn" onclick="downloadPairingImage()">🖼 이미지</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="mau-table" id="pairing-table">
+          <thead><tr id="pairing-table-head"></tr></thead>
+          <tbody id="pairing-table-body"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+        <p style="font-size:11px;color:var(--text-tertiary);line-height:1.6;">
+          * 휴면(2년 이상) = 전체 페어링 − 유효 페어링
+        </p>
+      </div>
+    </div>
+  </div><!-- /page-pairing -->
+
 </main>
+
+<!-- 페어링 전체 기간 팝업 -->
+<div id="pairing-trend-popup" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 32px;width:min(90vw,860px);box-shadow:0 24px 60px rgba(0,0,0,0.18);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1d1d1f;">페어링 Trend — 전체 기간</div>
+        <div style="font-size:11px;color:#aeaeb2;margin-top:2px;">STB·단말 전체 및 유효 페어링</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="dl-btn" onclick="downloadPairingTrendImage()">🖼 이미지 저장</button>
+        <button onclick="closePairingTrendPopup()" style="font-size:18px;background:none;border:none;cursor:pointer;color:#6e6e73;line-height:1;">✕</button>
+      </div>
+    </div>
+    <div style="position:relative;height:320px;">
+      <canvas id="pairing-trend-chart-full"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 페어링 기간 설정 모달 -->
+<div id="pairing-period-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:28px 32px;width:380px;box-shadow:0 20px 50px rgba(0,0,0,0.15);">
+    <div style="font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:6px;">조회 기간 설정</div>
+    <div style="font-size:12px;color:#aeaeb2;margin-bottom:22px;">시작일과 종료일을 선택하세요</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">시작일</div>
+        <select id="pairing-period-start" style="width:100%;font-size:12px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">종료일</div>
+        <select id="pairing-period-end" style="width:100%;font-size:12px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+    </div>
+    <div style="margin-bottom:22px;">
+      <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:8px;">빠른 선택</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="quick-btn" onclick="setPairingQuickPeriod(6)">최근 6개</button>
+        <button class="quick-btn" onclick="setPairingQuickPeriod(12)">최근 12개</button>
+        <button class="quick-btn" onclick="setPairingQuickPeriod(24)">최근 24개</button>
+        <button class="quick-btn" onclick="setPairingQuickPeriod(0)">전체 기간</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="dl-btn" onclick="closePairingPeriodModal()">취소</button>
+      <button onclick="applyPairingPeriod()" style="font-size:13px;font-weight:600;font-family:-apple-system,sans-serif;background:#7c5ce7;color:#fff;border:none;border-radius:9px;padding:8px 20px;cursor:pointer;">적용</button>
+    </div>
+  </div>
+</div>
 
 <!-- T아이디 전체 기간 팝업 -->
 <div id="tid-trend-popup" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
@@ -1492,7 +1628,17 @@ function navigate(page, el) {
   if (el) el.classList.add('active');
   document.getElementById('page-mau').style.display = page==='mau' ? 'block' : 'none';
   document.getElementById('page-tid').style.display = page==='tid' ? 'block' : 'none';
+  document.getElementById('page-pairing').style.display = page==='pairing' ? 'block' : 'none';
+  const themes = {
+    mau: ['#0071e3', '#e8f1fb'],
+    tid: ['#e8820c', '#fff1df'],
+    pairing: ['#7c5ce7', '#f0ecff']
+  };
+  const [accent, light] = themes[page] || themes.mau;
+  document.documentElement.style.setProperty('--accent', accent);
+  document.documentElement.style.setProperty('--accent-light', light);
   if (page==='tid' && tidMonths.length===0) loadTidData();
+  if (page==='pairing' && pairingDates.length===0) loadPairingData();
 }
 
 // ══════════════════════════════════════════════
@@ -1932,8 +2078,422 @@ async function downloadTidImage(){
   a.download=`TID_상세DATA_${new Date().toISOString().slice(0,10)}.png`;a.click();
 }
 
+// ══════════════════════════════════════════════
+// 페어링 설정
+// A: 기준일자 / B: 서비스관리번호 / C: 디바이스ID
+// D: 서비스관리번호_유효 / E: 디바이스ID_유효
+// ══════════════════════════════════════════════
+const PAIRING_SHEET_TAB = '페어링';
+const PAIRING_COLOR = '#7c5ce7';
+const PAIRING_STB_COLOR = '#8f73e8';
+const PAIRING_DEVICE_COLOR = '#5e3fc9';
+
+let pairingAllData = [];
+let pairingDates = [];
+let pairingPeriodStart = null;
+let pairingPeriodEnd = null;
+let pairingTrendChart = null;
+let pairingRatioChart = null;
+let pairingTrendFullChart = null;
+
+function parsePairingCsvLine(line) {
+  const values = [];
+  let value = '';
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (quoted && line[i + 1] === '"') { value += '"'; i++; }
+      else quoted = !quoted;
+    } else if (ch === ',' && !quoted) {
+      values.push(value.trim());
+      value = '';
+    } else value += ch;
+  }
+  values.push(value.trim());
+  return values;
+}
+
+function pairingNum(value) {
+  return Math.max(0, Number(String(value || '').replace(/[^0-9.-]/g, '')) || 0);
+}
+
+function normalizePairingDate(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (digits.length < 8) return '';
+  return `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`;
+}
+
+function formatPairingDate(value) {
+  if (!value) return '';
+  const [y,m,d] = value.split('-');
+  return `${y.slice(2)}.${m}.${d}`;
+}
+
+async function loadPairingData() {
+  showPairingBanner('페어링 데이터를 불러오는 중입니다.', 'info');
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(PAIRING_SHEET_TAB)}&t=${Date.now()}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    if (text.includes('accounts.google.com')) throw new Error('시트가 비공개 상태입니다.');
+    parsePairingCSV(text);
+    document.getElementById('pairing-status-banner').style.display = 'none';
+  } catch (e) {
+    console.error('[페어링 연결 오류]', e);
+    showPairingBanner(`⚠ 연결 실패: ${e.message}`, 'warn');
+  }
+}
+
+function parsePairingCSV(text) {
+  const lines = text.replace(/\r/g, '').split('\n').filter(line => line.trim());
+  const byDate = new Map();
+  lines.slice(1).forEach(line => {
+    const cols = parsePairingCsvLine(line);
+    const date = normalizePairingDate(cols[0]);
+    if (!date) return;
+    const stbTotal = pairingNum(cols[1]);
+    const deviceTotal = pairingNum(cols[2]);
+    const stbValid = Math.min(stbTotal, pairingNum(cols[3]));
+    const deviceValid = Math.min(deviceTotal, pairingNum(cols[4]));
+    byDate.set(date, {
+      date,
+      stbTotal,
+      stbValid,
+      stbDormant: Math.max(0, stbTotal - stbValid),
+      deviceTotal,
+      deviceValid,
+      deviceDormant: Math.max(0, deviceTotal - deviceValid)
+    });
+  });
+
+  pairingAllData = Array.from(byDate.values()).sort((a,b) => a.date.localeCompare(b.date));
+  pairingDates = pairingAllData.map(d => d.date);
+  if (!pairingDates.length) {
+    showPairingBanner('⚠ 페어링 탭에서 유효한 데이터를 찾지 못했습니다.', 'warn');
+    return;
+  }
+  initPairingDateSelect();
+  renderPairingPage();
+}
+
+function showPairingBanner(message, type) {
+  const banner = document.getElementById('pairing-status-banner');
+  banner.textContent = message;
+  banner.style.display = 'flex';
+  banner.style.background = type === 'warn' ? '#fff8e7' : '#f0ecff';
+  banner.style.border = `1px solid ${type === 'warn' ? '#f0c840' : '#c8baf6'}`;
+  banner.style.color = type === 'warn' ? '#856404' : '#563ca8';
+}
+
+function initPairingDateSelect() {
+  const select = document.getElementById('pairing-date-select');
+  select.innerHTML = pairingDates.map(date =>
+    `<option value="${date}">${date}</option>`
+  ).join('');
+  select.value = pairingDates[pairingDates.length - 1];
+}
+
+function getPairingData(date) {
+  return pairingAllData.find(d => d.date === date) || {};
+}
+
+function getPairingFilteredDates() {
+  if (!pairingPeriodStart || !pairingPeriodEnd) return pairingDates.slice(-12);
+  return pairingDates.filter(date => date >= pairingPeriodStart && date <= pairingPeriodEnd);
+}
+
+function renderPairingPage() {
+  const selectedDate = document.getElementById('pairing-date-select').value;
+  if (!selectedDate) return;
+  const index = pairingDates.indexOf(selectedDate);
+  const previousDate = index > 0 ? pairingDates[index - 1] : null;
+  const current = getPairingData(selectedDate);
+  const previous = previousDate ? getPairingData(previousDate) : null;
+  const filteredDates = getPairingFilteredDates();
+  renderPairingKPI(current, previous);
+  renderPairingTrendChart(filteredDates);
+  renderPairingRatioChart(current);
+  renderPairingTable(filteredDates, selectedDate);
+}
+
+function pairingMetricCard(label, value, previous, color, total, note) {
+  const ratio = total > 0 ? `${(value / total * 100).toFixed(1)}%` : '0.0%';
+  return `
+    <div class="kpi-card">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${color};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label">${label}</div>
+      <div class="c-value">${fmt(value)}<span>건</span></div>
+      <div class="c-meta">
+        ${momBadge(value, previous || 0)}
+        <span class="ratio-pill">${note || `비중 ${ratio}`}</span>
+      </div>
+    </div>`;
+}
+
+function renderPairingKPI(current, previous) {
+  const left = document.getElementById('pairing-kpi-left');
+  const right = document.getElementById('pairing-kpi-right');
+  left.innerHTML = `
+    <div class="kpi-card" style="border-color:${PAIRING_COLOR};border-width:1.5px;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${PAIRING_COLOR};border-radius:14px 14px 0 0;"></div>
+      <div class="c-label">단말 기준 페어링</div>
+      <div class="c-value" style="font-size:21px;">${fmt(current.deviceTotal)}<span>건</span></div>
+      <div class="c-meta">
+        ${momBadge(current.deviceTotal, previous?.deviceTotal || 0)}
+        <span class="ratio-pill">메인 KPI</span>
+      </div>
+      <div class="mini-chart-wrap"><canvas id="pairing-mini-chart"></canvas></div>
+    </div>
+    ${pairingMetricCard('STB 기준 · 전체', current.stbTotal, previous?.stbTotal, PAIRING_STB_COLOR, current.stbTotal, '전체')}
+    ${pairingMetricCard('STB 기준 · 유효', current.stbValid, previous?.stbValid, '#a58fec', current.stbTotal)}
+    ${pairingMetricCard('STB 기준 · 휴면(2년 이상)', current.stbDormant, previous?.stbDormant, '#c4b6f2', current.stbTotal)}
+  `;
+  right.innerHTML = `
+    ${pairingMetricCard('단말 기준 · 전체', current.deviceTotal, previous?.deviceTotal, PAIRING_DEVICE_COLOR, current.deviceTotal, '전체')}
+    ${pairingMetricCard('단말 기준 · 유효', current.deviceValid, previous?.deviceValid, '#7657d7', current.deviceTotal)}
+    ${pairingMetricCard('단말 기준 · 휴면(2년 이상)', current.deviceDormant, previous?.deviceDormant, '#b7a6ed', current.deviceTotal)}
+  `;
+  requestAnimationFrame(renderPairingMiniChart);
+}
+
+function renderPairingMiniChart() {
+  const canvas = document.getElementById('pairing-mini-chart');
+  if (!canvas) return;
+  const target = pairingDates.slice(-6);
+  new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: target.map(formatPairingDate),
+      datasets: [{
+        data: target.map(date => getPairingData(date).deviceTotal || 0),
+        backgroundColor: target.map((_,i) => i === target.length - 1 ? PAIRING_COLOR : '#ddd5f8'),
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.y)+'건'}}},
+      scales:{x:{display:false},y:{display:false,beginAtZero:false}}
+    }
+  });
+}
+
+function buildPairingTrendData(targetDates) {
+  return {
+    labels: targetDates.map(formatPairingDate),
+    datasets: [
+      {label:'STB 전체', key:'stbTotal', color:PAIRING_STB_COLOR, dash:[]},
+      {label:'STB 유효', key:'stbValid', color:'#b09df0', dash:[5,4]},
+      {label:'단말 전체', key:'deviceTotal', color:PAIRING_DEVICE_COLOR, dash:[]},
+      {label:'단말 유효', key:'deviceValid', color:'#8c72df', dash:[5,4]}
+    ].map(item => ({
+      label:item.label,
+      data:targetDates.map(date => getPairingData(date)[item.key] || 0),
+      borderColor:item.color,
+      backgroundColor:'transparent',
+      borderWidth:item.dash.length ? 1.7 : 2.4,
+      borderDash:item.dash,
+      pointRadius:targetDates.length > 30 ? 0 : 2.5,
+      pointBackgroundColor:item.color,
+      tension:0.3
+    }))
+  };
+}
+
+function pairingChartOptions() {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:10},boxWidth:11,padding:12,usePointStyle:true}},
+      tooltip:{backgroundColor:'rgba(255,255,255,0.96)',titleColor:'#1d1d1f',bodyColor:'#6e6e73',
+        borderColor:'rgba(0,0,0,0.08)',borderWidth:1,padding:10,
+        callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}건`}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#aeaeb2',maxRotation:0,autoSkip:true,maxTicksLimit:8}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#aeaeb2',callback:v=>fmt(v)}}
+    }
+  };
+}
+
+function renderPairingTrendChart(targetDates) {
+  const dates = targetDates.length ? targetDates : pairingDates.slice(-12);
+  if (pairingTrendChart) pairingTrendChart.destroy();
+  pairingTrendChart = new Chart(
+    document.getElementById('pairing-trend-chart').getContext('2d'),
+    {type:'line',data:buildPairingTrendData(dates),options:pairingChartOptions()}
+  );
+}
+
+function renderPairingRatioChart(current) {
+  if (pairingRatioChart) pairingRatioChart.destroy();
+  const stbValidRate = current.stbTotal ? current.stbValid / current.stbTotal * 100 : 0;
+  const deviceValidRate = current.deviceTotal ? current.deviceValid / current.deviceTotal * 100 : 0;
+  pairingRatioChart = new Chart(
+    document.getElementById('pairing-ratio-chart').getContext('2d'),
+    {
+      type:'bar',
+      data:{
+        labels:['STB 기준','단말 기준'],
+        datasets:[
+          {label:'유효',data:[stbValidRate,deviceValidRate],backgroundColor:'#7657d7',borderRadius:5,borderSkipped:false},
+          {label:'휴면(2년 이상)',data:[100-stbValidRate,100-deviceValidRate],backgroundColor:'#d8cff7',borderRadius:5,borderSkipped:false}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:12}},
+          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}}
+        },
+        scales:{
+          x:{stacked:true,grid:{display:false},ticks:{font:{size:11},color:'#6e6e73'}},
+          y:{stacked:true,max:100,grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>v+'%',font:{size:10},color:'#aeaeb2'}}
+        }
+      }
+    }
+  );
+}
+
+const PAIRING_TABLE_ROWS = [
+  {key:'stbTotal',label:'STB 기준 · 전체',group:'stb',isTotal:true},
+  {key:'stbValid',label:'STB 기준 · 유효',group:'stb'},
+  {key:'stbDormant',label:'STB 기준 · 휴면',group:'stb'},
+  {key:'deviceTotal',label:'단말 기준 · 전체',group:'device',isTotal:true},
+  {key:'deviceValid',label:'단말 기준 · 유효',group:'device'},
+  {key:'deviceDormant',label:'단말 기준 · 휴면',group:'device'}
+];
+
+function renderPairingTable(targetDates, selectedDate) {
+  const dates = targetDates.length ? targetDates : pairingDates;
+  document.getElementById('pairing-table-head').innerHTML =
+    '<th>구분</th>' + dates.map(date => {
+      const selected = date === selectedDate;
+      return `<th ${selected?'id="pairing-th-selected"':''} style="${selected?'background:#7c5ce7;color:#fff;border-bottom:2px solid #7c5ce7;':''}">${formatPairingDate(date)}</th>`;
+    }).join('');
+
+  document.getElementById('pairing-table-body').innerHTML = PAIRING_TABLE_ROWS.map(row => {
+    const cells = dates.map((date,index) => {
+      const current = getPairingData(date)[row.key] || 0;
+      const previous = index > 0 ? (getPairingData(dates[index-1])[row.key] || 0) : null;
+      let change = '';
+      if (previous !== null && previous > 0) {
+        const pct = (current - previous) / previous * 100;
+        change = pct > 0
+          ? `<span class="cell-up">+${pct.toFixed(1)}%</span>`
+          : pct < 0
+            ? `<span class="cell-down">▼ ${Math.abs(pct).toFixed(1)}%</span>`
+            : '<span class="cell-flat">—</span>';
+      }
+      const selected = date === selectedDate;
+      return `<td style="${selected?'background:#f5f1ff;font-weight:600;color:#6d4ed2;':''}">${fmt(current)}${change?`<br><span style="font-size:10px;">${change}</span>`:''}</td>`;
+    }).join('');
+    return `<tr class="${row.isTotal?'row-total':'row-seg'}"><td>${row.isTotal?'':'└ '}${row.label}</td>${cells}</tr>`;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    const th = document.getElementById('pairing-th-selected');
+    const scroll = document.querySelector('#pairing-table-card .table-scroll');
+    if (th && scroll) scroll.scrollLeft = th.offsetLeft - scroll.offsetWidth/2 + th.offsetWidth/2;
+  });
+}
+
+function openPairingTrendPopup() {
+  document.getElementById('pairing-trend-popup').style.display = 'flex';
+  if (pairingTrendFullChart) pairingTrendFullChart.destroy();
+  pairingTrendFullChart = new Chart(
+    document.getElementById('pairing-trend-chart-full').getContext('2d'),
+    {type:'line',data:buildPairingTrendData(pairingDates),options:pairingChartOptions()}
+  );
+}
+
+function closePairingTrendPopup() {
+  document.getElementById('pairing-trend-popup').style.display = 'none';
+  if (pairingTrendFullChart) { pairingTrendFullChart.destroy(); pairingTrendFullChart = null; }
+}
+
+function openPairingPeriodModal() {
+  const start = document.getElementById('pairing-period-start');
+  const end = document.getElementById('pairing-period-end');
+  const options = pairingDates.map(date => `<option value="${date}">${date}</option>`).join('');
+  start.innerHTML = options;
+  end.innerHTML = options;
+  start.value = pairingPeriodStart || pairingDates.slice(-12)[0] || pairingDates[0];
+  end.value = pairingPeriodEnd || pairingDates[pairingDates.length - 1];
+  document.getElementById('pairing-period-modal').style.display = 'flex';
+}
+
+function closePairingPeriodModal() {
+  document.getElementById('pairing-period-modal').style.display = 'none';
+}
+
+function setPairingQuickPeriod(count) {
+  const start = document.getElementById('pairing-period-start');
+  const end = document.getElementById('pairing-period-end');
+  end.value = pairingDates[pairingDates.length - 1];
+  start.value = count === 0 ? pairingDates[0] : pairingDates.slice(-count)[0] || pairingDates[0];
+}
+
+function applyPairingPeriod() {
+  const start = document.getElementById('pairing-period-start').value;
+  const end = document.getElementById('pairing-period-end').value;
+  if (start > end) { alert('시작일이 종료일보다 늦을 수 없어요.'); return; }
+  pairingPeriodStart = start;
+  pairingPeriodEnd = end;
+  document.getElementById('pairing-period-display').textContent = `${formatPairingDate(start)} ~ ${formatPairingDate(end)}`;
+  closePairingPeriodModal();
+  renderPairingPage();
+}
+
+function downloadPairingExcel() {
+  const dates = getPairingFilteredDates();
+  const header = ['구분', ...dates];
+  const rows = PAIRING_TABLE_ROWS.map(row => [
+    row.label,
+    ...dates.map(date => getPairingData(date)[row.key] || 0)
+  ]);
+  const csv = [header,...rows].map(row => row.join(',')).join('\n');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  link.download = `페어링_상세DATA_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+async function ensureHtml2Canvas() {
+  if (window.html2canvas) return;
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  document.head.appendChild(script);
+  await new Promise(resolve => script.onload = resolve);
+}
+
+async function downloadPairingImage() {
+  await ensureHtml2Canvas();
+  const canvas = await html2canvas(document.getElementById('pairing-table-card'),{scale:2,backgroundColor:'#ffffff'});
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = `페어링_상세DATA_${new Date().toISOString().slice(0,10)}.png`;
+  link.click();
+}
+
+async function downloadPairingTrendImage() {
+  await ensureHtml2Canvas();
+  const card = document.getElementById('pairing-trend-popup').firstElementChild;
+  const canvas = await html2canvas(card,{scale:2,backgroundColor:'#ffffff'});
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = `페어링_Trend_${new Date().toISOString().slice(0,10)}.png`;
+  link.click();
+}
+
 document.getElementById('tid-trend-popup').addEventListener('click',function(e){if(e.target===this)closeTidTrendPopup();});
 document.getElementById('tid-period-modal').addEventListener('click',function(e){if(e.target===this)closeTidPeriodModal();});
+document.getElementById('pairing-trend-popup').addEventListener('click',function(e){if(e.target===this)closePairingTrendPopup();});
+document.getElementById('pairing-period-modal').addEventListener('click',function(e){if(e.target===this)closePairingPeriodModal();});
 document.getElementById('trend-popup').addEventListener('click', function(e) {
   if (e.target === this) closeTrendPopup();
 });
