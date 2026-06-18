@@ -389,7 +389,7 @@
   }
   .mau-table th {
     text-align: right;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
     padding: 10px 14px 12px;
@@ -438,7 +438,7 @@
   }
   /* 하위 행 들여쓰기 */
   .mau-table tr.row-seg td:first-child {
-    padding-left: 14px;
+    padding-left: 24px;
     color: var(--text-secondary);
   }
   .mau-table tr.row-seg td {
@@ -516,14 +516,23 @@
     <!-- 중앙 차트 컬럼 -->
     <div class="charts-col">
       <div class="chart-card">
-        <div class="chart-title">고객군별 MAU 추이</div>
+        <div class="chart-title">MAU Trend</div>
         <div class="chart-sub">월별 변화</div>
         <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">이번 달 비중</div>
+        <div class="chart-title">고객 Seg. 비중</div>
         <div class="chart-sub">전체 MAU 대비</div>
-        <div class="chart-wrap"><canvas id="ratio-chart"></canvas></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-align:center;margin-bottom:6px;" id="ratio-label-this">해당 월</div>
+            <div class="chart-wrap"><canvas id="ratio-chart"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-align:center;margin-bottom:6px;" id="ratio-label-prev">전월</div>
+            <div class="chart-wrap"><canvas id="ratio-chart-prev"></canvas></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -537,7 +546,7 @@
   <div class="table-card">
     <div class="table-header">
       <div>
-        <div class="chart-title">월별 MAU</div>
+        <div class="chart-title" style="font-weight:700;">MAU 상세 DATA</div>
         <div class="chart-sub">고객군별 이용자 수</div>
       </div>
     </div>
@@ -555,7 +564,7 @@
 // ══════════════════════════════════════════════
 // ① 설정: 구글 시트 ID를 여기에 입력하세요
 // ══════════════════════════════════════════════
-const SHEET_ID = '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY';   // ← 여기에 시트 ID
+const SHEET_ID = '1eDv5l59RnYDvibgBVnnaSAFi6';   // ← 시트 ID
 const SHEET_TAB = 'UV';                  // 탭 이름
 
 // ══════════════════════════════════════════════
@@ -590,39 +599,43 @@ const SAMPLE = [
 // ══════════════════════════════════════════════
 // 파싱된 데이터 저장소
 // ══════════════════════════════════════════════
-let allData = [];   // { dateCode, segment, uv }
-let months = [];    // 정렬된 날짜코드 배열
-let trendChart = null;
-let ratioChart  = null;
-let miniChart   = null;
+let allData = [];
+let months = [];
+let trendChart    = null;
+let ratioChart    = null;
+let ratioChartPrev = null;
+let miniChart     = null;
 
 // ══════════════════════════════════════════════
 // 구글 시트 CSV 로드
 // ══════════════════════════════════════════════
 async function loadData() {
-  if (SHEET_ID === '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY') {
+  if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
     useSampleData();
     return;
   }
 
-  // gviz 방식 (공유 시트에서 가장 안정적)
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+  // export 방식 — 탭 구분 TSV로 받아서 인코딩 문제 우회
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=tsv&sheet=${encodeURIComponent(SHEET_TAB)}`;
 
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
+    const buffer = await res.arrayBuffer();
 
-    // 로그인 페이지로 리다이렉트된 경우 (시트 비공개)
-    if (text.includes('accounts.google.com') || text.includes('signin')) {
+    // UTF-8 먼저 시도, 깨지면 EUC-KR로 재시도
+    let text = new TextDecoder('utf-8').decode(buffer);
+    if (text.includes('?') || text.includes('\ufffd')) {
+      text = new TextDecoder('euc-kr').decode(buffer);
+    }
+
+    console.log('[원본 첫 3줄]', text.split('\n').slice(0,3));
+
+    if (text.includes('accounts.google.com')) {
       throw new Error('시트가 비공개 상태입니다. 공유 설정을 확인해주세요.');
     }
-    // 응답이 너무 짧으면 데이터 없음
-    if (text.trim().length < 10) {
-      throw new Error('데이터가 비어있거나 탭명이 다릅니다.');
-    }
 
-    parseCSV(text);
+    parseTSV(text);
     document.getElementById('sheet-link').textContent = 'Google Sheets ✓';
 
   } catch(e) {
@@ -630,6 +643,33 @@ async function loadData() {
     showBanner(`⚠ 연결 실패: ${e.message}`, 'warn');
     useSampleData();
   }
+}
+
+function parseTSV(text) {
+  const lines = text.trim().split('\n');
+  console.log('[TSV 첫 3줄]', lines.slice(0, 3));
+
+  allData = [];
+  lines.forEach(line => {
+    if (!line.trim()) return;
+    const cols = line.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
+    const dateCode = cols[0];
+    const segment  = cols[1];
+    const uv       = parseInt((cols[2] || '').replace(/,/g, ''), 10);
+    if (dateCode && segment && !isNaN(uv)) {
+      allData.push({ dateCode, segment, uv });
+    }
+  });
+
+  console.log(`[파싱 완료] ${allData.length}건`);
+
+  if (allData.length === 0) {
+    throw new Error('파싱된 데이터가 없습니다. 구조를 확인해주세요.');
+  }
+
+  buildMonthList();
+  initMonthSelect();
+  renderPage();
 }
 
 function parseCSV(text) {
@@ -715,8 +755,8 @@ function renderPage() {
   // 추이 차트
   renderTrendChart();
 
-  // 비율 도넛
-  renderRatioChart(thisMonthData, totalUV);
+  // 비율 도넛 (해당월 + 전월)
+  renderRatioChart(thisMonthData, totalUV, prevMonthData, prevTotalUV, selMonth, prevMonth);
 
   // 월별 MAU 표
   renderMAUTable();
@@ -756,7 +796,7 @@ function renderKPIGrid(thisData, prevData, totalUV, prevTotalUV) {
     const card = document.createElement('div');
     card.className = 'kpi-card c-total';
     card.innerHTML = `
-      <div class="c-label" style="color:var(--text-tertiary);">전체 MAU</div>
+      <div class="c-label" style="color:var(--text-tertiary);">MAU</div>
       <div class="c-value" style="color:var(--text-primary);font-size:26px;">${fmt(totalUV)}<span style="color:var(--text-secondary);">명</span></div>
       <div class="c-meta" style="margin-bottom:10px;">
         ${momBadge(totalUV, prevTotalUV)}
@@ -878,67 +918,74 @@ function renderTrendChart() {
   });
 }
 
-function renderRatioChart(thisData, totalUV) {
+function renderRatioChart(thisData, totalUV, prevData, prevTotalUV, selMonth, prevMonth) {
   const labels = SEGMENTS.map(s => s.label);
-  const values = SEGMENTS.map(s => thisData[s.key] || 0);
-  const colors = SEGMENTS.map(s => s.color);
+  const colors  = SEGMENTS.map(s => s.color);
 
-  if (ratioChart) ratioChart.destroy();
-  const ctx = document.getElementById('ratio-chart').getContext('2d');
-  ratioChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderWidth: 0,
-        hoverOffset: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '68%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: { size: 11, family: '-apple-system' },
-            boxWidth: 10, padding: 12,
-            usePointStyle: true,
-            generateLabels: chart => {
-              const d = chart.data;
-              return d.labels.map((lbl, i) => {
-                const val = d.datasets[0].data[i];
-                const pct = totalUV > 0 ? ((val/totalUV)*100).toFixed(1) : '0';
-                return {
-                  text: `${lbl} ${pct}%`,
-                  fillStyle: d.datasets[0].backgroundColor[i],
-                  hidden: false,
-                  index: i,
-                };
-              });
+  // 라벨 월명 업데이트
+  document.getElementById('ratio-label-this').textContent = selMonth ? formatMonth(selMonth) : '해당 월';
+  document.getElementById('ratio-label-prev').textContent = prevMonth ? formatMonth(prevMonth) : '전월';
+
+  function makeDoughnutConfig(data, total) {
+    const values = SEGMENTS.map(s => data ? (data[s.key] || 0) : 0);
+    return {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: { size: 10, family: '-apple-system' },
+              boxWidth: 8, padding: 8,
+              usePointStyle: true,
+              generateLabels: chart => {
+                return chart.data.labels.map((lbl, i) => {
+                  const val = chart.data.datasets[0].data[i];
+                  const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+                  return { text: `${lbl} ${pct}%`, fillStyle: colors[i], hidden: false, index: i };
+                });
+              }
             }
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(255,255,255,0.95)',
-          titleColor: '#1d1d1f',
-          bodyColor: '#6e6e73',
-          borderColor: 'rgba(0,0,0,0.08)',
-          borderWidth: 1,
-          callbacks: {
-            label: ctx => {
-              const val = ctx.parsed;
-              const pct = totalUV > 0 ? ((val/totalUV)*100).toFixed(1) : '0';
-              return ` ${fmt(val)}명 (${pct}%)`;
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            titleColor: '#1d1d1f',
+            bodyColor: '#6e6e73',
+            borderColor: 'rgba(0,0,0,0.08)',
+            borderWidth: 1,
+            callbacks: {
+              label: ctx => {
+                const val = ctx.parsed;
+                const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+                return ` ${fmt(val)}명 (${pct}%)`;
+              }
             }
           }
         }
       }
-    }
-  });
+    };
+  }
+
+  // 해당 월
+  if (ratioChart) ratioChart.destroy();
+  ratioChart = new Chart(
+    document.getElementById('ratio-chart').getContext('2d'),
+    makeDoughnutConfig(thisData, totalUV)
+  );
+
+  // 전월
+  if (ratioChartPrev) ratioChartPrev.destroy();
+  ratioChartPrev = new Chart(
+    document.getElementById('ratio-chart-prev').getContext('2d'),
+    makeDoughnutConfig(prevData, prevTotalUV)
+  );
 }
 
 function renderMAUTable() {
@@ -970,7 +1017,7 @@ function renderMAUTable() {
     tr.className = row.isTotal ? 'row-total' : 'row-seg';
 
     // 행 레이블
-    let labelCell = `<td>${row.isTotal ? '' : '↳ '}${row.label}</td>`;
+    let labelCell = `<td>${row.isTotal ? '' : '　'}${row.label}</td>`;
 
     // 월별 값 + MoM
     const cells = months.map((m, i) => {
