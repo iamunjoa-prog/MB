@@ -594,8 +594,8 @@
 // ══════════════════════════════════════════════
 // ① 설정: 구글 시트 ID를 여기에 입력하세요
 // ══════════════════════════════════════════════
-const SHEET_ID = '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY';   // ← 시트 ID
-const SHEET_TAB = 'UV';                  // 탭 이름
+const SHEET_ID  = '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY';
+const SHEET_GID = '1687437787';   // UV 탭 gid
 
 // ══════════════════════════════════════════════
 // ② 고객군 정의 (B열 값 → 표시명 + 스타일)
@@ -640,13 +640,13 @@ let miniChart     = null;
 // 구글 시트 CSV 로드
 // ══════════════════════════════════════════════
 async function loadData() {
-  if (SHEET_ID === '1eDv5l59RnYDvibgBVnnaSAFi6dOol7FFJqJD95PcSEY') {
+  if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
     useSampleData();
     return;
   }
 
   // export 방식 — 탭 구분 TSV로 받아서 인코딩 문제 우회
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}&t=${Date.now()}`;
 
   try {
     const res = await fetch(url);
