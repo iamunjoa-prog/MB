@@ -431,6 +431,11 @@
     padding-left: 14px;
     border-radius: var(--radius-sm) 0 0 0;
     min-width: 90px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #f5f5f7;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.06);
   }
   .mau-table th:last-child {
     border-radius: 0 var(--radius-sm) 0 0;
@@ -449,6 +454,11 @@
     font-weight: 500;
     color: var(--text-secondary);
     font-size: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: #fff;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.06);
   }
   /* 전체 MAU 행 강조 */
   .mau-table tr.row-total td {
@@ -459,15 +469,21 @@
   }
   .mau-table tr.row-total td:first-child {
     color: #0071e3;
-    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    background: #f0f6ff;
+    border-radius: 0;
   }
   .mau-table tr.row-total td:last-child {
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border-radius: 0;
   }
   /* 하위 행 들여쓰기 */
   .mau-table tr.row-seg td:first-child {
     padding-left: 24px;
     color: var(--text-secondary);
+    background: #fff;
+  }
+  .mau-table tr.row-seg td {
+    color: var(--text-secondary);
+    font-size: 12px;
   }
   .mau-table tr.row-seg td {
     color: var(--text-secondary);
@@ -544,16 +560,20 @@
     <!-- 중앙 차트 컬럼 -->
     <div class="charts-col">
       <div class="chart-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-          <div class="chart-title">MAU Trend</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="display:flex;align-items:baseline;gap:7px;">
+            <div class="chart-title">MAU Trend</div>
+            <div class="chart-sub" style="margin-bottom:0;">최근 12개월</div>
+          </div>
           <button class="dl-btn" onclick="openTrendPopup()" style="font-size:11px;padding:4px 10px;">전체 기간 ↗</button>
         </div>
-        <div class="chart-sub">최근 12개월</div>
         <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">고객 Seg. 비중</div>
-        <div class="chart-sub">전체 MAU 대비</div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:14px;">
+          <div class="chart-title">고객 Seg. 비중</div>
+          <div class="chart-sub" style="margin-bottom:0;">전체 MAU 대비</div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div>
             <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-align:center;margin-bottom:6px;" id="ratio-label-this">해당 월</div>
@@ -764,8 +784,22 @@ function useSampleData() {
 }
 
 function buildMonthList() {
-  const set = new Set(allData.map(d => d.dateCode));
-  months = [...set].sort();
+  // 연월(YYYYMM) 기준으로 그룹핑 후 각 월의 최대 날짜(말일)만 사용
+  const monthMap = {};
+  allData.forEach(d => {
+    const ym = d.dateCode.slice(0, 6); // YYYYMM
+    if (!monthMap[ym] || d.dateCode > monthMap[ym]) {
+      monthMap[ym] = d.dateCode;
+    }
+  });
+
+  // 말일 dateCode 목록으로 교체
+  const validDates = new Set(Object.values(monthMap));
+
+  // allData를 말일 데이터만 남기도록 필터
+  allData = allData.filter(d => validDates.has(d.dateCode));
+
+  months = Object.values(monthMap).sort();
 }
 
 function initMonthSelect() {
