@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>모바일 B tv 이용 현황</title>
+<title>앱 이용 현황</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -565,22 +565,22 @@
 
   <div class="nav-section">홈</div>
 
-  <a class="nav-item active" onclick="navigate('home',this)">
+  <a class="nav-item active" data-page="home" onclick="navigate('home',this)">
     <span class="nav-icon">🏠</span> 메인
   </a>
 
   <div class="nav-section">지표</div>
 
-  <a class="nav-item" onclick="navigate('mau',this)">
+  <a class="nav-item" data-page="mau" onclick="navigate('mau',this)">
     <span class="nav-icon">📊</span> MAU
   </a>
-  <a class="nav-item" onclick="navigate('tid',this)">
-    <span class="nav-icon">🆔</span> T아이디
-  </a>
-  <a class="nav-item" onclick="navigate('pairing',this)">
+  <a class="nav-item" data-page="pairing" onclick="navigate('pairing',this)">
     <span class="nav-icon">📱</span> 페어링
   </a>
-  <a class="nav-item" onclick="navigate('derived',this)">
+  <a class="nav-item" data-page="tid" onclick="navigate('tid',this)">
+    <span class="nav-icon">🆔</span> T아이디
+  </a>
+  <a class="nav-item" data-page="derived" onclick="navigate('derived',this)">
     <span class="nav-icon">📐</span> 교차 분석
   </a>
 
@@ -600,14 +600,21 @@
 
     <div class="page-header">
       <div>
-        <div class="page-title">안녕하세요. 모바일 B tv입니다. 👋</div>
-        <div class="page-sub">모바일 B tv 앱 이용 현황 · 월별 핵심 지표</div>
+        <div class="page-title">안녕하세요 👋</div>
+        <div class="page-sub">B tv 앱 이용 현황 · 월별 핵심 지표</div>
       </div>
-      <div class="month-selector">
-        <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
-        <select id="home-month-select" onchange="renderHomePage()">
-          <option value="">— 선택 —</option>
-        </select>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="month-selector" style="gap:8px;">
+          <span style="font-size:13px;color:var(--text-tertiary);">조회 기간</span>
+          <span id="home-period-display" style="font-size:13px;font-weight:500;color:var(--text-primary);">최근 1년</span>
+          <button class="dl-btn" onclick="openHomePeriodModal()" style="font-size:11px;padding:4px 10px;">상세 설정</button>
+        </div>
+        <div class="month-selector">
+          <span style="font-size:13px;color:var(--text-tertiary);">기준 월</span>
+          <select id="home-month-select" onchange="renderHomePage()">
+            <option value="">— 선택 —</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -995,6 +1002,37 @@
   </div><!-- /page-derived -->
 
 </main>
+
+<!-- 홈 기간 설정 모달 -->
+<div id="home-period-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:28px 32px;width:360px;box-shadow:0 20px 50px rgba(0,0,0,0.15);">
+    <div style="font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:6px;">조회 기간 설정</div>
+    <div style="font-size:12px;color:#aeaeb2;margin-bottom:22px;">시작월과 종료월을 선택하세요</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">시작월</div>
+        <select id="home-period-start" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:6px;">종료월</div>
+        <select id="home-period-end" style="width:100%;font-size:13px;font-family:-apple-system,sans-serif;padding:8px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;background:#f5f5f7;outline:none;color:#1d1d1f;"></select>
+      </div>
+    </div>
+    <div style="margin-bottom:22px;">
+      <div style="font-size:11px;font-weight:600;color:#6e6e73;margin-bottom:8px;">빠른 선택</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="quick-btn" onclick="setHomeQuickPeriod(6)">최근 6개월</button>
+        <button class="quick-btn" onclick="setHomeQuickPeriod(12)">최근 1년</button>
+        <button class="quick-btn" onclick="setHomeQuickPeriod(24)">최근 2년</button>
+        <button class="quick-btn" onclick="setHomeQuickPeriod(0)">전체 기간</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="dl-btn" onclick="closeHomePeriodModal()">취소</button>
+      <button onclick="applyHomePeriod()" style="font-size:13px;font-weight:600;font-family:-apple-system,sans-serif;background:#1d1d1f;color:#fff;border:none;border-radius:9px;padding:8px 20px;cursor:pointer;">적용</button>
+    </div>
+  </div>
+</div>
 
 <!-- 파생지표 기간 설정 모달 -->
 <div id="derived-period-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
@@ -1880,11 +1918,53 @@ function navigate(page, el) {
     if (months.length > 0) { initDerivedMonthSelect(); renderDerivedPage(); }
   }
   if (page==='home' && months.length > 0) renderHomePage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ══════════════════════════════════════════════
 // 메인 홈 대시보드
 // ══════════════════════════════════════════════
+let homePeriodStart = null;
+let homePeriodEnd   = null;
+
+function getHomeFilteredMonths() {
+  if (!homePeriodStart || !homePeriodEnd) return months.slice(-12);
+  return months.filter(m => m.slice(0,6) >= homePeriodStart && m.slice(0,6) <= homePeriodEnd);
+}
+
+function openHomePeriodModal() {
+  const ss = document.getElementById('home-period-start');
+  const es = document.getElementById('home-period-end');
+  ss.innerHTML = es.innerHTML = '';
+  months.forEach(m => {
+    const y=m.slice(0,4), mo=parseInt(m.slice(4,6),10), ym=m.slice(0,6);
+    ss.innerHTML += `<option value="${ym}">${y}년 ${mo}월</option>`;
+    es.innerHTML += `<option value="${ym}">${y}년 ${mo}월</option>`;
+  });
+  ss.value = homePeriodStart || months.slice(-12)[0]?.slice(0,6);
+  es.value = homePeriodEnd   || months[months.length-1]?.slice(0,6);
+  document.getElementById('home-period-modal').style.display = 'flex';
+}
+function closeHomePeriodModal() { document.getElementById('home-period-modal').style.display = 'none'; }
+function setHomeQuickPeriod(n) {
+  const ss=document.getElementById('home-period-start'), es=document.getElementById('home-period-end');
+  es.value = months[months.length-1]?.slice(0,6);
+  ss.value = n===0 ? months[0]?.slice(0,6) : months.slice(-n)[0]?.slice(0,6)||months[0]?.slice(0,6);
+}
+function applyHomePeriod() {
+  const s=document.getElementById('home-period-start').value, e=document.getElementById('home-period-end').value;
+  if(s>e){alert('시작월이 종료월보다 늦을 수 없어요.');return;}
+  homePeriodStart=s; homePeriodEnd=e;
+  const sy=s.slice(0,4),sm=parseInt(s.slice(4,6),10),ey=e.slice(0,4),em=parseInt(e.slice(4,6),10);
+  document.getElementById('home-period-display').textContent=`${sy.slice(2)}.${String(sm).padStart(2,'0')} ~ ${ey.slice(2)}.${String(em).padStart(2,'0')}`;
+  closeHomePeriodModal();
+  renderHomePage();
+}
+
+document.getElementById('home-period-modal').addEventListener('click', function(e) {
+  if(e.target===this) closeHomePeriodModal();
+});
+
 let homeMAUChart = null, homeSegChart = null;
 
 function initHomeMonthSelect() {
@@ -1929,7 +2009,7 @@ function renderHomePage() {
   ].join('');
 
   // ── MAU · 페어링 · T아이디 Trend ──
-  const recent12 = months.slice(-12);
+  const recent12 = getHomeFilteredMonths();
   const trendLabels = recent12.map(m => { const y=m.slice(0,4),mo=parseInt(m.slice(4,6),10); return `${y.slice(2)}년 ${mo}월`; });
   if (homeMAUChart) homeMAUChart.destroy();
   homeMAUChart = new Chart(document.getElementById('home-mau-chart').getContext('2d'), {
@@ -1993,7 +2073,7 @@ function renderHomePage() {
   });
 
   // ── 월별 요약 표 ──
-  renderHomeTable(selMonth);
+  renderHomeTable(selMonth, getHomeFilteredMonths());
 
   // ── 교차 분석 핵심 지표 ──
   const der = calcDerived(selMonth);
@@ -2014,8 +2094,11 @@ function homeKpiCard(label, val, prev, unit, color, page) {
     ? `<span class="${diff>=0?'cell-up':'cell-down'}" style="font-size:12px;">${diff>=0?'+':''}${pct}%</span>`
     : '<span class="cell-flat" style="font-size:12px;">—</span>';
   return `
-    <div class="kpi-card" onclick="navigate('${page}', document.querySelector('[onclick*=\'${page}\']'))"
+    <div class="kpi-card"
          style="border-color:${color};border-width:1.5px;cursor:pointer;transition:box-shadow 0.15s;"
+         role="link" tabindex="0" aria-label="${label} 메뉴로 이동"
+         onclick="navigateToPage('${page}')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateToPage('${page}')}"
          onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.10)'"
          onmouseout="this.style.boxShadow='none'">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${color};border-radius:14px 14px 0 0;"></div>
@@ -2023,18 +2106,29 @@ function homeKpiCard(label, val, prev, unit, color, page) {
       <div style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:8px;">${valStr}<span style="font-size:13px;font-weight:500;color:var(--text-secondary);margin-left:2px;">${unit}</span></div>
       <div style="display:flex;align-items:center;justify-content:space-between;">
         ${momHtml}
-        <span style="font-size:11px;color:${color};font-weight:500;">자세히 →</span>
+        <button type="button"
+                onclick="event.stopPropagation();navigateToPage('${page}')"
+                style="font-size:11px;color:${color};font-weight:600;font-family:var(--font);background:transparent;border:0;padding:4px 0;cursor:pointer;">
+          자세히 →
+        </button>
       </div>
     </div>`;
 }
 
-function renderHomeTable(selMonth) {
+// 페이지 이동 헬퍼 (KPI 카드 클릭용)
+function navigateToPage(page) {
+  const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
+  navigate(page, navEl);
+}
+
+function renderHomeTable(selMonth, filteredMonths) {
   const thead = document.getElementById('home-table-head');
   const tbody = document.getElementById('home-table-body');
   if (!thead || !tbody) return;
+  const targetMonths = filteredMonths || months;
 
   // 헤더
-  thead.innerHTML = '<th>지표</th>' + months.map(m => {
+  thead.innerHTML = '<th>지표</th>' + targetMonths.map(m => {
     const y=m.slice(0,4), mo=parseInt(m.slice(4,6),10);
     const isSel = m === selMonth;
     return `<th ${isSel?'id="home-th-selected"':''} style="${isSel?'background:#1d1d1f;color:#fff;border-bottom:2px solid #1d1d1f;':''}">${y.slice(2)}년 ${mo}월</th>`;
@@ -2053,9 +2147,9 @@ function renderHomeTable(selMonth) {
 
   tbody.innerHTML = rows.map((row, ri) => {
     const isTotal = ri === 0;
-    const cells = months.map((m, i) => {
+    const cells = targetMonths.map((m, i) => {
       const cur  = row.fn(m);
-      const prev = i > 0 ? row.fn(months[i-1]) : null;
+      const prev = i > 0 ? row.fn(targetMonths[i-1]) : null;
       const isSel = m === selMonth;
       const valStr = cur >= 10000 ? (cur/10000).toFixed(1)+'만' : cur.toLocaleString();
       let momStr = '';
