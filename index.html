@@ -1917,6 +1917,7 @@ function navigate(page, el) {
     if (tidMonths.length===0)    loadTidData();
     if (months.length > 0) { initDerivedMonthSelect(); renderDerivedPage(); }
   }
+  if (page==='mau'  && months.length > 0) renderPage();
   if (page==='home' && months.length > 0) renderHomePage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
