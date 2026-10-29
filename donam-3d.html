@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>돈암삼성 현관·주방 4안</title>
+<title>돈암삼성 현관·주방 5안</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -36,8 +36,9 @@ h1{margin:0;font-size:16px;font-weight:600;text-wrap:balance;line-height:1.35}
 .seg button{border:0;background:transparent;color:var(--fg);font:500 13px var(--sans);padding:8px 6px;cursor:pointer}
 .seg button+button{border-left:1px solid var(--line)}
 .seg4{grid-template-columns:1fr 1fr}
-.seg4 button:nth-child(3),.seg4 button:nth-child(4){border-top:1px solid var(--line)}
-.seg4 button:nth-child(3){border-left:0}
+.seg4 button:nth-child(n+3){border-top:1px solid var(--line)}
+.seg4 button:nth-child(3),.seg4 button:nth-child(5){border-left:0}
+.seg4 button:nth-child(5){grid-column:1/-1}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
 .views{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .views button,.chk{font:500 12.5px var(--sans);color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:7px;padding:7px 8px;cursor:pointer;text-align:left}
@@ -89,8 +90,8 @@ body.walking .hint{display:none}
 <aside class="sheet" id="sheet">
   <div class="head">
     <div>
-      <h1>돈암삼성 79㎡ · 현관·주방 비교 4안</h1>
-      <p class="sub">1·2안은 신발장을 인터폰 벽까지 연장한 원안(냉장고 가로/세로), 3안은 현관 개편(신발장 절반+전신거울·여닫이 중문·복도 코너 붙박이장), 4안은 3안에서 반도형 식탁을 빼고 싱크대 앞 아일랜드</p>
+      <h1>돈암삼성 79㎡ · 현관·주방 비교 5안</h1>
+      <p class="sub">1·2안은 신발장을 인터폰 벽까지 연장한 원안(냉장고 가로/세로), 3안은 현관 개편(신발장 절반+전신거울·여닫이 중문·복도 코너 붙박이장), 4안은 3안 + 싱크대 앞 아일랜드, 5안은 4안 + 세탁실 입구를 현관으로 옮겨 아치+커튼 · 조리대를 붙박이장까지 연장</p>
     </div>
     <button class="collapse" id="collapse" aria-expanded="true">접기</button>
   </div>
@@ -108,8 +109,9 @@ body.walking .hint{display:none}
       <div class="seg seg4" role="group" aria-label="안 비교" id="plan-seg" style="margin-top:8px">
         <button id="p-1" aria-pressed="false">1안 · 냉장고 가로</button>
         <button id="p-2" aria-pressed="false">2안 · 냉장고 세로</button>
-        <button id="p-3" aria-pressed="true">3안 · 현관 개편</button>
+        <button id="p-3" aria-pressed="false">3안 · 현관 개편</button>
         <button id="p-4" aria-pressed="false">4안 · + 아일랜드</button>
+        <button id="p-5" aria-pressed="true">5안 · 세탁실 아치 + 조리대 연장</button>
       </div>
     </div>
     <div>
@@ -143,12 +145,17 @@ body.walking .hint{display:none}
       </dl>
       <dl id="dim-new">
         <dt>신발장</dt><dd>570 × 352 mm</dd>
-        <dt>전신 거울장</dt><dd>498 × 180 mm</dd>
+        <dt>전신 거울장</dt><dd>573 × 180 mm</dd>
         <dt>입구 붙박이장</dt><dd>507 × 400 mm</dd>
         <dt>가구 높이</dt><dd>2,300 mm</dd>
         <dt>중문 개구부</dt><dd>900 mm (여닫이)</dd>
         <dt>현관 통로 폭</dt><dd>922 mm</dd>
         <dt>복도 유효폭</dt><dd>871 mm</dd>
+      </dl>
+      <dl id="dim-5">
+        <dt>세탁실 아치</dt><dd>800 · R400 · 2,300</dd>
+        <dt>조리대 연장</dt><dd>849 × 600 mm</dd>
+        <dt>주방 쪽 구 입구</dt><dd>벽으로 막음</dd>
       </dl>
       <dl id="dim-isl">
         <dt>아일랜드</dt><dd>1,800 × 600 mm</dd>
@@ -163,6 +170,7 @@ body.walking .hint{display:none}
         <dt>벽</dt><dd style="font-family:var(--sans)">웜화이트 벽지</dd>
         <dt>신발장</dt><dd style="font-family:var(--sans)">화이트 플랫 · 오크 니치 · 하부 간접등</dd>
         <dt>거울장 / 붙박이장</dt><dd style="font-family:var(--sans)">화이트 플랫 · 전신거울 · 선반형</dd>
+        <dt>세탁실 아치 (5안)</dt><dd style="font-family:var(--sans)">문 없음 · 린넨 커튼</dd>
         <dt>중문</dt><dd style="font-family:var(--sans)">오크 여닫이 1장 · 플루티드 유리</dd>
         <dt>주방</dt><dd style="font-family:var(--sans)">오크 하부장 · 그레이지 상부장 · LED</dd>
         <dt>문</dt><dd style="font-family:var(--sans)">월넛</dd>
@@ -170,7 +178,7 @@ body.walking .hint{display:none}
         <dt>욕실</dt><dd style="font-family:var(--sans)">그레이지 대형타일</dd>
       </dl>
     </div>
-    <p class="note">실측 평면도 치수(10,459 × 6,163) 기준입니다. <b>1·2안(원안)</b>은 기존 신발장 1,143에서 인터폰 벽까지 2,467을 이어 붙여 총 3,610 일자 수납장을 만들고, 중문은 폭 840 오크 3연동입니다. 두 안의 차이는 주방 냉장고장 방향(가로 / 세로)뿐입니다. <b>3안(현관 개편)</b>은 신발장을 570(x 390–960)으로 줄이고 남는 498(x 960–1458, 중문 가벽 앞까지)을 깊이 180 슬림 전신거울장으로 바꿉니다. 벽까지 가던 연장 수납장은 빼고, 중문은 x 1,533 자리를 지킨 채 개구부만 남측(신발장 쪽) 벽선 y 2,411에 붙여 폭 900 여닫이 1장으로 바꿉니다. 경첩은 북측이라 문이 현관 안쪽으로 열려 현관 북측 벽에 납작하게 붙습니다 — 복도도, 신발장·거울장 앞도 막지 않습니다. 세탁실 벽면(1,489)에서 신발장 라인(2,411)까지 실폭이 922라 900 문짝이 거의 꽉 찹니다. 중문 바로 안쪽, 세탁실 벽(y 1,414)과 만나는 복도 코너에 507 × 깊이 400 × 높이 2,300 창고형 붙박이 선반장을 둡니다. 연장 수납장을 뺀 덕에 복도 실폭은 1,271(세탁실 벽면 1,489 ~ 침실2 윗벽면 2,760)이고, 붙박이장 400을 뺀 유효폭은 871입니다. 주방 골격은 1안(냉장고 가로)과 같습니다. <b>4안</b>은 3안에서 반도형 식탁(x 4,475–5,175)을 빼고 싱크대 앞에 1,800 × 600 아일랜드를 놓습니다. 싱크 상판 앞(y 640)에서 복도 남측 벽면(y 2,760)까지 2,120을 나눠 작업통로 760 · 아일랜드 600 · 남측 통로 760으로 균등 배분했습니다. 중문에서 거실로 가는 길은 아일랜드 남측 760을 지납니다. 모든 안에서 창고(약 640 × 990)는 파우더룸으로 바꾸고, 욕실과 맞닿은 벽에 벽붙이 세면대(폭 440, 깊이 300)와 원형 거울을 두었습니다. 복도 쪽은 문 없는 반원 아치(폭 900, R450, 최고 2,300), 침실2 방문(폭 800)은 붙박이장(깊이 600 × 1,300) 바로 옆입니다. 통로 치수는 모두 벽 중심선이 아니라 <b>벽 면</b> 기준입니다 (세탁실 벽 안쪽 면 y 1,489, 침실2 윗벽 안쪽 면 y 2,760).</p>
+    <p class="note">실측 평면도 치수(10,459 × 6,163) 기준입니다. <b>1·2안(원안)</b>은 기존 신발장 1,143에서 인터폰 벽까지 2,467을 이어 붙여 총 3,610 일자 수납장을 만들고, 중문은 폭 840 오크 3연동입니다. 두 안의 차이는 주방 냉장고장 방향(가로 / 세로)뿐입니다. <b>3안(현관 개편)</b>은 신발장을 570(x 390–960)으로 줄이고 남는 573(x 960–1533)을 깊이 180 슬림 전신거울장으로 바꿉니다. 벽까지 가던 연장 수납장은 뺐습니다. 중문은 x 1,533 자리를 지킨 채 개구부를 복도 남측 벽면(y 2,760)에 붙여 폭 900 여닫이 1장(개구부 y 1,860–2,760)으로 바꿨습니다. 경첩이 그 남측에 있어 거실 방향으로 열면 문짝이 복도 남측 벽에 납작하게 붙습니다 — 복도도 현관도 막지 않습니다. 중문 바로 안쪽, 세탁실 벽면(y 1,489)과 만나는 복도 코너에 507 × 깊이 400 × 높이 2,300 창고형 붙박이 선반장을 둡니다. 연장 수납장을 뺀 덕에 복도 실폭은 1,271(세탁실 벽면 1,489 ~ 침실2 윗벽면 2,760)이고, 붙박이장 400을 뺀 유효폭은 871입니다. 주방 골격은 1안(냉장고 가로)과 같습니다. <b>4안</b>은 3안에서 반도형 식탁(x 4,475–5,175)을 빼고 싱크대 앞에 1,800 × 600 아일랜드를 놓습니다. 싱크 상판 앞(y 640)에서 복도 남측 벽면(y 2,760)까지 2,120을 작업통로 760 · 아일랜드 600 · 남측 통로 760으로 균등 배분했습니다. <b>5안</b>은 4안에 더해 세탁실 입구를 현관으로 옮깁니다. 현관 북측 벽(y 1,414)에 문 없는 반원 아치(폭 800, R400, 정점 2,300)를 내고 린넨 커튼만 달며, 기존 주방 쪽 입구(x 2,050 · y 640–1,340)는 벽으로 막습니다. 그러면 x 2,050 벽이 막히므로 조리대를 그 벽을 타고 남쪽으로 849(y 640–1,489) 더 내려 깊이 600 하부장+상판으로 잇고, 그 끝이 세탁실 모서리를 돌아 붙박이장(x 2,040 끝)과 같은 면(y 1,489)에서 만납니다 — 거실 벽에서 현관까지 한 줄로 이어집니다. 붙박이장은 높이 2,300, 연장 조리대는 900이라 모서리에서 높이 단차가 있고, 깊이도 400 → 600으로 200 꺾입니다. 아치 바로 뒤(x 150–850)에는 세탁기·건조기가 있어 아치 서쪽으로 들어가면 약 614 앞에 세탁기가 섭니다 — 세탁기를 옮기거나 아치를 동쪽으로 더 밀 수 있습니다. 모든 안에서 창고(약 640 × 990)는 파우더룸으로 바꾸고, 욕실과 맞닿은 벽에 벽붙이 세면대(폭 440, 깊이 300)와 원형 거울을 두었습니다. 복도 쪽은 문 없는 반원 아치(폭 900, R450, 최고 2,300), 침실2 방문(폭 800)은 붙박이장(깊이 600 × 1,300) 바로 옆입니다. 통로 치수는 모두 벽 중심선이 아니라 <b>벽 면</b> 기준입니다 (세탁실 벽 안쪽 면 y 1,489, 침실2 윗벽 안쪽 면 y 2,760).</p>
   </div>
 </aside>
 <div class="hint">드래그 회전 · 휠/핀치 확대 · 우클릭 이동</div>
@@ -312,7 +320,10 @@ Object.values(groups).forEach(g => scene.add(g));
 const doorPanels = [], shoeGroups = [];
 // 1안/2안 (변경 후에서만 의미) — 벽은 walls 그룹, 가구는 after 그룹 안에
 const p1W = new THREE.Group(), p2W = new THREE.Group(); groups.walls.add(p1W, p2W);
+// 5안: 세탁실 입구를 현관으로 옮기고(아치+커튼), 기존 주방 쪽 입구는 막는다
+const p5W = new THREE.Group(), p5Wn = new THREE.Group(); groups.walls.add(p5W, p5Wn);
 const p1F = new THREE.Group(), p2F = new THREE.Group(); groups.after.add(p1F, p2F);
+const p5F = new THREE.Group(); groups.after.add(p5F);
 
 function mesh(geo, mat, parent){ const m = new THREE.Mesh(geo, mat); m.castShadow = m.receiveShadow = true; parent.add(m); return m; }
 function box(x1,y1,x2,y2,h0,h1,mat,parent=groups.base){
@@ -373,7 +384,20 @@ wall(0,6163,10459,6163,0,H,EXT);
 }
 
 // ---------- interior walls ----------
-wall(0,1414,1555,1414); wall(2040,1414,2050,1414); // 세탁실 / 현관
+wall(2040,1414,2050,1414);                                  // 세탁실 / 복도 모서리
+wall(0,1414,1555,1414,0,H,150,M.wall,p5Wn);                 // (1~4안) 현관 북측 통벽
+// (5안) 현관 북측 벽에 문 없는 반원 아치 — 폭 800, R400, 정점 2,300
+wall(0,1414,650,1414,0,H,150,M.wall,p5W);
+wall(1450,1414,1555,1414,0,H,150,M.wall,p5W);
+wall(2050,640,2050,1340,0,2.1,150,M.wall,p5W);              // (5안) 기존 주방 쪽 세탁실 입구는 막음
+const laundryArch = (() => {
+  const AW = 0.8, ATOP = 2.3, r = AW/2, spring = ATOP - r, sh = new THREE.Shape();
+  sh.moveTo(0,spring); sh.lineTo(0,H); sh.lineTo(AW,H); sh.lineTo(AW,spring);
+  sh.absarc(r,spring,r,0,Math.PI,false);
+  const g = new THREE.ExtrudeGeometry(sh,{depth:0.15,bevelEnabled:false,curveSegments:48});
+  const m = mesh(g, M.wall, p5W); m.position.set(X(650), 0, Z(1414)-0.075);
+  return m;
+})();
 wall(1555,1414,2040,1414,0,H,150,M.wall,p1W);      // (1안·변경 전) 막힌 벽
 wall(1555,1414,2040,1414,2.1,H,150,M.wall,p2W);    // (2안) 중문 안쪽에 세탁실 문 — 문틀 윗부분
 wall(2050,640,2050,1340,0,2.1,150,M.wall,p2W);     // (2안) 주방→세탁실 개구부 막음
@@ -385,9 +409,8 @@ const eoW = new THREE.Group(), enW = new THREE.Group(); groups.walls.add(eoW, en
 wall(1533,1414,1533,1500,0,H,150,M.wall,eoW);   // 원안 문틀 옆벽
 wall(1533,2340,1533,2411,0,H,150,M.wall,eoW);
 wall(1533,1500,1533,2340,2.1,H,150,M.wall,eoW); // 원안 개구부 840
-wall(1533,1414,1533,1511,0,H,150,M.wall,enW);   // 개편안 북측 문틀 선대 (세탁실 벽면 1489에 거의 붙음)
-wall(1533,2411,1533,2760,0,H,150,M.wall,enW);   // 개편안 경첩측 가벽 (신발장 깊이선 349 그대로 이음)
-wall(1533,1511,1533,2411,2.1,H,150,M.wall,enW); // 개편안 개구부 900 (여닫이 1장)
+wall(1533,1414,1533,1860,0,H,150,M.wall,enW);   // 개편안 북측 문틀 벽 (세탁실 벽면 1489 ~ 1860, 371)
+wall(1533,1860,1533,2760,2.1,H,150,M.wall,enW); // 개편안 개구부 900 — 복도 남측 벽면(2760)에 붙임
 box(0,2411,390,2763,0,H,M.wall,groups.walls);   // 현관 PS
 // 주방 ↔ 거실 (200 벽, 아래쪽 개구부)
 wall(5275,0,5275,840,0,H,200); lintel(5275,840,5275,2760,200);
@@ -554,14 +577,36 @@ const eoF = new THREE.Group(), enF = new THREE.Group(); groups.after.add(eoF, en
 shoeRun(390,1533,eoF,M.cab);
 shoeRun(1533,4000,eoF,M.cabNew);
 slidingDoor(eoF);
-// 3·4안 — 개편: 신발장 570 + 전신거울장 498(깊이 180) + 여닫이 중문 900
+// 3·4·5안 — 개편: 신발장 570 + 전신거울장 573(깊이 180) + 여닫이 중문 900
 // + 중문 안쪽, 세탁실 벽(y 1414)과 만나는 복도 코너에 붙박이 선반장
 shoeRun(390,960,enF,M.cab);
-mirrorRun(960,1458,enF);
+mirrorRun(960,1533,enF);
 entryCloset(1533,2040,enF);
 swingDoor(enF);
 
-// ---------- 4안 주방: 반도형 식탁 대신 싱크대 앞 아일랜드 ----------
+// ---------- 5안: 세탁실 아치 커튼 + 조리대를 붙박이장까지 연장 ----------
+M.linen = new THREE.MeshStandardMaterial({map:T.boucle, roughness:.95, side:THREE.DoubleSide});
+{ // 아치(x 650~1450) 커튼 — 문 대신 현관 쪽에 린넨 커튼
+  const len = 0.86, g = new THREE.PlaneGeometry(len, 2.02, 90, 1), q = g.attributes.position;
+  for (let i=0;i<q.count;i++) q.setZ(i, 0.028*Math.sin(q.getX(i)*34));
+  g.computeVertexNormals();
+  const c = new THREE.Mesh(g, M.linen);
+  c.castShadow = true; c.position.set(X(1050), 0.03 + 2.02/2, Z(1414)+0.1); p5F.add(c);
+  box(620,1495,1480,1525,2.06,2.09,M.cab,p5F);                 // 커튼봉
+}
+{ // 조리대 연장 — 북측 벽에서 x 2050 벽을 타고 남쪽으로 내려와 붙박이장과 코너에서 만난다
+  const xa = 2050, xb = 2650, ya = 640, yb = 1489, n = 2, h = (yb-ya)/n;
+  for (let i=0;i<n;i++){
+    const a = ya + i*h + 3, b = ya + (i+1)*h - 3;
+    box(xa, a, xb-30, b, 0.08, 0.86, M.kLow, p5F);             // 하부장 (도어는 동쪽 주방 쪽)
+    box(xb-40, a, xb-20, b, 0.80, 0.83, M.groove, p5F);        // 손잡이 홈
+  }
+  box(xa+20, ya, xb-30, yb-30, 0, 0.08, M.kick, p5F);          // 걸레받이
+  box(xa, ya, xb, yb, 0.86, 0.9, M.counter, p5F);              // 상판 600
+  box(xa, yb-30, xb, yb, 0, 0.86, M.counter, p5F);             // 남측 워터폴 엔드 (붙박이장과 같은 면 y 1489)
+}
+
+// ---------- 4안·5안 주방: 반도형 식탁 대신 싱크대 앞 아일랜드 ----------
 // 깊이 600 · 작업통로 760(싱크 상판 앞 640 → 1,400) · 남측 통로 760(2,000 → 벽면 2,760)
 const island4G = new THREE.Group(); groups.after.add(island4G);
 {
@@ -632,21 +677,21 @@ function slidingDoor(parent){
   });
   box(x-80,ya,x+80,yb,2.1,2.14,M.frame,parent);
 }
-// 중문(개편안, 3·4안): 여닫이 1장 (폭 900) — 개구부는 남측(y 2411) 벽선에 붙이고,
-// 경첩은 북측(y 1511). 열면 현관 안쪽으로 돌아 현관 북측 벽(y 1414)에 납작하게 붙으므로
-// 복도도, 신발장·거울장 앞도 막지 않는다
+// 중문(개편안, 3·4·5안): 여닫이 1장 (폭 900) — 개구부를 복도 남측 벽면(y 2760)에 붙이고
+// 경첩도 그 남측에 단다. 거실 방향(복도 안쪽, +x)으로 열리면 문짝이 복도 남측 벽에
+// 납작하게 붙으므로 복도도 현관도 막지 않고, 현관 북측 벽이 통째로 비워진다
 function swingDoor(parent){
-  const x = 1533, ya = 1511, yb = 2411;      // 개구부 900
+  const x = 1533, ya = 1860, yb = 2760;      // 개구부 900 (yb = 경첩측, 복도 남측 벽면)
   const g = new THREE.Group();
   box(x-20,ya,x+20,yb,0,2.1,M.mglass,g);     // 플루티드 유리
-  box(x-22,ya,x+22,ya+70,0,2.1,M.frame,g);   // 선대 (경첩측)
-  box(x-22,yb-70,x+22,yb,0,2.1,M.frame,g);   // 선대 (손잡이측)
+  box(x-22,ya,x+22,ya+70,0,2.1,M.frame,g);   // 선대 (손잡이측)
+  box(x-22,yb-70,x+22,yb,0,2.1,M.frame,g);   // 선대 (경첩측)
   box(x-22,ya,x+22,yb,2.03,2.1,M.frame,g);   // 윗막이
   box(x-22,ya,x+22,yb,0,0.07,M.frame,g);     // 밑막이
   { const h = new THREE.Mesh(new THREE.CylinderGeometry(0.011,0.011,0.26,10), M.steel);
-    h.castShadow = true; h.position.set(X(x)-0.05, 1.02, Z(yb-105)); g.add(h); }
-  // 경첩축(x 1533 / y 1511)을 그룹 원점으로 옮겨 회전시킨다
-  const hx = X(x), hz = Z(ya);
+    h.castShadow = true; h.position.set(X(x)-0.05, 1.02, Z(ya+105)); g.add(h); }
+  // 경첩축(x 1533 / y 2760)을 그룹 원점으로 옮겨 회전시킨다
+  const hx = X(x), hz = Z(yb);
   g.children.forEach(c => { c.position.x -= hx; c.position.z -= hz; });
   g.position.set(hx, 0, hz);
   parent.add(g);
@@ -706,13 +751,16 @@ function buildLabels(){
    .forEach(([t,x,y]) => groups.labels.add(label(t,x,y)));
   afterLbl = [
     shoeLbl(pL(label('수납장 3,610 (신발장→인터폰)',2200,2580,2.6,'#ffffff','rgba(181,118,58,0.95)',0.9),1,2)),
-    shoeLbl(pL(label('전신거울 498',1245,2500,2.6,'#ffffff','rgba(181,118,58,0.95)',0.8),3,4)),
-    shoeLbl(pL(label('입구 붙박이 선반장 507×400',1800,1700,2.6,'#ffffff','rgba(181,118,58,0.95)',0.8),3,4)),
-    pL(label('신발장 570',675,2500,2.6,'#1f2328','rgba(255,255,255,0.9)',0.7),3,4),
-    pL(label('중문 여닫이 900',1533,2120,1.3,'#1f2328','rgba(255,255,255,0.9)',0.7),3,4),
-    isl(pL(label('아일랜드 1,800 × 600',4100,1700,1.25,'#ffffff','rgba(181,118,58,0.95)',0.8),4)),
-    isl(pL(label('작업통로 760',4100,1020,1.1,'#1f2328','rgba(255,255,255,0.9)',0.65),4)),
-    isl(pL(label('통로 760',4100,2380,1.1,'#1f2328','rgba(255,255,255,0.9)',0.65),4)),
+    shoeLbl(pL(label('전신거울 573',1245,2500,2.6,'#ffffff','rgba(181,118,58,0.95)',0.8),3,4,5)),
+    shoeLbl(pL(label('입구 붙박이 선반장 507×400',1800,1700,2.6,'#ffffff','rgba(181,118,58,0.95)',0.8),3,4,5)),
+    pL(label('신발장 570',675,2500,2.6,'#1f2328','rgba(255,255,255,0.9)',0.7),3,4,5),
+    pL(label('중문 여닫이 900',1533,2300,1.3,'#1f2328','rgba(255,255,255,0.9)',0.7),3,4,5),
+    isl(pL(label('아일랜드 1,800 × 600',4100,1700,1.25,'#ffffff','rgba(181,118,58,0.95)',0.8),4,5)),
+    isl(pL(label('작업통로 760',4100,1020,1.1,'#1f2328','rgba(255,255,255,0.9)',0.65),4,5)),
+    isl(pL(label('통로 760',4100,2380,1.1,'#1f2328','rgba(255,255,255,0.9)',0.65),4,5)),
+    pL(label('세탁실 아치 800 (커튼)',1050,1250,2.45,'#ffffff','rgba(181,118,58,0.95)',0.8),5),
+    pL(label('구 입구 막음',2250,990,1.3,'#ffffff','rgba(194,65,45,0.92)',0.7),5),
+    pL(label('조리대 연장 → 붙박이장',2760,1150,1.3,'#ffffff','rgba(181,118,58,0.95)',0.75),5),
     label('침실2 기존 문 막힘',2250,3050,1.2,'#ffffff','rgba(194,65,45,0.92)',0.75),
     label('아치 입구 (문 없음)',4450,3425,2.55,'#ffffff','rgba(181,118,58,0.95)',0.75),
     label('파우더룸 (구 창고)',3880,3300,1.25,'#ffffff','rgba(181,118,58,0.95)',0.7),
@@ -736,7 +784,7 @@ function buildLabels(){
 }
 
 // ---------- state & UI ----------
-const st = { after:true, low:true, hl:true, lbl:true, style:true, doorClosed:false, shoe:true, island:true, plan:3 };
+const st = { after:true, low:true, hl:true, lbl:true, style:true, doorClosed:false, shoe:true, island:true, plan:5 };
 function setMat(m, color, map){ m.color.set(color); if (m.map !== map){ m.map = map; m.needsUpdate = true; } }
 function applyStyle(){
   const s = st.style;
@@ -783,10 +831,13 @@ function apply(){
   enW.visible = newEntry; eoW.visible = !newEntry;
   enF.visible = newEntry; eoF.visible = !newEntry;
   stN.visible = newEntry; stO.visible = !newEntry;
-  [1,2,3,4].forEach(k => document.getElementById('p-'+k).setAttribute('aria-pressed', st.plan === k));
+  const p5 = st.after && st.plan === 5;
+  p5W.visible = p5; p5Wn.visible = !p5; p5F.visible = st.plan === 5;
+  [1,2,3,4,5].forEach(k => document.getElementById('p-'+k).setAttribute('aria-pressed', st.plan === k));
   document.getElementById('dim-old').hidden = newEntry;
   document.getElementById('dim-new').hidden = !newEntry;
-  document.getElementById('dim-isl').hidden = st.plan !== 4;
+  document.getElementById('dim-isl').hidden = st.plan < 4;
+  document.getElementById('dim-5').hidden = st.plan !== 5;
   document.getElementById('plan-seg').hidden = !st.after;
   doorPanels.forEach(d => {
     if (d.rot !== undefined) d.g.rotation.y = st.doorClosed ? 0 : d.rot;
@@ -794,13 +845,13 @@ function apply(){
   });
   shoeGroups.forEach(g => { g.visible = st.shoe; });
   // 4안은 반도형 식탁을 빼고 싱크대 앞 아일랜드로 대체
-  islandGroups.forEach(g => { g.visible = st.island && st.plan !== 4; });
-  island4G.visible = st.island && st.plan === 4;
+  islandGroups.forEach(g => { g.visible = st.island && st.plan < 4; });
+  island4G.visible = st.island && st.plan >= 4;
   wA.visible = st.after; wB.visible = !st.after;
   const f = st.low ? 0.5 : 1;
   groups.walls.scale.y = f;
   // 벽을 낮춰도 아치는 진짜 반원 모양 유지 (정점만 낮아진 벽 높이에 맞춤)
-  archMesh.scale.y = 1/f; archMesh.position.y = H*(1 - 1/f);
+  [archMesh, laundryArch].forEach(a => { a.scale.y = 1/f; a.position.y = H*(1 - 1/f); });
   tall.forEach(t => { t.o.position.y = t.y * f; t.o.scale.y = t.s * f; });
   applyStyle();
   M.cabNew.color.set(st.hl ? ACCENT : (st.style ? 0xf4f0ea : 0xeeeeec));
@@ -813,7 +864,7 @@ function apply(){
 }
 document.getElementById('b-after').onclick = () => { st.after = true; apply(); };
 document.getElementById('b-before').onclick = () => { st.after = false; apply(); };
-[1,2,3,4].forEach(k => { document.getElementById('p-'+k).onclick = () => { st.plan = k; apply(); }; });
+[1,2,3,4,5].forEach(k => { document.getElementById('p-'+k).onclick = () => { st.plan = k; apply(); }; });
 document.getElementById('t-island').onchange = e => { st.island = e.target.checked; apply(); };
 document.getElementById('t-shoe').onchange = e => { st.shoe = e.target.checked; apply(); };
 document.getElementById('t-door').onchange = e => { st.doorClosed = e.target.checked; apply(); };
@@ -948,7 +999,7 @@ function updateWalk(dt){
 const V = {
   overview: { p:[X(-1500),8,Z(9800)], t:[X(4300),0,Z(3000)] },
   top:      { p:[X(5230),15,Z(3100)], t:[X(5230),0,Z(3080)] },
-  entrance: { p:[X(250),1.6,Z(1700)], t:[X(4000),1.1,Z(2450)], low:false },
+  entrance: { p:[X(300),1.6,Z(2050)], t:[X(4200),1.15,Z(2350)], low:false },
   newdoor:  { p:[X(5000),1.6,Z(3350)], t:[X(3560),1.2,Z(3430)], low:false },
   reverse:  { p:[X(4700),1.6,Z(2150)], t:[X(500),1.15,Z(2050)], low:false },
 };
